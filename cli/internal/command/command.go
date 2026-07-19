@@ -61,7 +61,7 @@ func (app App) Run(args []string) int {
 		return app.diagnose()
 	case "install", "verify", "repair", "update", "uninstall", "evaluate":
 		return app.runLifecycle(lifecycle.Action(args[0]), args[1:])
-	case "mark":
+	case "signal":
 		return app.runMarker(args[1:])
 	default:
 		fmt.Fprintf(app.stderr, "unknown command %q\n", args[0])
@@ -146,8 +146,6 @@ Lifecycle commands:
   repair      Reinstall an owned canonical payload
   update      Replace an owned canonical payload
   uninstall   Remove an owned installation
-  evaluate    Run or clean up a blind evaluation
-  mark        Record an opaque skill activation silently
-
+  evaluate    Run or clean up a governed scenario
 Run "skill-issue help" and see cli/README.md for command arguments.`)
 }

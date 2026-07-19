@@ -1,6 +1,6 @@
 # Gardening Web Application Expected Calls
 
-Keep this answer sheet outside the evaluated workspace and hidden from the evaluated primary agent.
+This document is the human-readable governance view. The standalone CLI embeds the same calls inside the `gardening-web-application` unit, loads them into private state when that identifier is selected, and never copies them into the evaluated workspace.
 
 ## Required First Activations
 

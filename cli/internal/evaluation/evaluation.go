@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/ericwimp8/skill-issue/cli/internal/harness"
@@ -29,14 +30,22 @@ type AnswerSheet struct {
 
 type RunRequest struct {
 	Workspace      string
+	OutputRoot     string
 	Harness        harness.ID
 	Model          string
+	EvaluationID   string
 	ScenarioPath   string
 	AnswerSheet    string
-	Scope          harness.Scope
 	Executable     string
 	CLIPath        string
 	ProductVersion string
+}
+
+type BuiltInEvaluation struct {
+	SchemaVersion int             `json:"schema_version"`
+	EvaluationID  string          `json:"evaluation_id"`
+	Scenario      replay.Scenario `json:"scenario"`
+	AnswerSheet   AnswerSheet     `json:"answer_sheet"`
 }
 
 type Result struct {
@@ -54,6 +63,23 @@ type Result struct {
 	Additional     []SkillCall `json:"additional"`
 	Unattributed   []SkillCall `json:"unattributed"`
 	TranscriptPath string      `json:"transcript_path"`
+}
+
+type WebsitePoint struct {
+	Turn   int    `json:"turn"`
+	TurnID string `json:"turn_id"`
+	Called int    `json:"called"`
+	Missed int    `json:"missed"`
+}
+
+type WebsiteResult struct {
+	SchemaVersion int            `json:"schema_version"`
+	RunID         string         `json:"run_id"`
+	ScenarioID    string         `json:"scenario_id"`
+	Harness       string         `json:"harness"`
+	Model         string         `json:"model"`
+	TotalTurns    int            `json:"total_turns"`
+	Points        []WebsitePoint `json:"points"`
 }
 
 type Service struct {
@@ -80,21 +106,18 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 	if info, statErr := os.Stat(workspace); statErr != nil || !info.IsDir() {
 		return Result{}, errors.New("evaluation workspace must be an existing directory")
 	}
-	scenario, err := readScenario(request.ScenarioPath)
+	request.Workspace = workspace
+	outputRoot, err := prepareOutputRoot(workspace, request.OutputRoot)
 	if err != nil {
 		return Result{}, err
 	}
-	answer, err := readAnswerSheet(request.AnswerSheet, scenario)
+	scenario, answer, err := loadInputs(request)
 	if err != nil {
 		return Result{}, err
 	}
 	cliPath, err := executablePath(request.CLIPath)
 	if err != nil {
 		return Result{}, err
-	}
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return Result{}, fmt.Errorf("resolve home directory: %w", err)
 	}
 	tokens, err := skillTokens(answer)
 	if err != nil {
@@ -104,6 +127,10 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 	if err != nil {
 		return Result{}, err
 	}
+	outputDirectory := filepath.Join(outputRoot, runID)
+	if err := os.Mkdir(outputDirectory, 0o700); err != nil {
+		return Result{}, fmt.Errorf("create evaluation output directory: %w", err)
+	}
 	startedAt := time.Now().UTC()
 	run := runstate.Run{
 		SchemaVersion: 1,
@@ -112,7 +139,7 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 		Harness:       string(request.Harness),
 		Model:         request.Model,
 		Scenario:      scenario.ID,
-		Scope:         string(request.Scope),
+		Scope:         string(harness.ScopeProject),
 		Status:        "preparing",
 		Tokens:        tokens,
 	}
@@ -127,9 +154,8 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 	}()
 	backup, _, err := service.installer.PrepareEvaluation(installer.Request{
 		Harness:        request.Harness,
-		Scope:          request.Scope,
+		Scope:          harness.ScopeProject,
 		Workspace:      workspace,
-		Home:           home,
 		ProductVersion: request.ProductVersion,
 		RunID:          runID,
 		CLIPath:        cliPath,
@@ -193,13 +219,21 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 		return Result{}, err
 	}
 	result = deriveResult(runID, request, scenario.ID, startedAt, answer.Expected, events)
-	transcriptPath := filepath.Join(service.runs.RunDir(runID), "transcript.json")
+	eventsPath := filepath.Join(outputDirectory, "events.jsonl")
+	if err := writeEventsJSONL(eventsPath, events); err != nil {
+		return Result{}, err
+	}
+	transcriptPath := filepath.Join(outputDirectory, "transcript.json")
 	if err := writeJSON(transcriptPath, replayResult); err != nil {
 		return Result{}, err
 	}
 	result.TranscriptPath = filepath.Base(transcriptPath)
-	evidencePath := filepath.Join(service.runs.RunDir(runID), "result.json")
+	evidencePath := filepath.Join(outputDirectory, "result.json")
 	if err := writeJSON(evidencePath, result); err != nil {
+		return Result{}, err
+	}
+	websitePath := filepath.Join(outputDirectory, "website.json")
+	if err := writeJSON(websitePath, deriveWebsiteResult(result, scenario)); err != nil {
 		return Result{}, err
 	}
 	run, err = service.runs.Load(runID)
@@ -300,6 +334,113 @@ func readScenario(path string) (replay.Scenario, error) {
 	return scenario, nil
 }
 
+func loadInputs(request RunRequest) (replay.Scenario, AnswerSheet, error) {
+	if request.EvaluationID != "" {
+		if request.ScenarioPath != "" || request.AnswerSheet != "" {
+			return replay.Scenario{}, AnswerSheet{}, errors.New("built-in evaluation cannot be combined with custom input files")
+		}
+		data, err := payload.BuiltInEvaluation(request.EvaluationID)
+		if err != nil {
+			return replay.Scenario{}, AnswerSheet{}, err
+		}
+		var builtIn BuiltInEvaluation
+		if err := json.Unmarshal(data, &builtIn); err != nil {
+			return replay.Scenario{}, AnswerSheet{}, fmt.Errorf("decode built-in evaluation: %w", err)
+		}
+		if builtIn.SchemaVersion != 1 || builtIn.EvaluationID != request.EvaluationID {
+			return replay.Scenario{}, AnswerSheet{}, errors.New("built-in evaluation identity is invalid")
+		}
+		if err := builtIn.Scenario.Validate(); err != nil {
+			return replay.Scenario{}, AnswerSheet{}, err
+		}
+		if err := validateAnswerSheet(builtIn.AnswerSheet, builtIn.Scenario); err != nil {
+			return replay.Scenario{}, AnswerSheet{}, err
+		}
+		return builtIn.Scenario, builtIn.AnswerSheet, nil
+	}
+	if request.ScenarioPath == "" || request.AnswerSheet == "" {
+		return replay.Scenario{}, AnswerSheet{}, errors.New("custom evaluation requires scenario and answer-sheet files")
+	}
+	inside, err := pathInsideWorkspace(request.Workspace, request.AnswerSheet)
+	if err != nil {
+		return replay.Scenario{}, AnswerSheet{}, err
+	}
+	if inside {
+		return replay.Scenario{}, AnswerSheet{}, errors.New("custom answer sheet must remain outside the evaluated workspace")
+	}
+	scenario, err := readScenario(request.ScenarioPath)
+	if err != nil {
+		return replay.Scenario{}, AnswerSheet{}, err
+	}
+	answer, err := readAnswerSheet(request.AnswerSheet, scenario)
+	if err != nil {
+		return replay.Scenario{}, AnswerSheet{}, err
+	}
+	return scenario, answer, nil
+}
+
+func pathInsideWorkspace(workspace, candidate string) (bool, error) {
+	if workspace == "" {
+		return false, nil
+	}
+	resolvedWorkspace, err := filepath.EvalSymlinks(workspace)
+	if err != nil {
+		return false, fmt.Errorf("resolve evaluation workspace: %w", err)
+	}
+	resolvedCandidate, err := filepath.EvalSymlinks(candidate)
+	if err != nil {
+		return false, fmt.Errorf("resolve custom answer sheet: %w", err)
+	}
+	relative, err := filepath.Rel(resolvedWorkspace, resolvedCandidate)
+	if err != nil {
+		return false, fmt.Errorf("compare custom answer sheet location: %w", err)
+	}
+	return relative == "." || (relative != ".." && !strings.HasPrefix(relative, ".."+string(filepath.Separator))), nil
+}
+
+func prepareOutputRoot(workspace, configured string) (string, error) {
+	if strings.TrimSpace(configured) == "" {
+		return "", errors.New("evaluation output directory is required")
+	}
+	outputRoot, err := filepath.Abs(configured)
+	if err != nil {
+		return "", fmt.Errorf("resolve evaluation output directory: %w", err)
+	}
+	inside, err := pathWithin(workspace, outputRoot)
+	if err != nil {
+		return "", err
+	}
+	if inside {
+		return "", errors.New("evaluation output directory must remain outside the evaluated workspace")
+	}
+	if err := os.MkdirAll(outputRoot, 0o700); err != nil {
+		return "", fmt.Errorf("create evaluation output root: %w", err)
+	}
+	info, err := os.Stat(outputRoot)
+	if err != nil {
+		return "", fmt.Errorf("inspect evaluation output root: %w", err)
+	}
+	if !info.IsDir() {
+		return "", errors.New("evaluation output root must be a directory")
+	}
+	inside, err = pathInsideWorkspace(workspace, outputRoot)
+	if err != nil {
+		return "", err
+	}
+	if inside {
+		return "", errors.New("evaluation output directory must remain outside the evaluated workspace")
+	}
+	return outputRoot, nil
+}
+
+func pathWithin(root, candidate string) (bool, error) {
+	relative, err := filepath.Rel(root, candidate)
+	if err != nil {
+		return false, fmt.Errorf("compare evaluation paths: %w", err)
+	}
+	return relative == "." || (relative != ".." && !strings.HasPrefix(relative, ".."+string(filepath.Separator))), nil
+}
+
 func readAnswerSheet(path string, scenario replay.Scenario) (AnswerSheet, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -309,8 +450,15 @@ func readAnswerSheet(path string, scenario replay.Scenario) (AnswerSheet, error)
 	if err := json.Unmarshal(data, &answer); err != nil {
 		return AnswerSheet{}, fmt.Errorf("decode answer sheet: %w", err)
 	}
+	if err := validateAnswerSheet(answer, scenario); err != nil {
+		return AnswerSheet{}, err
+	}
+	return answer, nil
+}
+
+func validateAnswerSheet(answer AnswerSheet, scenario replay.Scenario) error {
 	if answer.SchemaVersion != 1 || answer.ScenarioID != scenario.ID || len(answer.Expected) == 0 {
-		return AnswerSheet{}, errors.New("answer sheet does not match the scenario")
+		return errors.New("answer sheet does not match the scenario")
 	}
 	turns := map[string]bool{}
 	for _, turn := range scenario.Turns {
@@ -319,17 +467,17 @@ func readAnswerSheet(path string, scenario replay.Scenario) (AnswerSheet, error)
 	available := map[string]bool{}
 	skills, err := payload.EvaluationSkills()
 	if err != nil {
-		return AnswerSheet{}, err
+		return err
 	}
 	for _, skill := range skills {
 		available[skill.Name] = true
 	}
 	for _, expected := range answer.Expected {
 		if !turns[expected.TurnID] || !available[expected.Skill] {
-			return AnswerSheet{}, fmt.Errorf("invalid expected call for %s on turn %s", expected.Skill, expected.TurnID)
+			return fmt.Errorf("invalid expected call for %s on turn %s", expected.Skill, expected.TurnID)
 		}
 	}
-	return answer, nil
+	return nil
 }
 
 func skillTokens(answer AnswerSheet) (map[string]string, error) {
@@ -382,7 +530,7 @@ func deriveResult(runID string, request RunRequest, scenarioID string, startedAt
 		Harness:       string(request.Harness),
 		Model:         request.Model,
 		ScenarioID:    scenarioID,
-		Scope:         string(request.Scope),
+		Scope:         string(harness.ScopeProject),
 		StartedAt:     startedAt,
 		CompletedAt:   time.Now().UTC(),
 		Expected:      expected,
@@ -390,6 +538,50 @@ func deriveResult(runID string, request RunRequest, scenarioID string, startedAt
 		Missing:       missing,
 		Additional:    additional,
 		Unattributed:  unattributed,
+	}
+}
+
+func deriveWebsiteResult(result Result, scenario replay.Scenario) WebsiteResult {
+	expectedByTurn := make(map[string]map[string]struct{})
+	for _, call := range result.Expected {
+		skills := expectedByTurn[call.TurnID]
+		if skills == nil {
+			skills = make(map[string]struct{})
+			expectedByTurn[call.TurnID] = skills
+		}
+		skills[call.Skill] = struct{}{}
+	}
+	observed := make(map[string]struct{})
+	for _, call := range result.Observed {
+		observed[call.TurnID+"\x00"+call.Skill] = struct{}{}
+	}
+	points := make([]WebsitePoint, 0, len(expectedByTurn))
+	for index, turn := range scenario.Turns {
+		skills := expectedByTurn[turn.ID]
+		if len(skills) == 0 {
+			continue
+		}
+		called := 0
+		for skill := range skills {
+			if _, ok := observed[turn.ID+"\x00"+skill]; ok {
+				called++
+			}
+		}
+		points = append(points, WebsitePoint{
+			Turn:   index + 1,
+			TurnID: turn.ID,
+			Called: called,
+			Missed: len(skills) - called,
+		})
+	}
+	return WebsiteResult{
+		SchemaVersion: 1,
+		RunID:         result.RunID,
+		ScenarioID:    result.ScenarioID,
+		Harness:       result.Harness,
+		Model:         result.Model,
+		TotalTurns:    len(scenario.Turns),
+		Points:        points,
 	}
 }
 
@@ -423,6 +615,22 @@ func writeJSON(path string, value any) error {
 	}
 	if err := os.WriteFile(path, append(data, '\n'), 0o600); err != nil {
 		return fmt.Errorf("write evaluation result: %w", err)
+	}
+	return nil
+}
+
+func writeEventsJSONL(path string, events []runstate.Event) error {
+	data := make([]byte, 0)
+	for _, event := range events {
+		encoded, err := json.Marshal(event)
+		if err != nil {
+			return fmt.Errorf("encode evaluation event: %w", err)
+		}
+		data = append(data, encoded...)
+		data = append(data, '\n')
+	}
+	if err := os.WriteFile(path, data, 0o600); err != nil {
+		return fmt.Errorf("write evaluation events: %w", err)
 	}
 	return nil
 }

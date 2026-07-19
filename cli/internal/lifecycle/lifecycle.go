@@ -143,35 +143,13 @@ func (service Service) evaluate(args []string) (Result, error) {
 		if err != nil {
 			return Result{}, err
 		}
-		id, scope, workspace, _, err := installationTarget(options)
-		if err != nil {
-			return Result{}, err
-		}
-		model, err := required(options, "model")
-		if err != nil {
-			return Result{}, err
-		}
-		scenario, err := required(options, "scenario")
-		if err != nil {
-			return Result{}, err
-		}
-		answer, err := required(options, "answer-sheet")
+		request, err := evaluationRunRequest(options, service.version)
 		if err != nil {
 			return Result{}, err
 		}
 		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 		defer stop()
-		result, err := service.evaluation.Run(ctx, evaluation.RunRequest{
-			Workspace:      workspace,
-			Harness:        id,
-			Model:          model,
-			ScenarioPath:   scenario,
-			AnswerSheet:    answer,
-			Scope:          scope,
-			Executable:     options["executable"],
-			CLIPath:        options["cli-path"],
-			ProductVersion: service.version,
-		})
+		result, err := service.evaluation.Run(ctx, request)
 		if err != nil {
 			return Result{}, err
 		}
@@ -196,12 +174,64 @@ func (service Service) evaluate(args []string) (Result, error) {
 
 func (service Service) mark(args []string) (Result, error) {
 	if len(args) != 1 {
-		return Result{}, errors.New("mark requires one opaque token")
+		return Result{}, errors.New("signal requires one opaque token")
 	}
 	if err := service.evaluation.Mark(args[0]); err != nil {
 		return Result{}, err
 	}
 	return Result{Action: ActionMark, Status: "recorded"}, nil
+}
+
+func evaluationRunRequest(options map[string]string, version string) (evaluation.RunRequest, error) {
+	harnessValue, err := required(options, "harness")
+	if err != nil {
+		return evaluation.RunRequest{}, err
+	}
+	id, err := harness.ParseID(harnessValue)
+	if err != nil {
+		return evaluation.RunRequest{}, err
+	}
+	workspace, err := required(options, "workspace")
+	if err != nil {
+		return evaluation.RunRequest{}, err
+	}
+	workspace, err = filepath.Abs(workspace)
+	if err != nil {
+		return evaluation.RunRequest{}, fmt.Errorf("resolve workspace: %w", err)
+	}
+	model, err := required(options, "model")
+	if err != nil {
+		return evaluation.RunRequest{}, err
+	}
+	output, err := required(options, "output")
+	if err != nil {
+		return evaluation.RunRequest{}, err
+	}
+	output, err = filepath.Abs(output)
+	if err != nil {
+		return evaluation.RunRequest{}, fmt.Errorf("resolve output directory: %w", err)
+	}
+	evaluationID := options["evaluation"]
+	scenario := options["scenario"]
+	answer := options["answer-sheet"]
+	if evaluationID != "" && (scenario != "" || answer != "") {
+		return evaluation.RunRequest{}, errors.New("--evaluation cannot be combined with --scenario or --answer-sheet")
+	}
+	if evaluationID == "" && (scenario == "" || answer == "") {
+		return evaluation.RunRequest{}, errors.New("use --evaluation or supply both --scenario and --answer-sheet")
+	}
+	return evaluation.RunRequest{
+		Workspace:      workspace,
+		OutputRoot:     output,
+		Harness:        id,
+		Model:          model,
+		EvaluationID:   evaluationID,
+		ScenarioPath:   scenario,
+		AnswerSheet:    answer,
+		Executable:     options["executable"],
+		CLIPath:        options["cli-path"],
+		ProductVersion: version,
+	}, nil
 }
 
 func installRequest(options map[string]string, version string) (installer.Request, error) {

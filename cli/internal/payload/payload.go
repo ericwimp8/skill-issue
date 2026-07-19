@@ -35,6 +35,8 @@ type Skill struct {
 
 var localReference = regexp.MustCompile("`((?:references|scripts|assets)/[^`]+)`")
 
+const builtInEvaluationRoot = "evaluations/skill-calling/built-ins"
+
 func ReadManifest() (Manifest, error) {
 	var manifest Manifest
 	if err := json.Unmarshal(manifestData, &manifest); err != nil {
@@ -52,6 +54,17 @@ func Skills() ([]Skill, error) {
 
 func EvaluationSkills() ([]Skill, error) {
 	return readSkills(true)
+}
+
+func BuiltInEvaluation(id string) ([]byte, error) {
+	if strings.TrimSpace(id) == "" || path.Base(id) != id {
+		return nil, fmt.Errorf("invalid built-in evaluation %q", id)
+	}
+	data, err := fs.ReadFile(skillissue.CanonicalSkills, path.Join(builtInEvaluationRoot, id+".json"))
+	if err != nil {
+		return nil, fmt.Errorf("read built-in evaluation %q: %w", id, err)
+	}
+	return append([]byte(nil), data...), nil
 }
 
 func readSkills(includeEvaluationOnly bool) ([]Skill, error) {

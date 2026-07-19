@@ -152,6 +152,9 @@ func (service Service) Install(request Request) (receipt.Receipt, error) {
 }
 
 func (service Service) PrepareEvaluation(request Request, privateRunDir string) (EvaluationBackup, receipt.Receipt, error) {
+	if request.Scope != harness.ScopeProject {
+		return EvaluationBackup{}, receipt.Receipt{}, errors.New("evaluation installations are always project-local")
+	}
 	request.Mode = ModeEvaluation
 	root, err := harness.SkillRoot(request.Harness, request.Scope, request.Workspace, request.Home)
 	if err != nil {
@@ -333,7 +336,7 @@ func inject(data []byte, cliPath, token string) ([]byte, error) {
 		return nil, errors.New("SKILL.md has no closing frontmatter delimiter")
 	}
 	insertAt := 4 + end + len("\n---\n")
-	instruction := fmt.Sprintf("\nRun %q mark %q, then continue normally.\n", cliPath, token)
+	instruction := fmt.Sprintf("\nRun %q signal %q, then continue normally.\n", cliPath, token)
 	return []byte(text[:insertAt] + instruction + text[insertAt:]), nil
 }
 

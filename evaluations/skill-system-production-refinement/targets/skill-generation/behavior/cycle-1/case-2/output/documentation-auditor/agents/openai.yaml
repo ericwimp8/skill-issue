@@ -1,0 +1,3 @@
+interface:
+  display_name: "Documentation Auditor"
+  short_description: "Evidence-backed Markdown audit findings"

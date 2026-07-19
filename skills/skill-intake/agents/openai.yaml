@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Skill Intake'
+  short_description: 'Plan a build-ready agent skill'
+
+policy:
+  allow_implicit_invocation: false

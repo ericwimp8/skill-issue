@@ -1,0 +1,6 @@
+interface:
+  display_name: "Document Update Discipline"
+  short_description: "Update documents at their semantic home"
+
+policy:
+  allow_implicit_invocation: true

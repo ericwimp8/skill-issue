@@ -28,6 +28,14 @@ The model and harness are initially treated as a single practical environment. T
 
 Users evaluate their environment first. If it performs reliably, they can build and refine skills with confidence. If it does not, they can reconsider the environment instead of endlessly rewriting a skill that was never the underlying problem.
 
+## Evaluation measurement
+
+The initial skill-calling evaluation uses three scripted scenarios with the same number of fixed user turns. Every harness-and-model configuration receives the same turns in the same order. Agent responses are retained as evidence but do not change the next scripted turn.
+
+Results are measured by turn rather than by context-token count. Tokenization, context limits, compaction, and exposed telemetry differ across models and harnesses, while a turn represents the same point in the user's workflow for every configuration. This makes observations such as a skill first loading on turn 10 or failing to load by turn 20 directly comparable across identical conversations.
+
+The MVP scenarios contain 30 turns each and deliberately include substantial real-world planning work. Context-based analysis may be added later when comparable telemetry is available across the supported environments.
+
 ## Skill creation
 
 The goal is to let users describe the outcome they want in ordinary language. For example:
@@ -51,14 +59,34 @@ The user describes the outcome. Skill Issue handles the skill-engineering work.
 
 The initial product will focus on local execution. Rather than operating a hosted service across every model API, Skill Issue will provide something users can install and run inside their own agent setup.
 
-The exact interface is still being explored, but the likely shape is a small CLI or installer that:
+The MVP uses a self-contained Go CLI distributed as prebuilt macOS, Windows, and Linux executables. It:
 
-- installs the required skills and evaluation assets;
+- installs the required canonical skills;
 - runs a repeatable evaluation inside the user’s configured environment;
 - measures skill discovery and invocation behavior; and
 - produces a useful local report explaining the results.
 
-Much of Skill Issue may itself be implemented as agent skills. A thin CLI can handle installation, orchestration, repeatable runs, and reporting while the agent-facing workflows perform generation, evaluation, diagnosis, and refinement.
+The CLI owns deterministic installation, verification, repair, update, removal, evaluation execution, and reporting boundaries. The installed agent skills own generation, diagnosis, and refinement behavior.
+
+The current implementation embeds the canonical primary and supporting skills, installs them into researched native project or user roots, records external ownership receipts, and provides blind primary-agent replay with private turn attribution, graph-ready evidence, restoration, and cleanup. Harness adapters still require real-environment qualification before release claims are made.
+
+### Evaluation mitigation
+
+The runner evaluates each harness's primary agent directly. It uses fixed verbatim prompts, private answer sheets and turn state, cryptographically random opaque marker tokens, temporary generated skill copies, and external event storage. The runner never adapts later prompts from model responses and removes temporary instrumentation after the run while retaining evidence.
+
+These measures minimize evaluation clues. They cannot guarantee that an agent inspecting its environment will never infer that instrumentation exists.
+
+### CLI development
+
+```sh
+go vet ./cli/...
+go run ./cli/cmd/skill-issue diagnose
+./cli/scripts/build-cross-platform.sh
+```
+
+The automated CLI test suite is intentionally deferred while the implementation is changing rapidly. Final regression, adapter, lifecycle, and platform tests will be written against the stabilized product during qualification rather than maintained against transitional interfaces.
+
+The build script produces standalone Darwin, Windows, and Linux binaries for `amd64` and `arm64`. Cross-compilation does not replace native runtime testing on each released platform.
 
 ## Longer-term vision
 
@@ -68,4 +96,36 @@ The MVP deliberately starts with the part users can run in the environments they
 
 ## Status
 
-Skill Issue is currently in the design and early development stage. The evaluation format, local execution interface, scoring model, and division of responsibilities between the CLI and skills are still being determined.
+Skill Issue is in active development. The standalone CLI, canonical embedded payload, direct installation lifecycle, blind evaluation runner, and website mock-up are implemented. Real-harness and native-platform qualification, campaign evidence, and public release remain in progress.
+
+The current six-block completion sequence is maintained in `plans/skill-issue-project-completion/skill-issue-project-completion-a-to-b-plan.md`. Its completed-work inventory, research source map, CLI mismatch record, and old-task reconciliation live in `plans/skill-issue-project-completion/reorganization-dependency-audit.md`. Document authority, supersession, consumer links, and required update routing live in `plans/skill-issue-project-completion/document-authority-and-update-map.md`.
+
+## Website mock-up
+
+The repository includes a one-page React and TypeScript website that builds to static files for GitHub Pages. Benchmark content is local and requires no database or runtime API.
+
+### Run locally
+
+```sh
+npm install
+npm run dev -- --host 127.0.0.1
+```
+
+Open `http://127.0.0.1:5173/`.
+
+### Validate and preview the production build
+
+```sh
+npm run validate
+npm run preview
+```
+
+The production preview is available at `http://127.0.0.1:4173/skill-issue/`. Set `VITE_BASE_PATH` when the eventual GitHub Pages repository path differs from `/skill-issue/`.
+
+### Update website content
+
+All editable website copy, release metadata, summary metrics, methodology text, and evaluation graph values live in `src/data/siteData.ts`.
+
+To add another graph, append one evaluation definition with a unique `id`, harness and model labels, description, sample size, and context checkpoint values. The results grid renders new definitions automatically through the shared `EvaluationChart` component.
+
+Replace the release URL in the same data file when the first CLI artifact is published through GitHub Releases. Keep binaries in Releases rather than the Pages build.

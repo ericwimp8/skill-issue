@@ -1,0 +1,3 @@
+interface:
+  display_name: "Prompt Writing Disciplined"
+  short_description: "Write prompts that carry only the task-specific delta"

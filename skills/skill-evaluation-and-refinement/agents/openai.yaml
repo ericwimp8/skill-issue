@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Skill Evaluation and Refinement'
+  short_description: 'Evaluate and semantically refine agent skills'
+
+policy:
+  allow_implicit_invocation: true

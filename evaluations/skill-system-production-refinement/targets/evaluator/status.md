@@ -1,0 +1,22 @@
+# Evaluator Target Status
+
+- Target: `skills/skill-evaluation-and-refinement/SKILL.md`
+- Content hash: `6c2ef1fb3fcd529e99098a8348d516cd29263401087b93dbae78d464b9f9687c`
+- Environment qualification: `evaluations/skill-system-production-refinement/environment-qualification.md`
+- Refinement mode: automatic
+- Description state: `passed`
+- Description evidence:
+  - `description/round-1/trial-1-response.md` — fresh session `019f7766-23a9-7ce1-b0c1-aa66d7e7ca39`
+  - `description/round-1/trial-2-response.md` — fresh session `019f7766-38cb-7752-bead-5004c4a6424b`
+  - `description/round-1/trial-3-response.md` — fresh session `019f7771-86cd-72a1-9ab2-ab63dd997640`
+  - `description/round-1/trial-4-response.md` — fresh session `019f7771-9ead-7712-ae15-6904b7ac6456`
+- Current loop: concluded
+- Description failures: 0
+- Body failures: 0
+- Total campaign allowance: 40
+- Remaining campaign iterations at target conclusion: 28
+- Initial trial 1: `description/round-1/trial-1-response.md`
+- Initial trial 2: `description/round-1/trial-2-response.md`
+- Last completed trial: confirmation trial 4
+- Next action at target conclusion: evaluate Skill Intake
+- State: passed

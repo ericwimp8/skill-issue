@@ -1,0 +1,3 @@
+interface:
+  display_name: 'Skill Generation'
+  short_description: 'Generate a skill from an intake plan'

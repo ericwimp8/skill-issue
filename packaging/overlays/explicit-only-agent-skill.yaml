@@ -1,0 +1,10 @@
+skill: skill-intake
+targets:
+  - claude-code
+  - github-copilot-cli
+  - cursor-native-skills
+  - pi
+frontmatter:
+  disable-model-invocation: true
+notes:
+  cursor-native-skills: Verify the installed Cursor version before applying this overlay to plugin-delivered skills.

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ericwimp8/skill-issue/evaluations/skill-calling/event.schema.json",
+  "title": "Skill Issue Skill Invocation Event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event",
+    "run_id",
+    "attributed",
+    "harness",
+    "model",
+    "skill",
+    "recorded_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "event": {
+      "const": "skill_invocation"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "turn_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "attributed": {
+      "type": "boolean"
+    },
+    "harness": {
+      "type": "string",
+      "minLength": 1
+    },
+    "model": {
+      "type": "string",
+      "minLength": 1
+    },
+    "skill": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "recorded_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

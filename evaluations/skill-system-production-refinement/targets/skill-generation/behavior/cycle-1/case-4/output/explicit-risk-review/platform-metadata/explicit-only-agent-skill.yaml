@@ -1,0 +1,6 @@
+skill: explicit-risk-review
+targets:
+  - claude-code
+  - pi
+frontmatter:
+  disable-model-invocation: true

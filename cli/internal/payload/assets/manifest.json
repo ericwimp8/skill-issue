@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "product": "skill-issue",
+  "payload_version": "development",
+  "components": [
+    {
+      "id": "skill-evaluation-and-refinement"
+    },
+    {
+      "id": "skill-generation"
+    },
+    {
+      "id": "skill-intake"
+    },
+    {
+      "id": "document-update-discipline"
+    },
+    {
+      "id": "prompt-writing"
+    },
+    {
+      "id": "skill-authoring-discipline"
+    },
+    {
+      "id": "system-change-ownership"
+    },
+    {
+      "id": "dictate-plan",
+      "evaluation_only": true
+    }
+  ]
+}

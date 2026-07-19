@@ -1,0 +1,6 @@
+interface:
+  display_name: "System Change Ownership"
+  short_description: "Place system changes at the responsibility owner"
+
+policy:
+  allow_implicit_invocation: true

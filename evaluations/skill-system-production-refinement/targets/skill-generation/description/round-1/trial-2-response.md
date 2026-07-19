@@ -1,0 +1,5 @@
+Implementation is build-ready but cannot begin yet. The intake contract preserves an explicit user-owned stop immediately before generation, so work may start only after the user confirms that the pause is released.
+
+Once released, the implementation is authorized to proceed conditionally autonomously at `output/documentation-auditor`, using the completed A-to-B plan as its source of truth. The documented policy and available tooling are sufficient to make implementation decisions without further expected user input. The governing limitation is that the private production examples remain unavailable: the skill must keep that limitation visible and cannot claim or infer example-specific production expectations from evidence it has not received.
+
+The immediate build handoff is to create the ready-to-use Codex skill at the confirmed destination, preserve the findings-only boundary, define the severity labels and report structure, validate the packaged skill against the repository's applicable checks, and then hand it to representative evaluation with the private-example limitation intact.

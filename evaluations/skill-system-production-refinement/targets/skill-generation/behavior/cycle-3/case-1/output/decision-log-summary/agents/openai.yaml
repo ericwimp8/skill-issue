@@ -1,0 +1,3 @@
+interface:
+  display_name: "Decision Log Summary"
+  short_description: "Summarize selected Markdown ADR decisions"

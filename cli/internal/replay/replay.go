@@ -94,6 +94,8 @@ const (
 type Boundary struct {
 	ScenarioID string
 	TurnID     string
+	TurnIndex  int
+	TurnTotal  int
 	Phase      BoundaryPhase
 	Prompt     string
 	Capture    *Capture
@@ -125,8 +127,8 @@ func (runner Runner) Run(ctx context.Context, scenario Scenario) (result Result,
 	}()
 
 	result = Result{HarnessID: runner.Adapter.HarnessID(), Scenario: scenario, Turns: make([]TurnResult, 0, len(scenario.Turns))}
-	for _, turn := range scenario.Turns {
-		before := Boundary{ScenarioID: scenario.ID, TurnID: turn.ID, Phase: BoundaryBefore, Prompt: turn.Prompt}
+	for index, turn := range scenario.Turns {
+		before := Boundary{ScenarioID: scenario.ID, TurnID: turn.ID, TurnIndex: index + 1, TurnTotal: len(scenario.Turns), Phase: BoundaryBefore, Prompt: turn.Prompt}
 		if err := runner.notify(ctx, before); err != nil {
 			return Result{}, err
 		}
@@ -137,7 +139,7 @@ func (runner Runner) Run(ctx context.Context, scenario Scenario) (result Result,
 		if err != nil {
 			return Result{}, fmt.Errorf("wait for turn %q: %w", turn.ID, err)
 		}
-		after := Boundary{ScenarioID: scenario.ID, TurnID: turn.ID, Phase: BoundaryAfter, Prompt: turn.Prompt, Capture: &capture}
+		after := Boundary{ScenarioID: scenario.ID, TurnID: turn.ID, TurnIndex: index + 1, TurnTotal: len(scenario.Turns), Phase: BoundaryAfter, Prompt: turn.Prompt, Capture: &capture}
 		if err := runner.notify(ctx, after); err != nil {
 			return Result{}, err
 		}

@@ -65,7 +65,7 @@ and cleanup probes; do not count them as campaign results.
 - [ ] Confirm every evaluation workspace will be outside this repository and
       every output will use a distinct directory beneath repository `output/`.
 - [ ] Confirm the campaign orchestration uses no more than six simultaneous
-      evaluation workers and keeps shared progress updates serialized.
+      evaluation commands and keeps shared progress updates serialized.
 
 ## 2. CLI Audit, Hardening, And Baseline Freeze
 
@@ -115,7 +115,7 @@ tests as validation.
 - [ ] Build the committed campaign revision as the next known-good CLI snapshot.
 - [ ] Record the immutable commit, CLI version, build date, and harness versions
       used by the campaign.
-- [ ] Confirm all full campaign workers use that same known-good snapshot.
+- [ ] Confirm all full campaign commands use that same known-good snapshot.
 - [ ] Treat any later campaign-affecting CLI fix as a baseline change requiring
       an explicit comparability review and any necessary reruns.
 
@@ -140,14 +140,14 @@ The campaign contains ten harness-and-model configurations and three governed
 - [ ] Keep independent eligible evaluation lanes running when another lane is
       blocked.
 
-### OpenAI Codex Sub-Agent Permission Rule
+### OpenAI Codex Command Permission Rule
 
-- [ ] Require every OpenAI Codex harness worker to execute the exact known-good
+- [ ] Execute every OpenAI Codex harness evaluation through the exact known-good
       evaluation command with `sandbox_permissions="require_escalated"`.
 - [ ] Require the escalation justification to state that nested Codex needs its
       normal authenticated session database and session state under
       `CODEX_HOME`.
-- [ ] Confirm the escalation removes only the outer worker sandbox for that
+- [ ] Confirm the escalation removes only the outer main-thread shell sandbox for that
       command and does not weaken or bypass the evaluator-owned inner Codex
       `workspace-write` sandbox, approval policy, clean configuration, model,
       reasoning, or cleanup controls.
@@ -173,14 +173,14 @@ Claude route and may require bounded resume or tooling diagnosis.
 - [ ] Stop only the proxy process owned by `.skill-issue/claudex/manage` after
       all three runs complete; do not reset or delete the isolated runtime.
 
-Other non-Claude-Code evaluations may use the remaining worker capacity while
+Other non-Claude-Code evaluations may use the remaining process capacity while
 this sequential lane runs.
 
 ### Claude Code Fable Transition
 
 The project-local `claudex` launcher is a Codex-backed route. It starts a
 localhost proxy and injects an isolated Claude configuration, proxy URL,
-authentication token, model aliases, sub-agent model, and forced model. Moving
+authentication token, model aliases, delegated-agent model, and forced model. Moving
 to normal Claude Code therefore requires an explicit executable and environment
 transition rather than changing one global environment variable.
 

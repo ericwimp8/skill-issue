@@ -30,8 +30,8 @@ Use one reasoning target across the campaign, or the closest documented harness-
 | ----------------------------- | -------: |
 | Configuration suites complete |     0/10 |
 | Evaluation runs complete      |     0/30 |
-| Evaluation runs pending       |    30/30 |
-| Evaluation runs failed        |        0 |
+| Evaluation runs pending       |    29/30 |
+| Evaluation runs failed        |        1 |
 | Evaluation runs blocked       |        0 |
 | Overall completion            |       0% |
 
@@ -52,16 +52,17 @@ Status values: `Pending`, `Running`, `Complete`, `Failed`, or `Blocked`.
 - Other non-Claude-Code evaluations may run while the Claude Code — Codex sequence is active, subject to the campaign-wide limit of six simultaneous evaluation runs.
 - Do not start Claude Code — Fable until all three Claude Code — Codex evaluations are complete and the normal Claude Code route has passed its required smoke gate.
 - After that smoke gate passes, the three Claude Code — Fable evaluations may run concurrently with each other and with eligible non-Claude-Code evaluations.
-- Only the campaign orchestrator updates this progress document. Evaluation workers return evidence to the orchestrator instead of editing shared campaign state.
+- The campaign orchestrator starts and monitors evaluation commands directly and is the only writer of this progress document.
 - Every evaluation uses its own external workspace and its own retained output location.
-- OpenAI Codex evaluations started from a Codex sub-agent require command-scoped outer-sandbox escalation for the exact known-good evaluation command. The nested evaluator-owned Codex sandbox and approval settings remain unchanged.
+- OpenAI Codex evaluations launched from Codex require command-scoped outer-sandbox escalation for the exact known-good evaluation command. The nested evaluator-owned Codex sandbox and approval settings remain unchanged.
+- If several main Codex threads participate, assign disjoint evaluation IDs to each thread and designate one thread as the serialized progress-document writer.
 
-The adjacent `evaluation-orchestration-prompt.md` owns scheduling, worker prompts, Claude Code route switching, smoke gates, failure handling, and progress-update procedure.
+The adjacent `evaluation-orchestration-prompt.md` owns scheduling, command launch contracts, Claude Code route switching, smoke gates, failure handling, and progress-update procedure.
 
 ## 1. Claude Code — Codex
 
 - [ ] **Configuration complete:** Claude Code — Codex — 0/3
-- [ ] **CLA-COD-01:** Gardening Web Application — Status: `Pending` — Attempts: 0 — Result: — Notes: —
+- [ ] **CLA-COD-01:** Gardening Web Application — Status: `Failed` — Attempts: 1 — Result: — Notes: Operator-requested interruption during turn 7; evaluator cleanup completed.
 - [ ] **CLA-COD-02:** Community Archive Desktop Application — Status: `Pending` — Attempts: 0 — Result: — Notes: —
 - [ ] **CLA-COD-03:** Neighborhood Emergency Preparedness Program — Status: `Pending` — Attempts: 0 — Result: — Notes: —
 
@@ -136,12 +137,12 @@ Add one row for every failed or blocked attempt. Retain earlier rows after a suc
 
 | Evaluation ID | Date | Attempt | Status | Failure or blocker | Resolution or next action | Rerun result |
 | ------------- | ---- | ------: | ------ | ------------------ | ------------------------- | ------------ |
-| —             | —    |       — | —      | —                  | —                         | —            |
+| CLA-COD-01    | 2026-07-21 | 1 | Failed | Operator-requested interruption during turn 7; evaluator exited on `SIGINT`. | Cleanup completed; rerun all 30 turns from a fresh workspace when requested. | — |
 
 ## Campaign Notes
 
 - **Reasoning target:** Medium, or the closest documented harness-specific equivalent where no independent medium control exists.
-- **Exact model identifiers:** Record during configuration preflight.
-- **Campaign started:** —
+- **Exact model identifiers:** Claude Code — Codex uses `gpt-5.6-sol` with Claude Code `2.1.205` through CLIProxyAPI `7.2.91`.
+- **Campaign started:** 2026-07-21
 - **Campaign completed:** —
-- **General notes:** —
+- **General notes:** Official Claude Code — Codex lane paused after the operator requested that `CLA-COD-01` stop during its first attempt.

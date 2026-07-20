@@ -1,6 +1,12 @@
 package lifecycle
 
-import "testing"
+import (
+	"bytes"
+	"testing"
+
+	"github.com/ericwimp8/skill-issue/cli/internal/evaluation"
+	"github.com/ericwimp8/skill-issue/cli/internal/replay"
+)
 
 func TestEvaluationRunIsProjectLocalAndHasOneInputMode(t *testing.T) {
 	base := map[string]string{
@@ -49,5 +55,15 @@ func TestEvaluationCleanupAndSignalRequireOutputOwnedState(t *testing.T) {
 	}
 	if _, err := service.mark([]string{"opaque-token", "relative-state"}); err == nil {
 		t.Fatal("signal with relative state root was accepted")
+	}
+}
+
+func TestWriteTurnProgressReportsStartAndFinish(t *testing.T) {
+	var output bytes.Buffer
+	writeTurnProgress(&output, evaluation.TurnProgress{TurnID: "turn-2", Index: 2, Total: 3, Phase: replay.BoundaryBefore})
+	writeTurnProgress(&output, evaluation.TurnProgress{TurnID: "turn-2", Index: 2, Total: 3, Phase: replay.BoundaryAfter})
+	wanted := "Starting turn 2 of 3: turn-2\nFinished turn 2 of 3: turn-2\n"
+	if output.String() != wanted {
+		t.Fatalf("progress output = %q", output.String())
 	}
 }

@@ -29,6 +29,26 @@ The wrapper stores generated binaries under ignored repository-local `.skill-iss
 
 Unless the user explicitly requests the development CLI or current-source testing, use known-good. Build a new known-good snapshot only from the committed revision intended to become the next working baseline. Keep known-good and development evaluation artifacts in separate descriptive subdirectories under `output/`. Never force-add `.skill-issue/` binaries or state.
 
+# Local Harness Evaluation Routing
+
+Use explicit executable selection for local evaluations so interactive shell aliases cannot choose the wrong harness route. Go resolves harness commands with `exec.LookPath`; shell aliases such as `claude-codex` are invisible to the CLI and are only for interactive terminal use.
+
+Before a Claude Code evaluation, define the intended local routes without recording machine-specific paths in tracked files:
+
+```zsh
+export CLAUDE_NORMAL_EXECUTABLE="$(whence -p claude)"
+export CLAUDE_CODEX_EXECUTABLE="$(git rev-parse --show-toplevel)/.skill-issue/claudex/claudex"
+```
+
+Select the route explicitly for every Claude Code evaluation:
+
+- Normal Claude Code: pass `--harness claude-code --executable "$CLAUDE_NORMAL_EXECUTABLE" --model <qualified-native-Claude-model> --reasoning medium`.
+- Claude Code through the local Codex-backed proxy: pass `--harness claude-code --executable "$CLAUDE_CODEX_EXECUTABLE" --model gpt-5.6-sol --reasoning medium`.
+
+Never pass the `claude-codex` alias to `--executable`. Before confirming an evaluation, verify the pre-run summary shows the intended executable, model, reasoning, workspace, and output root.
+
+When Codex runs an OpenAI Codex harness evaluation, execute the exact known-good evaluation command with `sandbox_permissions: "require_escalated"`. State in the justification that the nested Codex process needs its normal authenticated session database and session state under `CODEX_HOME`. This escalation applies only to the outer shell command. Keep the evaluator-owned inner Codex `workspace-write` sandbox, approval policy, ambient-configuration exclusions, model, reasoning, workspace, and cleanup unchanged. Never use `danger-full-access` or bypass approvals. If escalation is denied, treat the run as blocked, verify partial preparation is cleaned, and do not retry the command inside the read-only outer sandbox.
+
 # Planning and Research Documents
 
 Keep active working documents tracked, understandable, and out of the repository root and implementation directories. Store plans and progress in `plans/`; store research, investigation findings, evaluation reports, audits, and supporting documents in `research/`. Keep permanent or domain-owned files at their semantic home.

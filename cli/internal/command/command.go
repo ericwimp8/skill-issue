@@ -37,7 +37,7 @@ func New(stdin io.Reader, stdout, stderr io.Writer, buildInfo BuildInfo) App {
 		stdout:    stdout,
 		stderr:    stderr,
 		buildInfo: buildInfo,
-		lifecycle: lifecycle.New(),
+		lifecycle: lifecycle.New(stderr),
 	}
 }
 

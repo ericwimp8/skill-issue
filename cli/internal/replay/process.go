@@ -434,7 +434,7 @@ func DeleteOpenCodeSession(ctx context.Context, executable, directory string, en
 	if err != nil {
 		return fmt.Errorf("OpenCode session executable: %w", err)
 	}
-	listed, err := runStatusCommand(ctx, path, env, clean, "session", "list", "--pure", "--format", "json")
+	listed, err := runStatusCommandAt(ctx, path, directory, env, clean, "session", "list", "--pure", "--format", "json")
 	if err != nil {
 		return fmt.Errorf("OpenCode session listing failed: %w", err)
 	}
@@ -452,6 +452,40 @@ func DeleteOpenCodeSession(ctx context.Context, executable, directory string, en
 	stopOwnedProcessGroup(command)
 	if err != nil {
 		return fmt.Errorf("OpenCode session deletion failed: %w: %s", err, strings.TrimSpace(output.String()))
+	}
+	listed, err = runStatusCommandAt(ctx, path, directory, env, clean, "session", "list", "--pure", "--format", "json")
+	if err != nil {
+		return fmt.Errorf("OpenCode session deletion verification failed: %w", err)
+	}
+	if jsonContainsString([]byte(listed), sessionID) {
+		return errors.New("OpenCode session deletion verification failed: session still exists")
+	}
+	return nil
+}
+
+func CheckOpenCodeSkills(ctx context.Context, executable, directory string, env []string, clean bool, expected []string) error {
+	path, err := resolveExecutable("opencode", executable)
+	if err != nil {
+		return fmt.Errorf("OpenCode skill discovery executable: %w", err)
+	}
+	output, err := runStatusCommandAt(ctx, path, directory, env, clean, "debug", "skill", "--pure")
+	if err != nil {
+		return fmt.Errorf("OpenCode skill discovery failed: %w", err)
+	}
+	var discovered []struct {
+		Name string `json:"name"`
+	}
+	if err := json.Unmarshal([]byte(output), &discovered); err != nil {
+		return fmt.Errorf("decode OpenCode skill discovery: %w", err)
+	}
+	found := make(map[string]bool, len(discovered))
+	for _, skill := range discovered {
+		found[skill.Name] = true
+	}
+	for _, name := range expected {
+		if !found[name] {
+			return fmt.Errorf("OpenCode did not discover installed evaluation skill %q", name)
+		}
 	}
 	return nil
 }
@@ -625,7 +659,12 @@ func checkOpenCodeAuthentication(ctx context.Context, path, model string, env []
 }
 
 func runStatusCommand(ctx context.Context, path string, env []string, clean bool, args ...string) (string, error) {
+	return runStatusCommandAt(ctx, path, "", env, clean, args...)
+}
+
+func runStatusCommandAt(ctx context.Context, path, directory string, env []string, clean bool, args ...string) (string, error) {
 	command := exec.CommandContext(ctx, path, args...)
+	command.Dir = directory
 	command.Env = environment(env, clean)
 	var output bytes.Buffer
 	command.Stdout = &output

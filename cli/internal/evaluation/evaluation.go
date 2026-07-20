@@ -47,6 +47,14 @@ type RunRequest struct {
 	TurnLimit         int
 	AvailableTurns    int
 	EffectiveTurns    int
+	Progress          func(TurnProgress)
+}
+
+type TurnProgress struct {
+	TurnID string
+	Index  int
+	Total  int
+	Phase  replay.BoundaryPhase
 }
 
 func ResolveRequest(request RunRequest) (RunRequest, error) {
@@ -237,6 +245,9 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 	if err != nil {
 		return Result{}, err
 	}
+	if runtime.signalExecutable != "" {
+		cliPath = runtime.signalExecutable
+	}
 	defer os.RemoveAll(privateRuntimeRunRoot(runID))
 	if err := replay.CheckAuthentication(ctx, replay.HarnessID(request.Harness), request.Executable, request.Model, runtime.environment, request.Harness == harness.Cursor || request.Harness == harness.OpenCode || request.Harness == harness.KiloCode || request.Harness == harness.Pi); err != nil {
 		return Result{}, fmt.Errorf("evaluation encountered a tooling error: %w", err)
@@ -273,6 +284,11 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 		return Result{}, fmt.Errorf("write evaluation installation state: %w", err)
 	}
 	runtime.environment = append(runtime.environment, "PWD="+runtime.workingDirectory)
+	if request.Harness == harness.OpenCode {
+		if err := replay.CheckOpenCodeSkills(ctx, request.Executable, runtime.workingDirectory, runtime.environment, false, skillNames); err != nil {
+			return Result{}, fmt.Errorf("evaluation encountered a tooling error: %w", err)
+		}
+	}
 	run.InstallationState = installationStatePath
 	run.Status = "running"
 	if err := service.runs.Save(run); err != nil {
@@ -303,6 +319,9 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 		Adapter: adapter,
 		OnBoundary: func(_ context.Context, boundary replay.Boundary) error {
 			if boundary.Phase == replay.BoundaryBefore {
+				if request.Progress != nil {
+					request.Progress(TurnProgress{TurnID: boundary.TurnID, Index: boundary.TurnIndex, Total: boundary.TurnTotal, Phase: boundary.Phase})
+				}
 				return service.runs.SetActiveTurn(runID, boundary.TurnID)
 			}
 			if boundary.Capture != nil && boundary.Capture.SessionID != "" {
@@ -315,7 +334,18 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 					return err
 				}
 			}
-			return service.runs.SetActiveTurn(runID, "")
+			if request.Harness == harness.Cursor && boundary.Capture != nil {
+				if err := service.validateCursorSignals(runID, boundary.TurnID, *boundary.Capture, tokens, cliPath); err != nil {
+					return err
+				}
+			}
+			if err := service.runs.SetActiveTurn(runID, ""); err != nil {
+				return err
+			}
+			if request.Progress != nil {
+				request.Progress(TurnProgress{TurnID: boundary.TurnID, Index: boundary.TurnIndex, Total: boundary.TurnTotal, Phase: boundary.Phase})
+			}
+			return nil
 		},
 	}
 	replayResult, err := runner.Run(ctx, scenario)
@@ -418,6 +448,83 @@ func (service Service) recordCodexSignals(runID, turnID string, capture replay.C
 		}
 	}
 	return nil
+}
+
+func (service Service) validateCursorSignals(runID, turnID string, capture replay.Capture, tokens map[string]string, cliPath string) error {
+	existing, err := service.runs.Events(runID)
+	if err != nil {
+		return err
+	}
+	observed := map[string]bool{}
+	for _, event := range existing {
+		if event.TurnID == turnID {
+			observed[event.Skill] = true
+		}
+	}
+	for _, event := range capture.Events {
+		var value struct {
+			Type     string `json:"type"`
+			Subtype  string `json:"subtype"`
+			ToolCall struct {
+				ShellToolCall struct {
+					Args struct {
+						Command string `json:"command"`
+					} `json:"args"`
+				} `json:"shellToolCall"`
+			} `json:"tool_call"`
+		}
+		if json.Unmarshal(event, &value) != nil || value.Type != "tool_call" || value.Subtype != "started" {
+			continue
+		}
+		command := value.ToolCall.ShellToolCall.Args.Command
+		for token, skill := range tokens {
+			if observed[skill] || !isSignalCommand(command, cliPath, token, service.stateRoot) {
+				continue
+			}
+			detail := cursorSignalCompletionDetail(capture.Events, command)
+			return fmt.Errorf("Cursor attempted the instrumented signal for skill %q but no marker was recorded: %s", skill, detail)
+		}
+	}
+	return nil
+}
+
+func cursorSignalCompletionDetail(events []json.RawMessage, command string) string {
+	for _, event := range events {
+		var value struct {
+			Type     string `json:"type"`
+			Subtype  string `json:"subtype"`
+			ToolCall struct {
+				ShellToolCall struct {
+					Args struct {
+						Command string `json:"command"`
+					} `json:"args"`
+					Result struct {
+						Failure struct {
+							Stderr string `json:"stderr"`
+						} `json:"failure"`
+						Rejected struct {
+							Reason string `json:"reason"`
+						} `json:"rejected"`
+					} `json:"result"`
+				} `json:"shellToolCall"`
+			} `json:"tool_call"`
+		}
+		if json.Unmarshal(event, &value) != nil || value.Type != "tool_call" || value.Subtype != "completed" || value.ToolCall.ShellToolCall.Args.Command != command {
+			continue
+		}
+		if stderr := strings.TrimSpace(value.ToolCall.ShellToolCall.Result.Failure.Stderr); stderr != "" {
+			return stderr
+		}
+		if reason := strings.TrimSpace(value.ToolCall.ShellToolCall.Result.Rejected.Reason); reason != "" {
+			return reason
+		}
+		return "the command completed without recording its marker"
+	}
+	return "the command did not complete"
+}
+
+func isSignalCommand(command, cliPath, token, stateRoot string) bool {
+	return strings.Contains(command, cliPath) && strings.Contains(command, " signal ") && strings.Contains(command, token) && strings.Contains(command, stateRoot)
 }
 
 func (service Service) Cleanup(runID string) error {

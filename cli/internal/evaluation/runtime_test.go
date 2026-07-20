@@ -8,6 +8,47 @@ import (
 	"testing"
 )
 
+func TestPrepareCursorRuntimeOwnsSignalExecutable(t *testing.T) {
+	root := t.TempDir()
+	workspace := filepath.Join(root, "workspace")
+	stateRoot := filepath.Join(root, "output", ".skill-issue")
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	source := filepath.Join(root, "source-skill-issue")
+	if err := os.WriteFile(source, []byte("binary"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+
+	runtime, err := prepareCursorRuntime(root, workspace, stateRoot, "/bin/sh", source)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if runtime.signalExecutable != filepath.Join(root, "bin", "skill-issue") {
+		t.Fatalf("unexpected Cursor signal executable: %s", runtime.signalExecutable)
+	}
+	data, err := os.ReadFile(runtime.signalExecutable)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(data) != "binary" {
+		t.Fatalf("unexpected copied executable: %q", data)
+	}
+	configData, err := os.ReadFile(filepath.Join(root, "home", ".cursor", "cli-config.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(configData), "Shell("+runtime.signalExecutable+")") {
+		t.Fatalf("Cursor config does not allow the run-owned signal executable: %s", configData)
+	}
+	sandboxData, err := os.ReadFile(filepath.Join(root, "home", ".cursor", "sandbox.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(sandboxData), stateRoot) {
+		t.Fatalf("Cursor sandbox does not allow the run-owned marker state: %s", sandboxData)
+	}
+}
+
 func TestPrepareOpenCodeRuntimeOwnsConfigurationAndSkillPermissions(t *testing.T) {
 	root := t.TempDir()
 	home := t.TempDir()

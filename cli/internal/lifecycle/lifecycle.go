@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -14,6 +15,7 @@ import (
 	"github.com/ericwimp8/skill-issue/cli/internal/evaluation"
 	"github.com/ericwimp8/skill-issue/cli/internal/harness"
 	"github.com/ericwimp8/skill-issue/cli/internal/installer"
+	"github.com/ericwimp8/skill-issue/cli/internal/replay"
 )
 
 type Action string
@@ -33,13 +35,19 @@ type Result struct {
 
 type Service struct {
 	installer installer.Service
+	progress  io.Writer
 }
 
 type EvaluationReviewer func(evaluation.RunRequest) (bool, error)
 
-func New() Service {
+func New(progress ...io.Writer) Service {
+	progressWriter := io.Discard
+	if len(progress) > 0 && progress[0] != nil {
+		progressWriter = progress[0]
+	}
 	return Service{
 		installer: installer.New(),
+		progress:  progressWriter,
 	}
 }
 
@@ -150,11 +158,22 @@ func (service Service) evaluationRun(args []string, reviewer EvaluationReviewer)
 func (service Service) runEvaluation(request evaluation.RunRequest) (Result, error) {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+	request.Progress = func(progress evaluation.TurnProgress) {
+		writeTurnProgress(service.progress, progress)
+	}
 	result, err := evaluation.New(evaluationStateRoot(request.OutputRoot)).Run(ctx, request)
 	if err != nil {
 		return Result{}, err
 	}
 	return Result{Action: ActionEvaluate, Status: "complete", Data: result}, nil
+}
+
+func writeTurnProgress(writer io.Writer, progress evaluation.TurnProgress) {
+	verb := "Starting"
+	if progress.Phase == replay.BoundaryAfter {
+		verb = "Finished"
+	}
+	fmt.Fprintf(writer, "%s turn %d of %d: %s\n", verb, progress.Index, progress.Total, progress.TurnID)
 }
 
 func (service Service) mark(args []string) (Result, error) {

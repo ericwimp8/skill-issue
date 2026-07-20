@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -24,6 +25,7 @@ type runtimePreparation struct {
 	claudeSkillsRoot      string
 	claudeWorkspacePrompt string
 	piSkillsRoot          string
+	signalExecutable      string
 }
 
 func (service Service) prepareRuntime(harnessID harness.ID, model, reasoning, runID, workspace, executable, cliPath string, skillNames []string) (runtimePreparation, error) {
@@ -54,7 +56,7 @@ func (service Service) prepareRuntime(harnessID harness.ID, model, reasoning, ru
 
 	switch harnessID {
 	case harness.Cursor:
-		return prepareCursorRuntime(root, workspace, executable, cliPath)
+		return prepareCursorRuntime(root, workspace, service.stateRoot, executable, cliPath)
 	case harness.ClaudeCode:
 		return prepareClaudeRuntime(root, workspace)
 	case harness.OpenCode:
@@ -295,10 +297,11 @@ func openCodeEnvironment(root, executable string) ([]string, error) {
 	return environment, nil
 }
 
-func prepareCursorRuntime(root, workspace, executable, cliPath string) (runtimePreparation, error) {
+func prepareCursorRuntime(root, workspace, stateRoot, executable, cliPath string) (runtimePreparation, error) {
 	home := filepath.Join(root, "home")
 	plugin := filepath.Join(root, "plugin")
-	for _, path := range []string{filepath.Join(home, ".cursor"), filepath.Join(home, "Library"), filepath.Join(root, "store"), filepath.Join(plugin, ".cursor-plugin"), filepath.Join(plugin, "skills")} {
+	bin := filepath.Join(root, "bin")
+	for _, path := range []string{filepath.Join(home, ".cursor"), filepath.Join(home, "Library"), filepath.Join(root, "store"), filepath.Join(plugin, ".cursor-plugin"), filepath.Join(plugin, "skills"), bin} {
 		if err := os.MkdirAll(path, 0o700); err != nil {
 			return runtimePreparation{}, fmt.Errorf("create Cursor runtime path: %w", err)
 		}
@@ -311,10 +314,14 @@ func prepareCursorRuntime(root, workspace, executable, cliPath string) (runtimeP
 	if err := os.Symlink(filepath.Join(userHome, "Library", "Keychains"), keychain); err != nil && !os.IsExist(err) {
 		return runtimePreparation{}, fmt.Errorf("link Cursor keychain: %w", err)
 	}
+	signalExecutable := filepath.Join(bin, "skill-issue")
+	if err := copyExecutable(cliPath, signalExecutable); err != nil {
+		return runtimePreparation{}, fmt.Errorf("copy Cursor signal executable: %w", err)
+	}
 	config := map[string]any{
 		"version": 1,
 		"permissions": map[string]any{
-			"allow": []string{"Read(**)", "Write(**)", "Shell(" + cliPath + ")"},
+			"allow": []string{"Read(**)", "Write(**)", "Shell(" + signalExecutable + ")"},
 			"deny":  []string{"Shell(rm)", "Shell(git)", "Read(.env*)", "Write(**/*.key)"},
 		},
 		"approvalMode":        "allowlist",
@@ -325,6 +332,13 @@ func prepareCursorRuntime(root, workspace, executable, cliPath string) (runtimeP
 		"sandbox":             map[string]any{"mode": "enabled", "networkAccess": "user_config_with_defaults"},
 	}
 	if err := writeRuntimeJSON(filepath.Join(home, ".cursor", "cli-config.json"), config); err != nil {
+		return runtimePreparation{}, err
+	}
+	sandbox := map[string]any{
+		"type":                     "workspace_readwrite",
+		"additionalReadwritePaths": []string{stateRoot},
+	}
+	if err := writeRuntimeJSON(filepath.Join(home, ".cursor", "sandbox.json"), sandbox); err != nil {
 		return runtimePreparation{}, err
 	}
 	manifest := map[string]any{
@@ -352,7 +366,25 @@ func prepareCursorRuntime(root, workspace, executable, cliPath string) (runtimeP
 		workingDirectory:    workspace,
 		evaluationSkillRoot: filepath.Join(plugin, "skills"),
 		cursorPluginDir:     plugin,
+		signalExecutable:    signalExecutable,
 	}, nil
+}
+
+func copyExecutable(source, destination string) error {
+	input, err := os.Open(source)
+	if err != nil {
+		return err
+	}
+	defer input.Close()
+	output, err := os.OpenFile(destination, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o700)
+	if err != nil {
+		return err
+	}
+	if _, err := io.Copy(output, input); err != nil {
+		output.Close()
+		return err
+	}
+	return output.Close()
 }
 
 func prepareClaudeRuntime(root, workspace string) (runtimePreparation, error) {

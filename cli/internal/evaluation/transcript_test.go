@@ -156,3 +156,70 @@ func TestTranscriptSanitizationFollowsCodexSignalRecording(t *testing.T) {
 		t.Fatal("stored replay capture retained scoring paths")
 	}
 }
+
+func TestCursorSignalAttemptWithoutMarkerIsToolingFailure(t *testing.T) {
+	stateRoot := t.TempDir()
+	service := New(stateRoot)
+	runID, token := createCursorSignalRun(t, service, "turn-1")
+	cliPath := filepath.Join(stateRoot, "bin", "skill-issue")
+	capture := cursorSignalCapture(t, cliPath+` signal `+token+` `+stateRoot)
+
+	if err := service.validateCursorSignals(runID, "turn-1", capture, map[string]string{token: "prompt-writing"}, cliPath); err == nil {
+		t.Fatal("Cursor signal attempt without a recorded marker was accepted")
+	}
+}
+
+func TestCursorSignalAttemptWithMarkerIsAccepted(t *testing.T) {
+	stateRoot := t.TempDir()
+	service := New(stateRoot)
+	runID, token := createCursorSignalRun(t, service, "turn-1")
+	if err := service.runs.Mark(token); err != nil {
+		t.Fatal(err)
+	}
+	cliPath := filepath.Join(stateRoot, "bin", "skill-issue")
+	capture := cursorSignalCapture(t, cliPath+` signal `+token+` `+stateRoot)
+
+	if err := service.validateCursorSignals(runID, "turn-1", capture, map[string]string{token: "prompt-writing"}, cliPath); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestCursorWithoutSignalAttemptRemainsModelMiss(t *testing.T) {
+	stateRoot := t.TempDir()
+	service := New(stateRoot)
+	runID, token := createCursorSignalRun(t, service, "turn-1")
+	if err := service.validateCursorSignals(runID, "turn-1", replay.Capture{}, map[string]string{token: "prompt-writing"}, filepath.Join(stateRoot, "bin", "skill-issue")); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func createCursorSignalRun(t *testing.T, service Service, turnID string) (string, string) {
+	t.Helper()
+	runID, err := runstate.NewRunID()
+	if err != nil {
+		t.Fatal(err)
+	}
+	token, err := runstate.NewToken()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := service.runs.Create(runstate.Run{SchemaVersion: 1, ID: runID, ActiveTurn: turnID, Tokens: map[string]string{token: "prompt-writing"}}); err != nil {
+		t.Fatal(err)
+	}
+	return runID, token
+}
+
+func cursorSignalCapture(t *testing.T, command string) replay.Capture {
+	t.Helper()
+	event, err := json.Marshal(map[string]any{
+		"type":    "tool_call",
+		"subtype": "started",
+		"tool_call": map[string]any{
+			"shellToolCall": map[string]any{"args": map[string]any{"command": command}},
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return replay.Capture{Events: []json.RawMessage{event}}
+}

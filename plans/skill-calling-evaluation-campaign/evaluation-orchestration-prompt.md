@@ -2,7 +2,7 @@
 
 ## Goal
 
-Execute the complete skill-calling evaluation campaign tracked in `evaluation-progress.md` as quickly as its dependency and safety boundaries allow. Run the governed evaluations through the known-good Skill Issue CLI, retain the required evidence, keep the progress document current, and use parallel evaluation workers without allowing shared-state collisions.
+Execute the complete skill-calling evaluation campaign tracked in `evaluation-progress.md` as quickly as its dependency and safety boundaries allow. Run the governed evaluations through the known-good Skill Issue CLI, retain the required evidence, keep the progress document current, and manage parallel evaluation commands without allowing shared-state collisions.
 
 ## Authoritative Sources
 
@@ -14,7 +14,7 @@ Read these before acting:
 - `evaluations/skill-calling/instrumentation-contract.md`
 - the selected built-in evaluation assets under `evaluations/skill-calling/built-ins/`
 
-Use `skill-issue:document-update-discipline` whenever updating the campaign progress document and `skill-issue:prompt-writing` whenever creating evaluation-worker prompts. Production CLI source owns runtime behavior; the progress document owns campaign state and dependency order.
+Use `skill-issue:document-update-discipline` whenever updating the campaign progress document. Production CLI source owns runtime behavior; the progress document owns campaign state and dependency order.
 
 ## Completion Criteria
 
@@ -25,7 +25,7 @@ The campaign is complete only when:
 - every result records the exact harness version, effective model identifier, and reasoning setting;
 - instrumentation, session continuity, workspace effects, process ownership, and cleanup are tooling-complete;
 - all configuration headings, run entries, summary counts, percentages, dates, notes, failures, blockers, attempts, and result links in `evaluation-progress.md` match the retained evidence; and
-- no evaluation worker, temporary skill installation, private recovery state, or run-owned harness process remains.
+- no evaluation command session, temporary skill installation, private recovery state, or run-owned harness process remains.
 
 Do not report the campaign as complete while any run remains pending, running, failed, or blocked.
 
@@ -36,7 +36,7 @@ You may:
 - run the known-good local CLI;
 - create isolated evaluation workspaces outside the repository;
 - write disposable evaluation artifacts beneath repository-root `output/`;
-- start and coordinate evaluation sub-agents;
+- start, monitor, and coordinate evaluation CLI processes directly;
 - inspect non-secret executable, version, model, process, artifact, and cleanup evidence;
 - stop only a process positively identified as owned by the campaign or the project-local Claude/Codex runtime; and
 - update `evaluation-progress.md` from retained evidence.
@@ -50,7 +50,7 @@ Do not:
 - delete or reset an existing harness installation;
 - add backup, rollback, repair, or machine-cleanup machinery;
 - weaken an evaluator-owned harness sandbox, approval policy, isolation control, or permission profile;
-- let evaluation workers edit `evaluation-progress.md`; or
+- allow concurrent progress-document edits from separate threads or processes; or
 - infer a successful evaluation from process exit alone when required artifacts or cleanup evidence are missing.
 
 When user intervention is required for installation, authentication, account access, model availability, or normal Claude Code configuration, mark the affected run or configuration `Blocked`, record the exact non-secret blocker, continue independent work, and ask for the smallest required intervention.
@@ -68,16 +68,17 @@ When user intervention is required for installation, authentication, account acc
 
 ## Scheduling Model
 
-Act as the sole campaign orchestrator and progress-document writer. Evaluation sub-agents are evidence-producing workers.
+Act as the campaign orchestrator, process monitor, and progress-document writer. Start and manage evaluation commands directly from the main thread.
 
-- Keep at most six evaluation workers active simultaneously. The orchestrator does not count toward that six-worker limit.
-- Start workers with `fork_turns: "none"` and a self-contained prompt.
-- Give every worker exactly one matrix evaluation unless a bounded smoke gate explicitly groups its two smoke routes.
+- Keep at most six evaluation commands active simultaneously.
+- Retain the process or terminal session identifier for every active command so it can be monitored to completion.
+- Launch each command for exactly one matrix evaluation unless a bounded smoke gate explicitly groups two sequential smoke routes.
 - Give every evaluation a unique external temporary Git workspace and a distinct output root such as `output/skill-calling-evaluation-campaign/<evaluation-id>/`.
 - Never run two evaluations in the same workspace or output location.
-- Fill open worker capacity with any eligible pending evaluation whose configuration gate and dependencies are satisfied.
-- Serialize progress-document edits in the orchestrator as worker results arrive. Workers must return evidence instead of editing shared state.
-- A worker slot becomes reusable only after the worker reports process, temporary-skill, private-state, and workspace cleanup.
+- Fill open process capacity with any eligible pending evaluation whose configuration gate and dependencies are satisfied.
+- Inspect command output and retained artifacts directly, then serialize progress-document edits as runs finish.
+- Reuse a process slot only after the command has ended and process, temporary-skill, private-state, and workspace cleanup are verified.
+- If several main Codex threads participate, assign disjoint evaluation IDs and output roots to each thread and designate one thread as the only progress-document writer.
 
 ## Required Opening Lane: Claude Code With Codex
 
@@ -85,13 +86,13 @@ Treat Claude Code — Codex as the campaign's opening dependency lane.
 
 1. Preflight the existing project-local Claude/Codex launcher at `.skill-issue/claudex/claudex` without reading its credentials or tokens. Confirm its version, selected model, proxy readiness, executable path, and recent bounded smoke evidence.
 2. Run `CLA-COD-01`, `CLA-COD-02`, and `CLA-COD-03` sequentially in that order. Never have more than one Claude Code — Codex evaluation active.
-3. Other non-Claude-Code evaluations may occupy the remaining worker slots while this sequence runs.
+3. Other non-Claude-Code evaluations may occupy the remaining process slots while this sequence runs.
 4. Resolve and rerun any failed Claude Code — Codex evaluation before moving to the Fable transition. Do not change the Claude route while a Claude Code — Codex run is pending, running, or awaiting an identified safe rerun.
 5. After all three runs complete, stop only the proxy owned by `.skill-issue/claudex/manage`. Verify that its owned process and localhost listener are gone. Do not delete or reset the isolated runtime.
 
 ## Claude Code Fable Transition Gate
 
-The existing `.skill-issue/claudex/claudex` launcher is the Codex-backed route. It starts a localhost proxy and injects an isolated Claude config, proxy URL, authentication token, model aliases, sub-agent model, and forced model argument. Do not treat switching away from it as a single global environment-variable change.
+The existing `.skill-issue/claudex/claudex` launcher is the Codex-backed route. It starts a localhost proxy and injects an isolated Claude config, proxy URL, authentication token, model aliases, delegated-agent model, and forced model argument. Do not treat switching away from it as a single global environment-variable change.
 
 Before any Claude Code — Fable campaign run:
 
@@ -99,28 +100,28 @@ Before any Claude Code — Fable campaign run:
 2. Confirm that the normal route does not inherit the project-local Codex proxy URL, proxy token, isolated `CLAUDE_CONFIG_DIR`, or forced Codex model aliases.
 3. Resolve the exact available Fable model identifier and medium reasoning control from the installed CLI and supported account. Record both in the progress document.
 4. If normal Claude Code installation, authentication, or model selection requires user action, mark Claude Code — Fable blocked and request that action. Do not install, authenticate, or rewrite user configuration autonomously.
-5. Start one smoke worker and run these routes sequentially against the normal Claude Code executable in separate external workspaces and output locations:
+5. Run these smoke commands sequentially against the normal Claude Code executable in separate external workspaces and output locations:
    - the built-in gardening evaluation truncated to two turns;
    - the existing two-turn custom smoke using `evaluations/skill-calling/smoke/custom-skills/`, `custom-scenario.json`, and `custom-answer-sheet.json`.
 6. Require both smoke routes to complete with artifacts, one stable session per route, expected workspace effects, temporary-skill cleanup, private-state cleanup, and no run-owned Claude process before opening the Fable campaign lane.
-7. Once the gate passes, `CLA-FAB-01`, `CLA-FAB-02`, and `CLA-FAB-03` may run concurrently with each other and with eligible non-Claude-Code evaluations, subject to the six-worker limit.
+7. Once the gate passes, `CLA-FAB-01`, `CLA-FAB-02`, and `CLA-FAB-03` may run concurrently with each other and with eligible non-Claude-Code evaluations, subject to the six-command limit.
 
-## OpenAI Codex Worker Permission Rule
+## OpenAI Codex Command Permission Rule
 
-Every OpenAI Codex harness evaluation executed by a Codex sub-agent must request command-scoped outer-sandbox escalation for the exact known-good evaluation command.
+Every OpenAI Codex harness evaluation launched from Codex must request command-scoped outer-sandbox escalation for the exact known-good evaluation command.
 
-The worker must call its shell tool with:
+Launch the command with:
 
 - `sandbox_permissions: "require_escalated"`; and
 - a concise justification that the nested Codex process must write its normal authenticated session database and session state under `CODEX_HOME`.
 
-This escalation applies only to the outer sub-agent shell command. Do not pass `danger-full-access`, bypass approvals, disable the evaluator's inner sandbox, or alter the inner Codex configuration. The Skill Issue evaluator must continue to own the nested Codex `workspace-write` sandbox, approval policy, ambient-config exclusions, model, reasoning, workspace, and cleanup.
+This escalation applies only to the outer main-thread shell command. Do not pass `danger-full-access`, bypass approvals, disable the evaluator's inner sandbox, or alter the inner Codex configuration. The Skill Issue evaluator must continue to own the nested Codex `workspace-write` sandbox, approval policy, ambient-config exclusions, model, reasoning, workspace, and cleanup.
 
 If escalation is denied, mark the attempt `Blocked`, record the denial, verify any partial preparation was cleaned, and continue other eligible work. Do not retry the same command inside the outer sandbox because the resulting read-only Codex database failure is already qualified.
 
-## Evaluation Worker Prompt Contract
+## Evaluation Command Launch Contract
 
-Every worker prompt must provide:
+Before launching each command, resolve and record:
 
 - the evaluation ID, governed scenario identifier, harness, model label, effective model target, and reasoning target;
 - the repository path and required authoritative files;
@@ -129,12 +130,12 @@ Every worker prompt must provide:
 - a unique external workspace and unique retained output root;
 - the command-confirmation requirement after checking the CLI pre-run summary;
 - the OpenAI Codex escalation rule when applicable;
-- the expected artifacts and evidence to return;
-- the cleanup checks the worker owns;
-- the prohibition on editing tracked files or campaign progress; and
+- the expected artifacts and evidence to retain;
+- the cleanup checks required before reusing the process slot;
+- the prohibition on changing tracked files other than serialized campaign-progress updates; and
 - the stop boundary for authentication, permission, model, protocol, artifact, process, or cleanup failures.
 
-Require a concise final report containing the exact run directory, run ID, harness version, effective model and reasoning, start and completion times, expected/observed/missing/additional/unattributed calls, artifact paths, workspace effects, session-continuity evidence, cleanup evidence, and pass/fail classification.
+After completion, capture the exact run directory, run ID, harness version, effective model and reasoning, start and completion times, expected/observed/missing/additional/unattributed calls, artifact paths, workspace effects, session-continuity evidence, cleanup evidence, and pass/fail classification.
 
 ## Progress Update Procedure
 
@@ -146,7 +147,7 @@ Before starting a run:
 4. Record the campaign start date when launching the first full run.
 5. Recalculate the progress summary.
 
-After a worker returns:
+After a command finishes:
 
 - Set `Complete` only when the full run, required artifacts, and cleanup all pass. Link the retained result and record concise configuration notes.
 - Set `Failed` for a tooling failure after launch. Add a failure-log row with the attempt, exact non-secret cause, resolution or next action, and later rerun result.
@@ -165,7 +166,7 @@ Use `apply_patch` for progress updates and run `npm run format:check` after Mark
 - Do not use earlier passing tests or smoke reports as proof that a current failed run is valid.
 - Retry only after identifying a concrete cause and a safe, scoped correction within the authority boundary.
 - Never repair authentication, mutate global configuration, delete user state, or broaden permissions to keep the queue moving.
-- When one lane blocks, keep all independent eligible lanes running up to the six-worker limit.
+- When one lane blocks, keep all independent eligible lanes running up to the six-command limit.
 - If cleanup is incomplete, stop scheduling that harness until owned-process and temporary-state boundaries are restored.
 
 ## Final Report

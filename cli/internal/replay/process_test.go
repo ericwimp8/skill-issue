@@ -163,9 +163,17 @@ func TestDeleteOpenCodeSessionDeletesOnlyAnExistingSession(t *testing.T) {
 	directory := t.TempDir()
 	executable := filepath.Join(directory, "opencode")
 	logPath := filepath.Join(directory, "deleted")
+	if err := os.WriteFile(filepath.Join(directory, ".workspace-marker"), nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
 	script := `#!/bin/sh
 if [ "$1 $2" = "session list" ]; then
-  printf '[{"id":"session-1"}]\n'
+  [ -f .workspace-marker ] || exit 2
+  if [ ! -f "$DELETE_LOG" ]; then
+    printf '[{"id":"session-1"}]\n'
+  else
+    printf '[]\n'
+  fi
   exit 0
 fi
 if [ "$1 $2 $3" = "session delete session-1" ]; then
@@ -191,5 +199,28 @@ exit 1
 	data, err = os.ReadFile(logPath)
 	if err != nil || strings.Count(strings.TrimSpace(string(data)), "\n") != 0 {
 		t.Fatalf("missing OpenCode session triggered deletion: %q %v", data, err)
+	}
+}
+
+func TestCheckOpenCodeSkillsRequiresEveryExpectedSkill(t *testing.T) {
+	directory := t.TempDir()
+	executable := filepath.Join(directory, "opencode")
+	if err := os.WriteFile(filepath.Join(directory, ".workspace-marker"), nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	script := `#!/bin/sh
+[ -f .workspace-marker ] || exit 2
+[ "$1 $2 $3" = "debug skill --pure" ] || exit 3
+printf '[{"name":"alpha"},{"name":"beta"}]\n'
+`
+	if err := os.WriteFile(executable, []byte(script), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	environment := []string{"PATH=/usr/bin:/bin"}
+	if err := CheckOpenCodeSkills(context.Background(), executable, directory, environment, true, []string{"alpha", "beta"}); err != nil {
+		t.Fatal(err)
+	}
+	if err := CheckOpenCodeSkills(context.Background(), executable, directory, environment, true, []string{"missing"}); err == nil {
+		t.Fatal("missing OpenCode evaluation skill was accepted")
 	}
 }

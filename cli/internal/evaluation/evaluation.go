@@ -178,6 +178,10 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 		return Result{}, errors.New("evaluation workspace must be an existing directory")
 	}
 	request.Workspace = workspace
+	harnessSpec, err := harness.Lookup(request.Harness)
+	if err != nil {
+		return Result{}, err
+	}
 	outputRoot, err := prepareOutputRoot(workspace, request.OutputRoot)
 	if err != nil {
 		return Result{}, err
@@ -221,7 +225,7 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 		EvaluationID:      evaluationIdentity(request, scenario),
 		Scenario:          scenario.ID,
 		Scope:             string(harness.ScopeProject),
-		Status:            "preparing",
+		Status:            runstate.StatusPreparing,
 		HarnessExecutable: request.Executable,
 		Tokens:            tokens,
 	}
@@ -257,7 +261,7 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 		cliPath = runtime.signalExecutable
 	}
 	defer os.RemoveAll(privateRuntimeRunRoot(runID))
-	if err := replay.CheckAuthentication(ctx, replay.HarnessID(request.Harness), request.Executable, request.Model, runtime.environment, request.Harness == harness.Cursor || request.Harness == harness.OpenCode || request.Harness == harness.KiloCode || request.Harness == harness.Pi); err != nil {
+	if err := replay.CheckAuthentication(ctx, replay.HarnessID(request.Harness), request.Executable, request.Model, runtime.environment, harnessSpec.CleanAuthenticationEnvironment); err != nil {
 		return Result{}, fmt.Errorf("evaluation encountered a tooling error: %w", err)
 	}
 	installationState, _, err := service.installer.PrepareEvaluation(installer.Request{
@@ -303,7 +307,7 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 		}
 	}
 	run.InstallationState = installationStatePath
-	run.Status = "running"
+	run.Status = runstate.StatusRunning
 	if err := service.runs.Save(run); err != nil {
 		return Result{}, err
 	}
@@ -311,7 +315,7 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 		Executable:            request.Executable,
 		Directory:             runtime.workingDirectory,
 		Environment:           runtime.environment,
-		CleanEnvironment:      request.Harness == harness.Cursor || request.Harness == harness.KiloCode || request.Harness == harness.Pi,
+		CleanEnvironment:      harnessSpec.CleanEvaluationEnvironment,
 		Model:                 request.Model,
 		ModelOverride:         request.ModelOverride,
 		Reasoning:             request.Reasoning,
@@ -325,7 +329,7 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 		SkillIssueExecutable:  cliPath,
 	})
 	if err != nil {
-		service.setStatus(runID, "tooling-failed")
+		service.setStatus(runID, runstate.StatusToolingFailed)
 		return Result{}, fmt.Errorf("evaluation encountered a tooling error: %w", err)
 	}
 	runner := replay.Runner{
@@ -363,7 +367,7 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 	}
 	replayResult, err := runner.Run(ctx, scenario)
 	if err != nil {
-		service.setStatus(runID, "tooling-failed")
+		service.setStatus(runID, runstate.StatusToolingFailed)
 		return Result{}, fmt.Errorf("evaluation encountered a tooling error: %w", err)
 	}
 	if request.IncludeTranscript {
@@ -415,7 +419,7 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 	if request.IncludeTranscript {
 		run.TranscriptPath = filepath.Join(outputDirectory, result.TranscriptPath)
 	}
-	run.Status = "complete"
+	run.Status = runstate.StatusComplete
 	if err := service.runs.Save(run); err != nil {
 		return Result{}, err
 	}
@@ -681,10 +685,10 @@ func (service Service) finishCleanup(run runstate.Run) error {
 		return err
 	}
 	run.ActiveTurn = ""
-	if run.Status == "complete" || run.Status == "complete-cleaned" {
-		run.Status = "complete-cleaned"
-	} else if run.Status != "cleaned" {
-		run.Status = "cleaned"
+	if run.Status == runstate.StatusComplete || run.Status == runstate.StatusCompleteCleaned {
+		run.Status = runstate.StatusCompleteCleaned
+	} else if run.Status != runstate.StatusCleaned {
+		run.Status = runstate.StatusCleaned
 	}
 	if err := service.runs.Save(run); err != nil {
 		return err
@@ -696,7 +700,7 @@ func (service Service) Mark(token string) error {
 	return service.runs.Mark(token)
 }
 
-func (service Service) setStatus(runID, status string) {
+func (service Service) setStatus(runID string, status runstate.Status) {
 	run, err := service.runs.Load(runID)
 	if err != nil {
 		return

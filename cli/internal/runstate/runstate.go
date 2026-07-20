@@ -15,6 +15,19 @@ import (
 	"time"
 )
 
+// Status names a stage in a run's lifecycle. It is stored as a plain string
+// in run.json, so values must remain stable across releases.
+type Status string
+
+const (
+	StatusPreparing       Status = "preparing"
+	StatusRunning         Status = "running"
+	StatusComplete        Status = "complete"
+	StatusCompleteCleaned Status = "complete-cleaned"
+	StatusCleaned         Status = "cleaned"
+	StatusToolingFailed   Status = "tooling-failed"
+)
+
 type Run struct {
 	SchemaVersion     int               `json:"schema_version"`
 	ID                string            `json:"id"`
@@ -25,7 +38,7 @@ type Run struct {
 	EvaluationID      string            `json:"evaluation_id"`
 	Scenario          string            `json:"scenario"`
 	Scope             string            `json:"scope"`
-	Status            string            `json:"status"`
+	Status            Status            `json:"status"`
 	ActiveTurn        string            `json:"active_turn,omitempty"`
 	HarnessSession    string            `json:"harness_session,omitempty"`
 	HarnessExecutable string            `json:"harness_executable,omitempty"`

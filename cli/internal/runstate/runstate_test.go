@@ -14,7 +14,7 @@ func testRun(id, token string) Run {
 		SchemaVersion: 1,
 		ID:            id,
 		Harness:       "codex",
-		Status:        "preparing",
+		Status:        StatusPreparing,
 		Tokens:        map[string]string{token: "prompt-writing"},
 	}
 }

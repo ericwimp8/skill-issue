@@ -42,14 +42,15 @@ type EvaluationReviewer func(evaluation.RunRequest) (bool, error)
 
 type SkillReplacementConfirmer func(differing []string) (bool, error)
 
-func New(progress ...io.Writer) Service {
-	progressWriter := io.Discard
-	if len(progress) > 0 && progress[0] != nil {
-		progressWriter = progress[0]
+// New returns a lifecycle service that reports evaluation progress to the
+// given writer; pass nil to discard progress output.
+func New(progress io.Writer) Service {
+	if progress == nil {
+		progress = io.Discard
 	}
 	return Service{
 		installer: installer.New(),
-		progress:  progressWriter,
+		progress:  progress,
 	}
 }
 

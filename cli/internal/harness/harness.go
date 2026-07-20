@@ -33,6 +33,18 @@ type Spec struct {
 	UserSkillDir           func(home string) string
 	HarnessSkillFiles      []string
 	DisableModelInvocation bool
+	// InstallationInProgress marks a harness that is defined but whose
+	// installation support is not ready for use yet.
+	InstallationInProgress bool
+	// CleanEvaluationEnvironment runs evaluation harness processes with only
+	// the controlled environment instead of overlaying the caller's.
+	CleanEvaluationEnvironment bool
+	// CleanAuthenticationEnvironment runs the pre-run authentication check
+	// with only the controlled environment.
+	CleanAuthenticationEnvironment bool
+	// Evaluation holds the harness's evaluation defaults; a nil value means
+	// the harness cannot run evaluations.
+	Evaluation *EvaluationDefaults
 }
 
 type EvaluationDefaults struct {
@@ -40,42 +52,36 @@ type EvaluationDefaults struct {
 	Reasoning string
 }
 
-var specs = map[ID]Spec{
-	ClaudeCode: {ID: ClaudeCode, Executable: "claude", ProjectSkillDir: ".claude/skills", UserSkillDir: claudeUserPath, DisableModelInvocation: true},
-	Codex:      {ID: Codex, Executable: "codex", ProjectSkillDir: ".agents/skills", UserSkillDir: homePath(".agents", "skills"), HarnessSkillFiles: []string{"agents/openai.yaml"}},
-	Cursor:     {ID: Cursor, Executable: "cursor-agent", ProjectSkillDir: ".cursor/skills", UserSkillDir: homePath(".cursor", "skills"), DisableModelInvocation: true},
-	OpenCode:   {ID: OpenCode, Executable: "opencode", ProjectSkillDir: ".opencode/skills", UserSkillDir: homePath(".config", "opencode", "skills")},
-	KiloCode:   {ID: KiloCode, Executable: "kilo", ProjectSkillDir: ".kilo/skills", UserSkillDir: homePath(".kilo", "skills")},
-	Pi:         {ID: Pi, Executable: "pi", ProjectSkillDir: ".pi/skills", UserSkillDir: homePath(".pi", "agent", "skills"), DisableModelInvocation: true},
+// orderedSpecs is the single registry of supported harnesses; every lookup,
+// listing, and capability check derives from it.
+var orderedSpecs = []Spec{
+	{ID: ClaudeCode, Executable: "claude", ProjectSkillDir: ".claude/skills", UserSkillDir: claudeUserPath, DisableModelInvocation: true, Evaluation: &EvaluationDefaults{Model: "opus", Reasoning: "medium"}},
+	{ID: Codex, Executable: "codex", ProjectSkillDir: ".agents/skills", UserSkillDir: homePath(".agents", "skills"), HarnessSkillFiles: []string{"agents/openai.yaml"}, Evaluation: &EvaluationDefaults{Model: "gpt-5.6-sol", Reasoning: "medium"}},
+	{ID: Cursor, Executable: "cursor-agent", ProjectSkillDir: ".cursor/skills", UserSkillDir: homePath(".cursor", "skills"), DisableModelInvocation: true, CleanEvaluationEnvironment: true, CleanAuthenticationEnvironment: true, Evaluation: &EvaluationDefaults{Model: "auto", Reasoning: "medium"}},
+	{ID: OpenCode, Executable: "opencode", ProjectSkillDir: ".opencode/skills", UserSkillDir: homePath(".config", "opencode", "skills"), CleanAuthenticationEnvironment: true, Evaluation: &EvaluationDefaults{Model: "openai/gpt-5.6-sol", Reasoning: "medium"}},
+	{ID: KiloCode, Executable: "kilo", ProjectSkillDir: ".kilo/skills", UserSkillDir: homePath(".kilo", "skills"), CleanEvaluationEnvironment: true, CleanAuthenticationEnvironment: true, Evaluation: &EvaluationDefaults{Model: "openai/gpt-5.6-sol", Reasoning: "medium"}},
+	{ID: Pi, Executable: "pi", ProjectSkillDir: ".pi/skills", UserSkillDir: homePath(".pi", "agent", "skills"), DisableModelInvocation: true, CleanEvaluationEnvironment: true, CleanAuthenticationEnvironment: true, Evaluation: &EvaluationDefaults{Model: "openai-codex/gpt-5.6-sol", Reasoning: "medium"}},
 }
 
-var evaluationDefaults = map[ID]EvaluationDefaults{
-	ClaudeCode: {Model: "opus", Reasoning: "medium"},
-	Codex:      {Model: "gpt-5.6-sol", Reasoning: "medium"},
-	Cursor:     {Model: "auto", Reasoning: "medium"},
-	OpenCode:   {Model: "openai/gpt-5.6-sol", Reasoning: "medium"},
-	KiloCode:   {Model: "openai/gpt-5.6-sol", Reasoning: "medium"},
-	Pi:         {Model: "openai-codex/gpt-5.6-sol", Reasoning: "medium"},
-}
+var specs = func() map[ID]Spec {
+	byID := make(map[ID]Spec, len(orderedSpecs))
+	for _, spec := range orderedSpecs {
+		byID[spec.ID] = spec
+	}
+	return byID
+}()
 
 func SupportedIDs() []ID {
-	return []ID{
-		ClaudeCode,
-		Codex,
-		Cursor,
-		OpenCode,
-		KiloCode,
-		Pi,
+	ids := make([]ID, 0, len(orderedSpecs))
+	for _, spec := range orderedSpecs {
+		ids = append(ids, spec.ID)
 	}
+	return ids
 }
 
 func InstallationAvailable(id ID) bool {
-	switch id {
-	case ClaudeCode, Codex, Cursor, OpenCode, KiloCode, Pi:
-		return true
-	default:
-		return false
-	}
+	spec, ok := specs[id]
+	return ok && !spec.InstallationInProgress
 }
 
 func ParseID(value string) (ID, error) {
@@ -91,18 +97,18 @@ func ParseEvaluationID(value string) (ID, error) {
 	if err != nil {
 		return "", err
 	}
-	if _, ok := evaluationDefaults[id]; !ok {
+	if specs[id].Evaluation == nil {
 		return "", fmt.Errorf("unsupported evaluation harness %q", value)
 	}
 	return id, nil
 }
 
 func EvaluationDefaultsFor(id ID) (EvaluationDefaults, error) {
-	defaults, ok := evaluationDefaults[id]
-	if !ok {
+	spec, ok := specs[id]
+	if !ok || spec.Evaluation == nil {
 		return EvaluationDefaults{}, fmt.Errorf("unsupported evaluation harness %q", id)
 	}
-	return defaults, nil
+	return *spec.Evaluation, nil
 }
 
 func ParseScope(value string) (Scope, error) {

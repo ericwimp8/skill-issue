@@ -2,7 +2,6 @@ package evaluation
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -70,79 +69,123 @@ func (service Service) prepareRuntime(harnessID harness.ID, model, reasoning, ru
 	}
 }
 
-func prepareKiloRuntime(root, workspace, executable, model, reasoning, cliPath string, skillNames []string) (runtimePreparation, error) {
-	configHome := filepath.Join(root, "config")
-	configRoot := filepath.Join(configHome, "kilo")
-	skillRoot := filepath.Join(root, "passed-skills")
-	for _, path := range []string{configRoot, skillRoot, filepath.Join(root, "state"), filepath.Join(root, "cache")} {
-		if err := os.MkdirAll(path, 0o700); err != nil {
-			return runtimePreparation{}, fmt.Errorf("create Kilo runtime path: %w", err)
-		}
-	}
-	provider, _, found := strings.Cut(model, "/")
-	if !found || provider == "" {
-		return runtimePreparation{}, errors.New("Kilo model must use provider/model format")
-	}
-	skillPermissions := map[string]string{"*": "deny"}
-	for _, name := range skillNames {
-		skillPermissions[name] = "allow"
-	}
-	config := map[string]any{
-		"$schema":           "https://app.kilo.ai/config.json",
-		"model":             model,
-		"small_model":       model,
-		"default_agent":     "code",
-		"enabled_providers": []string{provider},
-		"share":             "disabled",
-		"autoupdate":        false,
-		"snapshot":          false,
-		"formatter":         false,
-		"lsp":               false,
-		"remote_control":    false,
-		"indexing":          map[string]any{"enabled": false},
-		"skills":            map[string]any{"paths": []string{skillRoot}, "urls": []string{}},
-		"agent": map[string]any{
-			"code": map[string]any{
-				"variant": reasoning,
-				"permission": map[string]string{
-					"codebase_search": "deny",
-					"semantic_search": "deny",
-				},
+// structuredRuntimeSpec parameterizes the OpenCode-style harnesses (OpenCode
+// and its Kilo fork) that share a configuration schema, permission model, and
+// XDG-based environment isolation. Fields hold only what genuinely differs.
+type structuredRuntimeSpec struct {
+	harnessID        harness.ID
+	name             string            // harness name used in error messages
+	configDir        string            // configuration directory name under <root>/config
+	configFile       string            // configuration file name
+	schema           string            // configuration $schema URL
+	defaultAgent     string            // agent that receives the reasoning variant
+	agentConfig      map[string]any    // extra settings for the default agent
+	configExtras     map[string]any    // harness-specific top-level configuration
+	permissionExtras map[string]string // harness-specific permission denials
+	environment      []string          // harness-specific environment variables
+}
+
+func kiloRuntimeSpec(skillRoot string) structuredRuntimeSpec {
+	return structuredRuntimeSpec{
+		harnessID:    harness.KiloCode,
+		name:         "Kilo",
+		configDir:    "kilo",
+		configFile:   "kilo.json",
+		schema:       "https://app.kilo.ai/config.json",
+		defaultAgent: "code",
+		agentConfig: map[string]any{
+			"permission": map[string]string{
+				"codebase_search": "deny",
+				"semantic_search": "deny",
 			},
 		},
-		"permission": map[string]any{
-			"*": "deny",
-			"read": map[string]string{
-				"*":             "allow",
-				"*.env":         "deny",
-				"*.env.*":       "deny",
-				"*.env.example": "allow",
-			},
-			"edit":  "allow",
-			"glob":  "allow",
-			"grep":  "allow",
-			"list":  "allow",
-			"skill": skillPermissions,
-			"bash": map[string]string{
-				"*":                          "deny",
-				"*" + cliPath + `" signal *`: "allow",
-				cliPath + " signal *":        "allow",
-			},
-			"external_directory": "deny",
-			"question":           "deny",
-			"task":               "deny",
-			"webfetch":           "deny",
-			"websearch":          "deny",
+		configExtras: map[string]any{
+			"remote_control": false,
+			"indexing":       map[string]any{"enabled": false},
+			"skills":         map[string]any{"paths": []string{skillRoot}, "urls": []string{}},
+		},
+		permissionExtras: map[string]string{
 			"semantic_search":    "deny",
 			"codebase_search":    "deny",
 			"kilo_memory_save":   "deny",
 			"kilo_memory_recall": "deny",
 		},
+		environment: []string{
+			"KILO_AUTO_SHARE=false",
+			"KILO_DISABLE_AUTOUPDATE=true",
+			"KILO_DISABLE_CLAUDE_CODE=true",
+			"KILO_DISABLE_CLAUDE_CODE_PROMPT=true",
+			"KILO_DISABLE_CLAUDE_CODE_SKILLS=true",
+			"KILO_DISABLE_CODEBASE_INDEXING=true",
+			"KILO_DISABLE_EXTERNAL_SKILLS=true",
+			"KILO_DISABLE_LSP_DOWNLOAD=true",
+			"KILO_DISABLE_PRESENCE=true",
+			"KILO_DISABLE_PROJECT_CONFIG=true",
+			"KILO_DISABLE_SESSION_INGEST=true",
+			"KILO_DISABLE_SHARE=true",
+			"KILO_EXPERIMENTAL_DISABLE_FILEWATCHER=true",
+			"KILO_NO_DAEMON=true",
+			"KILO_PURE=true",
+			"KILO_REMOTE=false",
+		},
 	}
-	if err := writeRuntimeJSON(filepath.Join(configRoot, "kilo.json"), config); err != nil {
+}
+
+func openCodeRuntimeSpec() structuredRuntimeSpec {
+	return structuredRuntimeSpec{
+		harnessID:    harness.OpenCode,
+		name:         "OpenCode",
+		configDir:    "opencode",
+		configFile:   "opencode.json",
+		schema:       "https://opencode.ai/config.json",
+		defaultAgent: "build",
+		configExtras: map[string]any{
+			"plugin":       []string{},
+			"instructions": []string{},
+			"mcp":          map[string]any{},
+		},
+		environment: []string{
+			"OPENCODE_AUTO_SHARE=false",
+			"OPENCODE_DISABLE_AUTOUPDATE=true",
+			"OPENCODE_DISABLE_CLAUDE_CODE=true",
+			"OPENCODE_DISABLE_CLAUDE_CODE_PROMPT=true",
+			"OPENCODE_DISABLE_CLAUDE_CODE_SKILLS=true",
+			"OPENCODE_DISABLE_EXTERNAL_SKILLS=true",
+			"OPENCODE_DISABLE_LSP_DOWNLOAD=true",
+			"OPENCODE_DISABLE_PROJECT_CONFIG=true",
+			"OPENCODE_DISABLE_SHARE=true",
+			"OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER=true",
+		},
+	}
+}
+
+func prepareKiloRuntime(root, workspace, executable, model, reasoning, cliPath string, skillNames []string) (runtimePreparation, error) {
+	skillRoot := filepath.Join(root, "passed-skills")
+	return prepareStructuredRuntime(kiloRuntimeSpec(skillRoot), root, workspace, executable, model, reasoning, cliPath, skillNames, skillRoot, []string{skillRoot})
+}
+
+func prepareOpenCodeRuntime(root, workspace, executable, model, reasoning, cliPath string, skillNames []string) (runtimePreparation, error) {
+	skillRoot := filepath.Join(root, "config", "opencode", "skills")
+	return prepareStructuredRuntime(openCodeRuntimeSpec(), root, workspace, executable, model, reasoning, cliPath, skillNames, skillRoot, nil)
+}
+
+func prepareStructuredRuntime(spec structuredRuntimeSpec, root, workspace, executable, model, reasoning, cliPath string, skillNames []string, skillRoot string, extraPaths []string) (runtimePreparation, error) {
+	configRoot := filepath.Join(root, "config", spec.configDir)
+	paths := append([]string{configRoot, filepath.Join(root, "state"), filepath.Join(root, "cache")}, extraPaths...)
+	for _, path := range paths {
+		if err := os.MkdirAll(path, 0o700); err != nil {
+			return runtimePreparation{}, fmt.Errorf("create %s runtime path: %w", spec.name, err)
+		}
+	}
+	provider, err := structuredModelProvider(spec.name, model)
+	if err != nil {
 		return runtimePreparation{}, err
 	}
-	environment, err := kiloEnvironment(root, executable)
+	config := structuredRuntimeConfig(spec, model, provider, reasoning, cliPath, skillNames)
+	if err := writeRuntimeJSON(filepath.Join(configRoot, spec.configFile), config); err != nil {
+		return runtimePreparation{}, err
+	}
+	environment, err := structuredEnvironment(spec, root, executable)
 	if err != nil {
 		return runtimePreparation{}, err
 	}
@@ -153,125 +196,78 @@ func prepareKiloRuntime(root, workspace, executable, model, reasoning, cliPath s
 	}, nil
 }
 
-func kiloEnvironment(root, executable string) ([]string, error) {
-	path, err := runtimeExecutable(harness.KiloCode, executable)
-	if err != nil {
-		return nil, err
-	}
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return nil, fmt.Errorf("resolve Kilo home: %w", err)
-	}
-	dataHome := os.Getenv("XDG_DATA_HOME")
-	if dataHome == "" {
-		dataHome = filepath.Join(home, ".local", "share")
-	}
-	environment := controlledEnvironment(home, filepath.Join(root, "tmp"), path, false)
-	environment = append(environment,
-		"XDG_CONFIG_HOME="+filepath.Join(root, "config"),
-		"XDG_DATA_HOME="+dataHome,
-		"XDG_STATE_HOME="+filepath.Join(root, "state"),
-		"XDG_CACHE_HOME="+filepath.Join(root, "cache"),
-		"KILO_AUTO_SHARE=false",
-		"KILO_DISABLE_AUTOUPDATE=true",
-		"KILO_DISABLE_CLAUDE_CODE=true",
-		"KILO_DISABLE_CLAUDE_CODE_PROMPT=true",
-		"KILO_DISABLE_CLAUDE_CODE_SKILLS=true",
-		"KILO_DISABLE_CODEBASE_INDEXING=true",
-		"KILO_DISABLE_EXTERNAL_SKILLS=true",
-		"KILO_DISABLE_LSP_DOWNLOAD=true",
-		"KILO_DISABLE_PRESENCE=true",
-		"KILO_DISABLE_PROJECT_CONFIG=true",
-		"KILO_DISABLE_SESSION_INGEST=true",
-		"KILO_DISABLE_SHARE=true",
-		"KILO_EXPERIMENTAL_DISABLE_FILEWATCHER=true",
-		"KILO_NO_DAEMON=true",
-		"KILO_PURE=true",
-		"KILO_REMOTE=false",
-	)
-	return environment, nil
-}
-
-func prepareOpenCodeRuntime(root, workspace, executable, model, reasoning, cliPath string, skillNames []string) (runtimePreparation, error) {
-	configHome := filepath.Join(root, "config")
-	configRoot := filepath.Join(configHome, "opencode")
-	for _, path := range []string{configRoot, filepath.Join(root, "state"), filepath.Join(root, "cache")} {
-		if err := os.MkdirAll(path, 0o700); err != nil {
-			return runtimePreparation{}, fmt.Errorf("create OpenCode runtime path: %w", err)
-		}
-	}
+func structuredModelProvider(name, model string) (string, error) {
 	provider, _, found := strings.Cut(model, "/")
 	if !found || provider == "" {
-		return runtimePreparation{}, errors.New("OpenCode model must use provider/model format")
+		return "", fmt.Errorf("%s model must use provider/model format", name)
 	}
+	return provider, nil
+}
+
+func structuredRuntimeConfig(spec structuredRuntimeSpec, model, provider, reasoning, cliPath string, skillNames []string) map[string]any {
 	skillPermissions := map[string]string{"*": "deny"}
 	for _, name := range skillNames {
 		skillPermissions[name] = "allow"
 	}
+	permission := map[string]any{
+		"*": "deny",
+		"read": map[string]string{
+			"*":             "allow",
+			"*.env":         "deny",
+			"*.env.*":       "deny",
+			"*.env.example": "allow",
+		},
+		"edit":  "allow",
+		"glob":  "allow",
+		"grep":  "allow",
+		"list":  "allow",
+		"skill": skillPermissions,
+		"bash": map[string]string{
+			"*":                          "deny",
+			"*" + cliPath + `" signal *`: "allow",
+			cliPath + " signal *":        "allow",
+		},
+		"external_directory": "deny",
+		"question":           "deny",
+		"task":               "deny",
+		"webfetch":           "deny",
+		"websearch":          "deny",
+	}
+	for key, value := range spec.permissionExtras {
+		permission[key] = value
+	}
+	agent := map[string]any{"variant": reasoning}
+	for key, value := range spec.agentConfig {
+		agent[key] = value
+	}
 	config := map[string]any{
-		"$schema":           "https://opencode.ai/config.json",
+		"$schema":           spec.schema,
 		"model":             model,
 		"small_model":       model,
-		"default_agent":     "build",
+		"default_agent":     spec.defaultAgent,
 		"enabled_providers": []string{provider},
 		"share":             "disabled",
 		"autoupdate":        false,
 		"snapshot":          false,
 		"formatter":         false,
 		"lsp":               false,
-		"plugin":            []string{},
-		"instructions":      []string{},
-		"mcp":               map[string]any{},
-		"agent": map[string]any{
-			"build": map[string]any{"variant": reasoning},
-		},
-		"permission": map[string]any{
-			"*": "deny",
-			"read": map[string]string{
-				"*":             "allow",
-				"*.env":         "deny",
-				"*.env.*":       "deny",
-				"*.env.example": "allow",
-			},
-			"edit":  "allow",
-			"glob":  "allow",
-			"grep":  "allow",
-			"list":  "allow",
-			"skill": skillPermissions,
-			"bash": map[string]string{
-				"*":                          "deny",
-				"*" + cliPath + `" signal *`: "allow",
-				cliPath + " signal *":        "allow",
-			},
-			"external_directory": "deny",
-			"question":           "deny",
-			"task":               "deny",
-			"webfetch":           "deny",
-			"websearch":          "deny",
-		},
+		"agent":             map[string]any{spec.defaultAgent: agent},
+		"permission":        permission,
 	}
-	if err := writeRuntimeJSON(filepath.Join(configRoot, "opencode.json"), config); err != nil {
-		return runtimePreparation{}, err
+	for key, value := range spec.configExtras {
+		config[key] = value
 	}
-	environment, err := openCodeEnvironment(root, executable)
-	if err != nil {
-		return runtimePreparation{}, err
-	}
-	return runtimePreparation{
-		environment:         environment,
-		workingDirectory:    workspace,
-		evaluationSkillRoot: filepath.Join(configRoot, "skills"),
-	}, nil
+	return config
 }
 
-func openCodeEnvironment(root, executable string) ([]string, error) {
-	path, err := runtimeExecutable(harness.OpenCode, executable)
+func structuredEnvironment(spec structuredRuntimeSpec, root, executable string) ([]string, error) {
+	path, err := runtimeExecutable(spec.harnessID, executable)
 	if err != nil {
 		return nil, err
 	}
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return nil, fmt.Errorf("resolve OpenCode home: %w", err)
+		return nil, fmt.Errorf("resolve %s home: %w", spec.name, err)
 	}
 	dataHome := os.Getenv("XDG_DATA_HOME")
 	if dataHome == "" {
@@ -283,18 +279,16 @@ func openCodeEnvironment(root, executable string) ([]string, error) {
 		"XDG_DATA_HOME="+dataHome,
 		"XDG_STATE_HOME="+filepath.Join(root, "state"),
 		"XDG_CACHE_HOME="+filepath.Join(root, "cache"),
-		"OPENCODE_AUTO_SHARE=false",
-		"OPENCODE_DISABLE_AUTOUPDATE=true",
-		"OPENCODE_DISABLE_CLAUDE_CODE=true",
-		"OPENCODE_DISABLE_CLAUDE_CODE_PROMPT=true",
-		"OPENCODE_DISABLE_CLAUDE_CODE_SKILLS=true",
-		"OPENCODE_DISABLE_EXTERNAL_SKILLS=true",
-		"OPENCODE_DISABLE_LSP_DOWNLOAD=true",
-		"OPENCODE_DISABLE_PROJECT_CONFIG=true",
-		"OPENCODE_DISABLE_SHARE=true",
-		"OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER=true",
 	)
-	return environment, nil
+	return append(environment, spec.environment...), nil
+}
+
+func kiloEnvironment(root, executable string) ([]string, error) {
+	return structuredEnvironment(kiloRuntimeSpec(filepath.Join(root, "passed-skills")), root, executable)
+}
+
+func openCodeEnvironment(root, executable string) ([]string, error) {
+	return structuredEnvironment(openCodeRuntimeSpec(), root, executable)
 }
 
 func prepareCursorRuntime(root, workspace, stateRoot, executable, cliPath string) (runtimePreparation, error) {

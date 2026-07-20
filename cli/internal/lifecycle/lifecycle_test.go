@@ -46,7 +46,7 @@ func TestEvaluationRunIsProjectLocalAndHasOneInputMode(t *testing.T) {
 }
 
 func TestEvaluationCleanupAndSignalRequireOutputOwnedState(t *testing.T) {
-	service := New()
+	service := New(nil)
 	if _, err := service.evaluate([]string{"cleanup", "--run", "run-id"}); err == nil {
 		t.Fatal("evaluation cleanup without output was accepted")
 	}

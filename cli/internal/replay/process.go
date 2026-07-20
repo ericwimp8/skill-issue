@@ -32,8 +32,7 @@ type Options struct {
 
 type commandSpec struct {
 	executable string
-	initial    func(string) []string
-	resume     func(string, string) []string
+	buildArgs  func(adapter *processAdapter, sessionID string, started bool, prompt string) []string
 }
 
 type processAdapter struct {
@@ -142,39 +141,7 @@ func (session *processSession) SendPrompt(ctx context.Context, prompt string) er
 	if session.pending != nil {
 		return errors.New("previous prompt is still running")
 	}
-	args := session.adapter.spec.initial(prompt)
-	if session.adapter.harnessID == HarnessCursor {
-		args = cursorArgs(session.adapter, session.sessionID, prompt)
-	} else if session.adapter.harnessID == HarnessClaude {
-		if session.started {
-			args = claudeArgs(session.adapter, session.sessionID, prompt, true)
-		} else {
-			args = claudeArgs(session.adapter, session.sessionID, prompt, false)
-		}
-	} else if session.adapter.harnessID == HarnessOpenCode || session.adapter.harnessID == HarnessKilo {
-		if session.adapter.harnessID == HarnessKilo {
-			args = kiloArgs(session.adapter, session.sessionID, prompt)
-		} else {
-			args = openCodeArgs(session.adapter, session.sessionID, prompt)
-		}
-	} else if session.sessionID != "" {
-		args = session.adapter.spec.resume(session.sessionID, prompt)
-	}
-	if session.adapter.harnessID == HarnessCodex {
-		prefix := []string{
-			"--cd", session.adapter.directory,
-			"--ask-for-approval", "on-request",
-			"--sandbox", "workspace-write",
-			"--disable", "plugins",
-		}
-		if session.adapter.model != "" {
-			prefix = append(prefix, "--model", session.adapter.model)
-		}
-		for _, value := range session.adapter.config {
-			prefix = append(prefix, "--config", value)
-		}
-		args = append(prefix, args...)
-	}
+	args := session.adapter.spec.buildArgs(session.adapter, session.sessionID, session.started, prompt)
 	session.stdout.Reset()
 	session.stderr.Reset()
 	command := exec.CommandContext(ctx, session.adapter.path, args...)
@@ -809,31 +776,46 @@ func findStringField(value any, keys []string) string {
 
 func commandSpecs() map[HarnessID]commandSpec {
 	return map[HarnessID]commandSpec{
-		HarnessClaude:   {executable: "claude", initial: promptArgs("-p", "--output-format", "stream-json", "--verbose"), resume: resumeArgs("--resume", "-p", "--output-format", "stream-json", "--verbose")},
-		HarnessCodex:    {executable: "codex", initial: codexInitial, resume: codexResume},
-		HarnessCursor:   {executable: "cursor-agent", initial: promptArgs("-p", "--output-format", "stream-json"), resume: resumeArgs("--resume", "-p", "--output-format", "stream-json")},
-		HarnessOpenCode: {executable: "opencode", initial: runArgs, resume: runResumeArgs},
-		HarnessKilo:     {executable: "kilo", initial: runArgs, resume: runResumeArgs},
+		HarnessClaude: {executable: "claude", buildArgs: func(adapter *processAdapter, sessionID string, started bool, prompt string) []string {
+			return claudeArgs(adapter, sessionID, prompt, started)
+		}},
+		HarnessCodex: {executable: "codex", buildArgs: codexBuildArgs},
+		HarnessCursor: {executable: "cursor-agent", buildArgs: func(adapter *processAdapter, sessionID string, _ bool, prompt string) []string {
+			return cursorArgs(adapter, sessionID, prompt)
+		}},
+		HarnessOpenCode: {executable: "opencode", buildArgs: func(adapter *processAdapter, sessionID string, _ bool, prompt string) []string {
+			return openCodeArgs(adapter, sessionID, prompt)
+		}},
+		HarnessKilo: {executable: "kilo", buildArgs: func(adapter *processAdapter, sessionID string, _ bool, prompt string) []string {
+			return kiloArgs(adapter, sessionID, prompt)
+		}},
 	}
 }
 
-func promptArgs(prefix string, suffix ...string) func(string) []string {
-	return func(prompt string) []string { return append([]string{prefix, prompt}, suffix...) }
-}
-
-func resumeArgs(resumeFlag, promptFlag string, suffix ...string) func(string, string) []string {
-	return func(sessionID, prompt string) []string {
-		return append([]string{resumeFlag, sessionID, promptFlag, prompt}, suffix...)
+func codexBuildArgs(adapter *processAdapter, sessionID string, _ bool, prompt string) []string {
+	args := codexInitial(prompt)
+	if sessionID != "" {
+		args = codexResume(sessionID, prompt)
 	}
+	prefix := []string{
+		"--cd", adapter.directory,
+		"--ask-for-approval", "on-request",
+		"--sandbox", "workspace-write",
+		"--disable", "plugins",
+	}
+	if adapter.model != "" {
+		prefix = append(prefix, "--model", adapter.model)
+	}
+	for _, value := range adapter.config {
+		prefix = append(prefix, "--config", value)
+	}
+	return append(prefix, args...)
 }
 
 func codexInitial(prompt string) []string {
 	return []string{"exec", "--ignore-user-config", "--ignore-rules", "--json", prompt}
 }
+
 func codexResume(sessionID, prompt string) []string {
 	return []string{"exec", "resume", "--ignore-user-config", "--ignore-rules", "--json", sessionID, prompt}
-}
-func runArgs(prompt string) []string { return []string{"run", "--format", "json", prompt} }
-func runResumeArgs(sessionID, prompt string) []string {
-	return []string{"run", "--session", sessionID, "--format", "json", prompt}
 }

@@ -29,25 +29,27 @@ type AnswerSheet struct {
 }
 
 type RunRequest struct {
-	Workspace         string
-	OutputRoot        string
-	Harness           harness.ID
-	Model             string
-	ModelOverride     bool
-	Reasoning         string
-	ReasoningOverride bool
-	EvaluationID      string
-	SkillsPath        string
-	ScenarioPath      string
-	AnswerSheet       string
-	Executable        string
-	CLIPath           string
-	IncludeEvents     bool
-	IncludeTranscript bool
-	TurnLimit         int
-	AvailableTurns    int
-	EffectiveTurns    int
-	Progress          func(TurnProgress)
+	Workspace          string
+	OutputRoot         string
+	Harness            harness.ID
+	Model              string
+	ModelOverride      bool
+	Reasoning          string
+	ReasoningOverride  bool
+	EvaluationID       string
+	SkillsPath         string
+	ScenarioPath       string
+	AnswerSheet        string
+	Executable         string
+	CLIPath            string
+	IncludeEvents      bool
+	IncludeTranscript  bool
+	ReplacePreexisting bool
+	TurnLimit          int
+	AvailableTurns     int
+	EffectiveTurns     int
+	Progress           func(TurnProgress)
+	ConfirmPreexisting func(differing []string) (bool, error)
 }
 
 type TurnProgress struct {
@@ -230,12 +232,18 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 	if err != nil {
 		return Result{}, err
 	}
+	cleanupFailed := false
 	defer func() {
-		if err != nil {
-			_ = service.runs.DeletePrivateMappings(runID)
-			_ = service.runs.DeleteRun(runID)
-			err = fmt.Errorf("evaluation run %s: %w", runID, err)
+		if err == nil {
+			return
 		}
+		if cleanupFailed {
+			err = fmt.Errorf("evaluation run %s: %w; run \"skill-issue evaluate cleanup --run %s --output %s\" to restore the workspace", runID, err, runID, request.OutputRoot)
+			return
+		}
+		_ = service.runs.DeletePrivateMappings(runID)
+		_ = service.runs.DeleteRun(runID)
+		err = fmt.Errorf("evaluation run %s: %w", runID, err)
 	}()
 	skillNames := make([]string, 0, len(inputs.skills))
 	for _, skill := range inputs.skills {
@@ -259,18 +267,23 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 		EvaluationRoot:       runtime.evaluationSkillRoot,
 		CLIPath:              cliPath,
 		SignalStateRoot:      service.stateRoot,
+		BackupRoot:           filepath.Join(service.runs.RunDir(runID), "preexisting-skills"),
 		Tokens:               tokens,
 		Skills:               inputs.skills,
 		ApplyHarnessMetadata: request.EvaluationID != "",
+		ConfirmReplace:       confirmPreexistingReplacement(request),
 	})
 	if err != nil {
 		return Result{}, err
 	}
 	cleaned := false
 	defer func() {
-		if !cleaned {
-			cleanupErr := service.cleanupWithInstallation(runID, installationState)
-			if err == nil && cleanupErr != nil {
+		if cleaned {
+			return
+		}
+		if cleanupErr := service.cleanupWithInstallation(runID, installationState); cleanupErr != nil {
+			cleanupFailed = true
+			if err == nil {
 				err = cleanupErr
 			}
 		}
@@ -406,11 +419,24 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 	if err := service.runs.Save(run); err != nil {
 		return Result{}, err
 	}
+	cleaned = true
 	if err := service.cleanupWithInstallation(runID, installationState); err != nil {
+		cleanupFailed = true
 		return Result{}, err
 	}
-	cleaned = true
 	return result, nil
+}
+
+func confirmPreexistingReplacement(request RunRequest) func([]string) (bool, error) {
+	return func(differing []string) (bool, error) {
+		if request.ReplacePreexisting {
+			return true, nil
+		}
+		if request.ConfirmPreexisting != nil {
+			return request.ConfirmPreexisting(differing)
+		}
+		return false, fmt.Errorf("installed skills differ from their canonical versions: %s; rerun with --replace-preexisting-skills to temporarily replace them (local versions are restored after the run)", strings.Join(differing, ", "))
+	}
 }
 
 func (service Service) recordCodexSignals(runID, turnID string, capture replay.Capture, tokens map[string]string, cliPath string) error {
@@ -438,7 +464,7 @@ func (service Service) recordCodexSignals(runID, turnID string, capture replay.C
 		}
 		for token := range tokens {
 			skill := tokens[token]
-			if recorded[token] || observed[skill] || !strings.Contains(value.Item.Command, cliPath) || !strings.Contains(value.Item.Command, " signal ") || !strings.Contains(value.Item.Command, token) || !strings.Contains(value.Item.Command, service.stateRoot) {
+			if recorded[token] || observed[skill] || !isSignalCommand(value.Item.Command, cliPath, token, service.stateRoot) {
 				continue
 			}
 			if err := service.runs.Mark(token); err != nil {
@@ -523,8 +549,47 @@ func cursorSignalCompletionDetail(events []json.RawMessage, command string) stri
 	return "the command did not complete"
 }
 
+// isSignalCommand reports whether a captured shell command actually invokes
+// the instrumented marker. Each component must appear as a standalone shell
+// word (optionally quoted) so that commands merely mentioning a token — for
+// example a model echoing its instructions — do not count as signals.
 func isSignalCommand(command, cliPath, token, stateRoot string) bool {
-	return strings.Contains(command, cliPath) && strings.Contains(command, " signal ") && strings.Contains(command, token) && strings.Contains(command, stateRoot)
+	return containsShellWord(command, cliPath) &&
+		containsShellWord(command, "signal") &&
+		containsShellWord(command, token) &&
+		containsShellWord(command, stateRoot)
+}
+
+func containsShellWord(command, wanted string) bool {
+	if wanted == "" {
+		return false
+	}
+	for start := 0; ; {
+		index := strings.Index(command[start:], wanted)
+		if index < 0 {
+			return false
+		}
+		index += start
+		end := index + len(wanted)
+		if shellWordBoundary(command, index-1) && shellWordBoundary(command, end) {
+			return true
+		}
+		start = index + 1
+	}
+}
+
+// shellWordBoundary reports whether the byte at index (or the string edge)
+// can delimit a shell word.
+func shellWordBoundary(command string, index int) bool {
+	if index < 0 || index >= len(command) {
+		return true
+	}
+	switch command[index] {
+	case ' ', '\t', '\n', '"', '\'', ';', '&', '|', '(', ')':
+		return true
+	default:
+		return false
+	}
 }
 
 func (service Service) Cleanup(runID string) error {

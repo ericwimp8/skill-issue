@@ -40,6 +40,8 @@ type Service struct {
 
 type EvaluationReviewer func(evaluation.RunRequest) (bool, error)
 
+type SkillReplacementConfirmer func(differing []string) (bool, error)
+
 func New(progress ...io.Writer) Service {
 	progressWriter := io.Discard
 	if len(progress) > 0 && progress[0] != nil {
@@ -66,8 +68,8 @@ func (service Service) Execute(action Action, args []string) (Result, error) {
 	}
 }
 
-func (service Service) ExecuteEvaluationRun(args []string, reviewer EvaluationReviewer) (Result, error) {
-	return service.evaluationRun(args, reviewer)
+func (service Service) ExecuteEvaluationRun(args []string, reviewer EvaluationReviewer, confirmReplacement SkillReplacementConfirmer) (Result, error) {
+	return service.evaluationRun(args, reviewer, confirmReplacement)
 }
 
 func (service Service) install(action Action, args []string) (Result, error) {
@@ -111,7 +113,7 @@ func (service Service) evaluate(args []string) (Result, error) {
 	}
 	switch args[0] {
 	case "run":
-		return service.evaluationRun(args[1:], nil)
+		return service.evaluationRun(args[1:], nil, nil)
 	case "cleanup":
 		options, err := parseOptions(args[1:])
 		if err != nil {
@@ -134,8 +136,8 @@ func (service Service) evaluate(args []string) (Result, error) {
 	}
 }
 
-func (service Service) evaluationRun(args []string, reviewer EvaluationReviewer) (Result, error) {
-	options, err := parseOptions(args, "events", "transcript")
+func (service Service) evaluationRun(args []string, reviewer EvaluationReviewer, confirmReplacement SkillReplacementConfirmer) (Result, error) {
+	options, err := parseOptions(args, "events", "transcript", "replace-preexisting-skills")
 	if err != nil {
 		return Result{}, err
 	}
@@ -143,6 +145,7 @@ func (service Service) evaluationRun(args []string, reviewer EvaluationReviewer)
 	if err != nil {
 		return Result{}, err
 	}
+	request.ConfirmPreexisting = confirmReplacement
 	if reviewer != nil {
 		confirmed, err := reviewer(request)
 		if err != nil {
@@ -225,22 +228,23 @@ func evaluationRunRequest(options map[string]string) (evaluation.RunRequest, err
 		return evaluation.RunRequest{}, errors.New("use --evaluation or supply --skills, --scenario, and --answer-sheet")
 	}
 	request := evaluation.RunRequest{
-		Workspace:         workspace,
-		OutputRoot:        output,
-		Harness:           id,
-		Model:             options["model"],
-		ModelOverride:     options["model"] != "",
-		Reasoning:         options["reasoning"],
-		ReasoningOverride: options["reasoning"] != "",
-		EvaluationID:      evaluationID,
-		SkillsPath:        skills,
-		ScenarioPath:      scenario,
-		AnswerSheet:       answer,
-		Executable:        options["executable"],
-		CLIPath:           options["cli-path"],
-		IncludeEvents:     options["events"] == "true",
-		IncludeTranscript: options["transcript"] == "true",
-		TurnLimit:         turnLimit,
+		Workspace:          workspace,
+		OutputRoot:         output,
+		Harness:            id,
+		Model:              options["model"],
+		ModelOverride:      options["model"] != "",
+		Reasoning:          options["reasoning"],
+		ReasoningOverride:  options["reasoning"] != "",
+		EvaluationID:       evaluationID,
+		SkillsPath:         skills,
+		ScenarioPath:       scenario,
+		AnswerSheet:        answer,
+		Executable:         options["executable"],
+		CLIPath:            options["cli-path"],
+		IncludeEvents:      options["events"] == "true",
+		IncludeTranscript:  options["transcript"] == "true",
+		ReplacePreexisting: options["replace-preexisting-skills"] == "true",
+		TurnLimit:          turnLimit,
 	}
 	return evaluation.PrepareRequest(request)
 }

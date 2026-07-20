@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/ericwimp8/skill-issue/cli/internal/evaluation"
 	"github.com/ericwimp8/skill-issue/cli/internal/harness"
@@ -25,6 +26,7 @@ type BuildInfo struct {
 
 type App struct {
 	stdin     io.Reader
+	prompts   *bufio.Reader
 	stdout    io.Writer
 	stderr    io.Writer
 	buildInfo BuildInfo
@@ -34,6 +36,7 @@ type App struct {
 func New(stdin io.Reader, stdout, stderr io.Writer, buildInfo BuildInfo) App {
 	return App{
 		stdin:     stdin,
+		prompts:   bufio.NewReader(stdin),
 		stdout:    stdout,
 		stderr:    stderr,
 		buildInfo: buildInfo,
@@ -142,7 +145,7 @@ func (app App) runGuidedInstall() int {
 	for _, skill := range skills {
 		fmt.Fprintf(app.stderr, "    - %s\n", skill.Name)
 	}
-	confirmed, err := readConfirmation(app.stdin, app.stderr, "Install these skills? [y/N]: ")
+	confirmed, err := readConfirmation(app.prompts, app.stderr, "Install these skills? [y/N]: ")
 	if err != nil {
 		return app.fail(err)
 	}
@@ -238,7 +241,7 @@ func moveSelection(options []menuOption, selected, direction int) int {
 	return selected
 }
 
-func readMenuKey(input io.Reader) (string, error) {
+func readMenuKey(input *os.File) (string, error) {
 	var current [1]byte
 	if _, err := io.ReadFull(input, current[:]); err != nil {
 		return "", fmt.Errorf("read interactive selection: %w", err)
@@ -248,34 +251,43 @@ func readMenuKey(input io.Reader) (string, error) {
 		return "select", nil
 	case 3:
 		return "cancel", nil
-	case 0, 0xe0:
-		if _, err := io.ReadFull(input, current[:]); err != nil {
-			return "", fmt.Errorf("read interactive selection: %w", err)
-		}
-		if current[0] == 72 {
-			return "up", nil
-		}
-		if current[0] == 80 {
-			return "down", nil
-		}
 	case 0x1b:
-		var sequence [2]byte
-		if _, err := io.ReadFull(input, sequence[:]); err != nil {
-			return "", fmt.Errorf("read interactive selection: %w", err)
+		sequence, err := readEscapeSuffix(input)
+		if err != nil {
+			return "", err
 		}
-		if (sequence[0] == '[' || sequence[0] == 'O') && sequence[1] == 'A' {
+		// A lone escape (no sequence bytes arrived) cancels the selection.
+		if len(sequence) == 0 {
+			return "cancel", nil
+		}
+		if len(sequence) == 2 && (sequence[0] == '[' || sequence[0] == 'O') && sequence[1] == 'A' {
 			return "up", nil
 		}
-		if (sequence[0] == '[' || sequence[0] == 'O') && sequence[1] == 'B' {
+		if len(sequence) == 2 && (sequence[0] == '[' || sequence[0] == 'O') && sequence[1] == 'B' {
 			return "down", nil
 		}
 	}
 	return "", nil
 }
 
-func readConfirmation(input io.Reader, output io.Writer, prompt string) (bool, error) {
+func readEscapeSuffix(input *os.File) ([]byte, error) {
+	deadline := input.SetReadDeadline(time.Now().Add(50*time.Millisecond)) == nil
+	if deadline {
+		defer input.SetReadDeadline(time.Time{})
+	}
+	var sequence [2]byte
+	read, err := io.ReadFull(input, sequence[:])
+	if err != nil && deadline && (os.IsTimeout(err) || errors.Is(err, os.ErrDeadlineExceeded)) {
+		return sequence[:read], nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("read interactive selection: %w", err)
+	}
+	return sequence[:], nil
+}
+
+func readConfirmation(reader *bufio.Reader, output io.Writer, prompt string) (bool, error) {
 	fmt.Fprint(output, prompt)
-	reader := bufio.NewReader(input)
 	answer, err := reader.ReadString('\n')
 	if err != nil && err != io.EOF {
 		return false, fmt.Errorf("read installation confirmation: %w", err)
@@ -312,11 +324,27 @@ func (app App) runLifecycle(action lifecycle.Action, args []string) int {
 }
 
 func (app App) runEvaluation(args []string) int {
-	result, err := app.lifecycle.ExecuteEvaluationRun(args[1:], app.reviewEvaluation)
+	result, err := app.lifecycle.ExecuteEvaluationRun(args[1:], app.reviewEvaluation, app.confirmSkillReplacement)
 	if err != nil {
 		return app.fail(err)
 	}
 	return app.writeJSON(result)
+}
+
+func (app App) confirmSkillReplacement(differing []string) (bool, error) {
+	fmt.Fprintln(app.stderr, "warning: these installed skills differ from their canonical Skill Issue versions:")
+	for _, skill := range differing {
+		fmt.Fprintf(app.stderr, "  - %s\n", skill)
+	}
+	fmt.Fprintln(app.stderr, "The evaluation temporarily replaces them with instrumented canonical copies; your local versions are backed up and restored after the run.")
+	confirmed, err := readConfirmation(app.prompts, app.stderr, "Replace these skills for this run? [y/N]: ")
+	if err != nil {
+		return false, err
+	}
+	if !confirmed {
+		fmt.Fprintln(app.stderr, "evaluation cancelled")
+	}
+	return confirmed, nil
 }
 
 func (app App) reviewEvaluation(request evaluation.RunRequest) (bool, error) {
@@ -346,8 +374,7 @@ func (app App) reviewEvaluation(request evaluation.RunRequest) (bool, error) {
 		fmt.Fprintln(app.stderr, "warning: answer-sheet correctness is caller-owned; an incorrect key can make the result invalid or misleading")
 	}
 	fmt.Fprint(app.stderr, "start evaluation? [y/N]: ")
-	reader := bufio.NewReader(app.stdin)
-	answer, err := reader.ReadString('\n')
+	answer, err := app.prompts.ReadString('\n')
 	if err != nil && err != io.EOF {
 		return false, fmt.Errorf("read evaluation confirmation: %w", err)
 	}

@@ -483,7 +483,7 @@ func writeRuntimeJSON(path string, value any) error {
 
 func runtimeExecutable(harnessID harness.ID, override string) (string, error) {
 	names := []string{override}
-	if len(names) == 0 || names[0] == "" {
+	if override == "" {
 		switch harnessID {
 		case harness.Cursor:
 			names = []string{"agent", "cursor-agent"}

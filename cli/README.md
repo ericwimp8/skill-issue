@@ -8,8 +8,8 @@ The Skill Issue CLI is a standalone Go executable that installs the canonical Sk
 skill-issue install
 skill-issue install --workspace <path> --harness <id> --scope project|user
 skill-issue uninstall --workspace <path> --harness <id> --scope project|user
-skill-issue evaluate run --workspace <path> --output <path> --harness <id> [--executable <path>] [--model <id>] [--reasoning <level>] [--turns <number>] --evaluation gardening-web-application [--events] [--transcript]
-skill-issue evaluate run --workspace <path> --output <path> --harness <id> [--executable <path>] [--model <id>] [--reasoning <level>] [--turns <number>] --skills <path> --scenario <path> --answer-sheet <path> [--events] [--transcript]
+skill-issue evaluate run --workspace <path> --output <path> --harness <id> [--executable <path>] [--model <id>] [--reasoning <level>] [--turns <number>] [--replace-preexisting-skills] --evaluation gardening-web-application [--events] [--transcript]
+skill-issue evaluate run --workspace <path> --output <path> --harness <id> [--executable <path>] [--model <id>] [--reasoning <level>] [--turns <number>] [--replace-preexisting-skills] --skills <path> --scenario <path> --answer-sheet <path> [--events] [--transcript]
 skill-issue evaluate cleanup --output <path> --run <id>
 ```
 
@@ -39,6 +39,8 @@ If a harness rejects a model, reasoning value, session, permission, or protocol 
 Use the optional positive integer `--turns` argument to run only that many turns from the beginning of any built-in or custom scenario. Omitting it runs the complete scenario. A value above the scenario length runs every available turn. Scenario truncation also removes later-turn expectations from the active answer sheet, so unrun turns are not reported as missing calls.
 
 Before an evaluation run creates output or private state, the CLI prints the selected evaluation, effective turn count, available turn count, harness, model, reasoning, workspace, output root, any executable override, and custom input paths. If the requested turn count exceeds the scenario length, the summary shows both the requested and effective values. Confirm with `y` to continue or cancel with `n` (the default); cancellation exits cleanly without starting evaluation.
+
+If the evaluation skill destination already contains a skill directory with a canonical Skill Issue name, the run backs the directory up under its private run state before replacing it and restores the backed-up content byte-for-byte during cleanup. When the preexisting content matches the canonical skill, the run proceeds silently. When it differs, the interactive CLI lists the differing skills and asks for confirmation before replacing them; non-interactive callers must pass `--replace-preexisting-skills` to accept the temporary replacement, and the run otherwise stops before any side effects on those skills.
 
 Custom evaluation results are caller-selected local evidence. `result.json`, `website.json`, and optional diagnostic artifacts remain under the selected output root and are not presented as website evidence without separate review and acceptance.
 

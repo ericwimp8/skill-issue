@@ -3,6 +3,7 @@ package payload
 import (
 	_ "embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -258,19 +259,27 @@ func validateReferenceClosure(name string, files map[string][]byte) error {
 }
 
 func validateFrontmatter(name string, data []byte) error {
-	text := string(data)
-	if !strings.HasPrefix(text, "---\n") {
+	document, err := ParseFrontmatter(data)
+	if errors.Is(err, ErrMissingOpeningFrontmatter) {
 		return fmt.Errorf("canonical skill %q has invalid frontmatter", name)
 	}
-	end := strings.Index(text[4:], "\n---\n")
-	if end < 0 {
+	if err != nil {
 		return fmt.Errorf("canonical skill %q has unterminated frontmatter", name)
 	}
-	frontmatter := text[4 : 4+end]
-	if !strings.Contains(frontmatter, "name: "+name+"\n") && !strings.HasSuffix(frontmatter, "name: "+name) {
+	hasName := false
+	hasDescription := false
+	for _, line := range document.Lines() {
+		if strings.TrimRight(line, " \t") == "name: "+name {
+			hasName = true
+		}
+		if strings.HasPrefix(line, "description:") {
+			hasDescription = true
+		}
+	}
+	if !hasName {
 		return fmt.Errorf("canonical skill %q frontmatter name does not match its directory", name)
 	}
-	if !strings.Contains(frontmatter, "description:") {
+	if !hasDescription {
 		return fmt.Errorf("canonical skill %q has no description", name)
 	}
 	return nil

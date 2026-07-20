@@ -160,9 +160,6 @@ func (session *processSession) SendPrompt(ctx context.Context, prompt string) er
 	} else if session.sessionID != "" {
 		args = session.adapter.spec.resume(session.sessionID, prompt)
 	}
-	if session.adapter.model != "" && session.adapter.harnessID != HarnessCodex && session.adapter.harnessID != HarnessCursor && session.adapter.harnessID != HarnessClaude && session.adapter.harnessID != HarnessOpenCode && session.adapter.harnessID != HarnessKilo {
-		args = append(args, "--model", session.adapter.model)
-	}
 	if session.adapter.harnessID == HarnessCodex {
 		prefix := []string{
 			"--cd", session.adapter.directory,

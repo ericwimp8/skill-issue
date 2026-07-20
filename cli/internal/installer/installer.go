@@ -1,9 +1,11 @@
 package installer
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"sort"
@@ -21,9 +23,11 @@ type Request struct {
 	Home                 string
 	CLIPath              string
 	SignalStateRoot      string
+	BackupRoot           string
 	Tokens               map[string]string
 	Skills               []payload.Skill
 	ApplyHarnessMetadata bool
+	ConfirmReplace       func(differing []string) (bool, error)
 }
 
 type Installation struct {
@@ -33,9 +37,12 @@ type Installation struct {
 
 type EvaluationInstallation struct {
 	Root        string   `json:"root,omitempty"`
+	BackupRoot  string   `json:"backup_root,omitempty"`
 	Preexisting []string `json:"preexisting"`
 	Skills      []string `json:"skills"`
 }
+
+var ErrReplacementDeclined = errors.New("declined replacement of preexisting skills")
 
 type Service struct{}
 
@@ -106,8 +113,17 @@ func (Service) PrepareEvaluation(request Request) (EvaluationInstallation, Insta
 		return EvaluationInstallation{}, Installation{}, err
 	}
 	ordinaryNames := skillNames(ordinary)
+	canonical, err := applyHarnessMetadata(request.Harness, ordinary)
+	if err != nil {
+		return EvaluationInstallation{}, Installation{}, err
+	}
+	canonicalByName := make(map[string]payload.Skill, len(canonical))
+	for _, skill := range canonical {
+		canonicalByName[skill.Name] = skill
+	}
 	state := EvaluationInstallation{Root: root}
 	state.Skills = skillNamesSorted(skills)
+	var differing []string
 	for _, skill := range skills {
 		target := filepath.Join(root, skill.Name)
 		if _, statErr := os.Stat(target); statErr == nil {
@@ -115,11 +131,42 @@ func (Service) PrepareEvaluation(request Request) (EvaluationInstallation, Insta
 				return EvaluationInstallation{}, Installation{}, fmt.Errorf("temporary evaluation skill collision at %s", target)
 			}
 			state.Preexisting = append(state.Preexisting, skill.Name)
+			matches, matchErr := directoryMatchesSkill(target, request.Harness, canonicalByName[skill.Name])
+			if matchErr != nil {
+				return EvaluationInstallation{}, Installation{}, fmt.Errorf("inspect preexisting skill %s: %w", target, matchErr)
+			}
+			if !matches {
+				differing = append(differing, skill.Name)
+			}
 		} else if !errors.Is(statErr, os.ErrNotExist) {
 			return EvaluationInstallation{}, Installation{}, fmt.Errorf("inspect evaluation skill destination: %w", statErr)
 		}
 	}
 	sort.Strings(state.Preexisting)
+	sort.Strings(differing)
+	if len(differing) > 0 {
+		if request.ConfirmReplace == nil {
+			return EvaluationInstallation{}, Installation{}, fmt.Errorf("preexisting skills differ from their canonical versions: %s", strings.Join(differing, ", "))
+		}
+		confirmed, confirmErr := request.ConfirmReplace(append([]string(nil), differing...))
+		if confirmErr != nil {
+			return EvaluationInstallation{}, Installation{}, confirmErr
+		}
+		if !confirmed {
+			return EvaluationInstallation{}, Installation{}, ErrReplacementDeclined
+		}
+	}
+	if len(state.Preexisting) > 0 && request.BackupRoot != "" {
+		if !filepath.IsAbs(request.BackupRoot) {
+			return EvaluationInstallation{}, Installation{}, errors.New("evaluation skill backup root must be absolute")
+		}
+		state.BackupRoot = request.BackupRoot
+		for _, name := range state.Preexisting {
+			if err := copyDirectory(filepath.Join(root, name), filepath.Join(request.BackupRoot, name)); err != nil {
+				return EvaluationInstallation{}, Installation{}, fmt.Errorf("back up preexisting skill %s: %w", name, err)
+			}
+		}
+	}
 	installed, err := materializeSkills(root, request.Harness, skills)
 	if err != nil {
 		cleanupErr := Service{}.CleanupEvaluation(request, state)
@@ -170,6 +217,13 @@ func (Service) CleanupEvaluation(request Request, state EvaluationInstallation) 
 	for _, name := range evaluationSkillNames {
 		target := filepath.Join(root, name)
 		if preexisting[name] {
+			restored, err := restoreFromBackup(state.BackupRoot, name, target)
+			if err != nil {
+				return err
+			}
+			if restored {
+				continue
+			}
 			if err := materialize(root, target, request.Harness, ordinaryByName[name]); err != nil {
 				return err
 			}
@@ -182,6 +236,30 @@ func (Service) CleanupEvaluation(request Request, state EvaluationInstallation) 
 	return nil
 }
 
+func restoreFromBackup(backupRoot, name, target string) (bool, error) {
+	if backupRoot == "" {
+		return false, nil
+	}
+	backup := filepath.Join(backupRoot, name)
+	info, err := os.Stat(backup)
+	if errors.Is(err, os.ErrNotExist) {
+		return false, nil
+	}
+	if err != nil {
+		return false, fmt.Errorf("inspect preexisting skill backup %s: %w", backup, err)
+	}
+	if !info.IsDir() {
+		return false, fmt.Errorf("preexisting skill backup %s is not a directory", backup)
+	}
+	if err := os.RemoveAll(target); err != nil {
+		return false, fmt.Errorf("remove temporary evaluation skill %s: %w", target, err)
+	}
+	if err := copyDirectory(backup, target); err != nil {
+		return false, fmt.Errorf("restore preexisting skill %s: %w", name, err)
+	}
+	return true, nil
+}
+
 func EncodeEvaluationInstallation(state EvaluationInstallation) ([]byte, error) {
 	return json.MarshalIndent(state, "", "  ")
 }
@@ -192,6 +270,9 @@ func DecodeEvaluationInstallation(data []byte) (EvaluationInstallation, error) {
 		return EvaluationInstallation{}, err
 	}
 	if state.Root != "" && !filepath.IsAbs(state.Root) {
+		return EvaluationInstallation{}, errors.New("evaluation installation state is invalid")
+	}
+	if state.BackupRoot != "" && !filepath.IsAbs(state.BackupRoot) {
 		return EvaluationInstallation{}, errors.New("evaluation installation state is invalid")
 	}
 	for _, name := range state.Preexisting {
@@ -297,6 +378,85 @@ func verifyMaterializedSkills(root string, harnessID harness.ID, skills []payloa
 	return nil
 }
 
+func directoryMatchesSkill(target string, harnessID harness.ID, skill payload.Skill) (bool, error) {
+	expected := make(map[string][]byte, len(skill.Files))
+	for relative, data := range skill.Files {
+		include, err := harness.IncludeSkillFile(harnessID, relative)
+		if err != nil {
+			return false, err
+		}
+		if include {
+			expected[relative] = data
+		}
+	}
+	actual, err := readDirectoryFiles(target)
+	if err != nil {
+		return false, err
+	}
+	if len(actual) != len(expected) {
+		return false, nil
+	}
+	for relative, data := range expected {
+		if !bytes.Equal(actual[relative], data) {
+			return false, nil
+		}
+	}
+	return true, nil
+}
+
+func readDirectoryFiles(root string) (map[string][]byte, error) {
+	files := map[string][]byte{}
+	err := filepath.WalkDir(root, func(filePath string, entry fs.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+		if entry.IsDir() || entry.Name() == ".DS_Store" {
+			return nil
+		}
+		if !entry.Type().IsRegular() {
+			return fmt.Errorf("unsupported file type at %s", filePath)
+		}
+		data, err := os.ReadFile(filePath)
+		if err != nil {
+			return err
+		}
+		relative, err := filepath.Rel(root, filePath)
+		if err != nil {
+			return err
+		}
+		files[filepath.ToSlash(relative)] = data
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return files, nil
+}
+
+func copyDirectory(source, destination string) error {
+	return filepath.WalkDir(source, func(filePath string, entry fs.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+		relative, err := filepath.Rel(source, filePath)
+		if err != nil {
+			return err
+		}
+		target := filepath.Join(destination, relative)
+		if entry.IsDir() {
+			return os.MkdirAll(target, 0o755)
+		}
+		if !entry.Type().IsRegular() {
+			return fmt.Errorf("unsupported file type at %s", filePath)
+		}
+		data, err := os.ReadFile(filePath)
+		if err != nil {
+			return err
+		}
+		return os.WriteFile(target, data, 0o644)
+	})
+}
+
 func skillNames(skills []payload.Skill) map[string]bool {
 	names := make(map[string]bool, len(skills))
 	for _, skill := range skills {
@@ -335,16 +495,11 @@ func applyHarnessMetadata(harnessID harness.ID, skills []payload.Skill) ([]paylo
 }
 
 func addDisableModelInvocation(data []byte) ([]byte, error) {
-	text := string(data)
-	if !strings.HasPrefix(text, "---\n") {
-		return nil, errors.New("SKILL.md has no opening frontmatter delimiter")
+	document, err := payload.ParseFrontmatter(data)
+	if err != nil {
+		return nil, err
 	}
-	end := strings.Index(text[4:], "\n---\n")
-	if end < 0 {
-		return nil, errors.New("SKILL.md has no closing frontmatter delimiter")
-	}
-	frontmatter := text[4 : 4+end]
-	for _, line := range strings.Split(frontmatter, "\n") {
+	for _, line := range document.Lines() {
 		line = strings.TrimSpace(line)
 		if !strings.HasPrefix(line, "disable-model-invocation:") {
 			continue
@@ -354,8 +509,8 @@ func addDisableModelInvocation(data []byte) ([]byte, error) {
 		}
 		return nil, errors.New("SKILL.md has conflicting disable-model-invocation metadata")
 	}
-	insertAt := 4 + end
-	return []byte(text[:insertAt] + "\ndisable-model-invocation: true" + text[insertAt:]), nil
+	text := string(data)
+	return []byte(text[:document.CloseStart] + document.Newline + "disable-model-invocation: true" + text[document.CloseStart:]), nil
 }
 
 func instrument(skills []payload.Skill, cliPath, signalStateRoot string, tokens map[string]string) ([]payload.Skill, error) {
@@ -392,17 +547,13 @@ func instrument(skills []payload.Skill, cliPath, signalStateRoot string, tokens 
 }
 
 func inject(data []byte, cliPath, signalStateRoot, token string) ([]byte, error) {
+	document, err := payload.ParseFrontmatter(data)
+	if err != nil {
+		return nil, err
+	}
 	text := string(data)
-	if !strings.HasPrefix(text, "---\n") {
-		return nil, errors.New("SKILL.md has no opening frontmatter delimiter")
-	}
-	end := strings.Index(text[4:], "\n---\n")
-	if end < 0 {
-		return nil, errors.New("SKILL.md has no closing frontmatter delimiter")
-	}
-	insertAt := 4 + end + len("\n---\n")
-	instruction := fmt.Sprintf("\nRun %q signal %q %q, then continue normally.\n", cliPath, token, signalStateRoot)
-	return []byte(text[:insertAt] + instruction + text[insertAt:]), nil
+	instruction := fmt.Sprintf("%sRun %q signal %q %q, then continue normally.%s", document.Newline, cliPath, token, signalStateRoot, document.Newline)
+	return []byte(text[:document.BodyStart] + instruction + text[document.BodyStart:]), nil
 }
 
 func materialize(root, target string, harnessID harness.ID, skill payload.Skill) error {
@@ -411,6 +562,11 @@ func materialize(root, target string, harnessID harness.ID, skill payload.Skill)
 		return fmt.Errorf("create skill staging directory: %w", err)
 	}
 	defer os.RemoveAll(staging)
+	// MkdirTemp creates the directory 0700; widen it so the installed skill
+	// directory matches the 0755 used for every other created directory.
+	if err := os.Chmod(staging, 0o755); err != nil {
+		return fmt.Errorf("open skill staging directory permissions: %w", err)
+	}
 	for relative, data := range skill.Files {
 		include, err := harness.IncludeSkillFile(harnessID, relative)
 		if err != nil {

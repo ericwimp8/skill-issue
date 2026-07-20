@@ -17,6 +17,10 @@ import (
 	"time"
 )
 
+// piRequestTimeout bounds control-plane RPC exchanges (get_state, get_commands)
+// so a hung pi process fails the run instead of blocking it indefinitely.
+const piRequestTimeout = 30 * time.Second
+
 type piAdapter struct {
 	path             string
 	directory        string
@@ -61,6 +65,7 @@ func (adapter *piAdapter) Start(ctx context.Context) (Session, error) {
 	}
 	args = append(args, "--no-prompt-templates", "--no-themes", "--no-context-files", "--tools", "read,bash,edit,write,grep,find,ls", "--offline")
 	command := exec.CommandContext(ctx, adapter.path, args...)
+	configureOwnedProcess(command)
 	command.Dir = adapter.directory
 	command.Env = environment(adapter.environ, adapter.cleanEnvironment)
 	stdin, err := command.StdinPipe()
@@ -88,7 +93,7 @@ func (adapter *piAdapter) Start(ctx context.Context) (Session, error) {
 		model:          model,
 		reasoning:      adapter.reasoning,
 	}
-	if err := session.preflight(); err != nil {
+	if err := session.preflight(ctx); err != nil {
 		_ = session.Close()
 		return nil, err
 	}
@@ -128,15 +133,15 @@ func (buffer *lockedBuffer) String() string {
 	return buffer.data.String()
 }
 
-func (session *piSession) preflight() error {
-	state, err := session.request("get_state")
+func (session *piSession) preflight(ctx context.Context) error {
+	state, err := session.request(ctx, "get_state")
 	if err != nil {
 		return fmt.Errorf("Pi get_state preflight failed: %w", err)
 	}
 	if err := validatePiState(state, session.sessionID, session.provider, session.model, session.reasoning); err != nil {
 		return err
 	}
-	commands, err := session.request("get_commands")
+	commands, err := session.request(ctx, "get_commands")
 	if err != nil {
 		return fmt.Errorf("Pi get_commands preflight failed: %w", err)
 	}
@@ -218,7 +223,7 @@ func (session *piSession) Wait(ctx context.Context) (Capture, error) {
 	if agentError != "" {
 		return Capture{}, errors.New(agentError)
 	}
-	state, err := session.request("get_state")
+	state, err := session.request(ctx, "get_state")
 	if err != nil {
 		return Capture{}, fmt.Errorf("Pi get_state after turn failed: %w", err)
 	}
@@ -231,7 +236,9 @@ func (session *piSession) Wait(ctx context.Context) (Capture, error) {
 	return Capture{SessionID: session.sessionID, Transcript: transcript.String(), Stderr: session.stderr.String(), Events: events}, nil
 }
 
-func (session *piSession) request(command string) ([]byte, error) {
+func (session *piSession) request(ctx context.Context, command string) ([]byte, error) {
+	ctx, cancel := context.WithTimeout(ctx, piRequestTimeout)
+	defer cancel()
 	id := session.commandID(command)
 	message, err := json.Marshal(map[string]any{"id": id, "type": command})
 	if err != nil {
@@ -241,7 +248,7 @@ func (session *piSession) request(command string) ([]byte, error) {
 		return nil, err
 	}
 	for {
-		event, err := session.readEvent(context.Background())
+		event, err := session.readEvent(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -315,9 +322,7 @@ func (session *piSession) Close() error {
 		}
 		return fmt.Errorf("Pi RPC exited unsuccessfully: %w: %s", err, strings.TrimSpace(session.stderr.String()))
 	case <-time.After(2 * time.Second):
-		if session.command.Process != nil {
-			_ = session.command.Process.Kill()
-		}
+		stopOwnedProcessGroup(session.command)
 		return nil
 	}
 }

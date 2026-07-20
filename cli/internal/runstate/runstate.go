@@ -8,7 +8,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
+	"strconv"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -73,8 +76,11 @@ func NewRunID() (string, error) {
 }
 
 func (store Store) Create(run Run) error {
-	if run.SchemaVersion != 1 || run.ID == "" || len(run.Tokens) == 0 {
+	if run.SchemaVersion != 1 || len(run.Tokens) == 0 {
 		return errors.New("run state is incomplete")
+	}
+	if err := validateRunID(run.ID); err != nil {
+		return err
 	}
 	if err := os.MkdirAll(store.runDir(run.ID), 0o700); err != nil {
 		return fmt.Errorf("create run directory: %w", err)
@@ -97,8 +103,8 @@ func (store Store) Create(run Run) error {
 }
 
 func (store Store) Save(run Run) error {
-	if run.ID == "" || strings.ContainsAny(run.ID, `/\\`) {
-		return errors.New("run ID is invalid")
+	if err := validateRunID(run.ID); err != nil {
+		return err
 	}
 	run.UpdatedAt = time.Now().UTC()
 	data, err := json.MarshalIndent(run, "", "  ")
@@ -109,6 +115,9 @@ func (store Store) Save(run Run) error {
 }
 
 func (store Store) Load(runID string) (Run, error) {
+	if err := validateRunID(runID); err != nil {
+		return Run{}, err
+	}
 	data, err := os.ReadFile(store.runPath(runID))
 	if err != nil {
 		return Run{}, fmt.Errorf("read run state: %w", err)
@@ -193,6 +202,9 @@ func (store Store) Mark(token string) error {
 }
 
 func (store Store) Events(runID string) ([]Event, error) {
+	if err := validateRunID(runID); err != nil {
+		return nil, err
+	}
 	data, err := os.ReadFile(store.eventsPath(runID))
 	if errors.Is(err, os.ErrNotExist) {
 		return nil, nil
@@ -233,8 +245,8 @@ func (store Store) RunDir(runID string) string {
 }
 
 func (store Store) DeleteRun(runID string) error {
-	if runID == "" || strings.ContainsAny(runID, `/\\`) {
-		return errors.New("run ID is invalid")
+	if err := validateRunID(runID); err != nil {
+		return err
 	}
 	if err := os.RemoveAll(store.runDir(runID)); err != nil {
 		return fmt.Errorf("remove private run state: %w", err)
@@ -248,20 +260,58 @@ func (store Store) DeleteRun(runID string) error {
 }
 
 func (store Store) withLock(runID string, action func() error) error {
+	if err := validateRunID(runID); err != nil {
+		return err
+	}
 	lockPath := filepath.Join(store.runDir(runID), ".lock")
-	for attempt := 0; attempt < 100; attempt++ {
+	deadline := time.Now().Add(5 * time.Second)
+	for {
 		file, err := os.OpenFile(lockPath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o600)
 		if err == nil {
+			_, writeErr := fmt.Fprintf(file, "%d\n", os.Getpid())
 			file.Close()
+			if writeErr != nil {
+				os.Remove(lockPath)
+				return fmt.Errorf("record run lock holder: %w", writeErr)
+			}
 			defer os.Remove(lockPath)
 			return action()
 		}
 		if !errors.Is(err, os.ErrExist) {
 			return fmt.Errorf("acquire run lock: %w", err)
 		}
+		if removeStaleLock(lockPath) {
+			continue
+		}
+		if time.Now().After(deadline) {
+			return errors.New("timed out waiting for run lock")
+		}
 		time.Sleep(10 * time.Millisecond)
 	}
-	return errors.New("timed out waiting for run lock")
+}
+
+func removeStaleLock(path string) bool {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return false
+	}
+	pid, err := strconv.Atoi(strings.TrimSpace(string(data)))
+	if err != nil || pid <= 0 || processAlive(pid) {
+		return false
+	}
+	return os.Remove(path) == nil
+}
+
+func processAlive(pid int) bool {
+	process, err := os.FindProcess(pid)
+	if err != nil {
+		return false
+	}
+	if runtime.GOOS == "windows" {
+		return true
+	}
+	err = process.Signal(syscall.Signal(0))
+	return err == nil || errors.Is(err, syscall.EPERM)
 }
 
 func (store Store) runDir(runID string) string {
@@ -282,6 +332,13 @@ func (store Store) tokenDir() string {
 
 func (store Store) tokenPath(token string) string {
 	return filepath.Join(store.tokenDir(), token)
+}
+
+func validateRunID(runID string) error {
+	if runID == "" || runID == "." || runID == ".." || strings.ContainsAny(runID, `/\`) {
+		return errors.New("run ID is invalid")
+	}
+	return nil
 }
 
 func validateToken(token string) error {

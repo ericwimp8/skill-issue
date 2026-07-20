@@ -2,6 +2,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
   LabelList,
   ResponsiveContainer,
   Tooltip,
@@ -10,18 +11,30 @@ import {
   type TooltipContentProps,
 } from 'recharts';
 
-import type { EvaluationResult } from '../../data/evaluationData';
-import { resultCalled, resultTotal } from './chartTheme';
+import {
+  scenarioOptions,
+  type EvaluationResult,
+} from '../../data/evaluationData';
+import {
+  chartColorForCell,
+  resultCalled,
+  resultTotal,
+} from './chartTheme';
 
 type OutcomeBarsChartProps = {
+  onToggleScenario: (scenarioId: string) => void;
   results: EvaluationResult[];
+  selectedScenarioIds: string[];
 };
 
 type OutcomeDatum = {
   called: number;
+  cellId: string;
+  color: string;
   failed: number;
   failureRate: number;
   label: string;
+  scenarioCount: number;
   successRate: number;
   total: number;
 };
@@ -42,7 +55,10 @@ function OutcomeTooltip({ active, payload }: TooltipContentProps) {
       <span>
         {result.failureRate.toFixed(0)}% failure · {result.failed} missed
       </span>
-      <span>{result.total} expected calls</span>
+      <span>
+        {result.total} expected calls across {result.scenarioCount} scenario
+        {result.scenarioCount === 1 ? '' : 's'}
+      </span>
     </div>
   );
 }
@@ -52,20 +68,44 @@ function percentageLabel(value: unknown) {
   return percentage >= 10 ? `${percentage.toFixed(0)}%` : '';
 }
 
-export function OutcomeBarsChart({ results }: OutcomeBarsChartProps) {
-  const data = results
-    .map((result): OutcomeDatum => {
-      const called = resultCalled(result);
-      const total = resultTotal(result);
-      const failed = total - called;
+function aggregateResults(results: EvaluationResult[]) {
+  const byCell = new Map<string, OutcomeDatum>();
+
+  results.forEach((result) => {
+    const called = resultCalled(result);
+    const total = resultTotal(result);
+    const current = byCell.get(result.cellId);
+
+    if (current) {
+      current.called += called;
+      current.total += total;
+      current.scenarioCount += 1;
+      return;
+    }
+
+    byCell.set(result.cellId, {
+      called,
+      cellId: result.cellId,
+      color: chartColorForCell(result.cellId),
+      failed: 0,
+      failureRate: 0,
+      label: result.cellLabel,
+      scenarioCount: 1,
+      successRate: 0,
+      total,
+    });
+  });
+
+  return [...byCell.values()]
+    .map((result) => {
+      const failed = result.total - result.called;
 
       return {
-        called,
+        ...result,
         failed,
-        failureRate: total === 0 ? 0 : (failed / total) * 100,
-        label: result.cellLabel,
-        successRate: total === 0 ? 0 : (called / total) * 100,
-        total,
+        failureRate: result.total === 0 ? 0 : (failed / result.total) * 100,
+        successRate:
+          result.total === 0 ? 0 : (result.called / result.total) * 100,
       };
     })
     .sort(
@@ -73,26 +113,55 @@ export function OutcomeBarsChart({ results }: OutcomeBarsChartProps) {
         right.successRate - left.successRate ||
         left.label.localeCompare(right.label),
     );
-  const chartHeight = Math.max(320, results.length * 46 + 72);
+}
+
+export function OutcomeBarsChart({
+  onToggleScenario,
+  results,
+  selectedScenarioIds,
+}: OutcomeBarsChartProps) {
+  const data = aggregateResults(results);
+  const chartHeight = Math.max(320, data.length * 48 + 72);
 
   return (
     <article className="exploration-chart">
       <header className="exploration-chart-header">
         <div>
-          <span className="chart-number">04</span>
+          <span className="chart-number">03</span>
           <p className="card-kicker">Success ranking</p>
           <h3>Which setups call skills reliably?</h3>
         </div>
-        <span className="chart-purpose">Overall performance</span>
+        <details className="chart-scenario-picker">
+          <summary>
+            Scenarios · {selectedScenarioIds.length} of {scenarioOptions.length}
+          </summary>
+          <div className="chart-scenario-panel">
+            {scenarioOptions.map((scenario) => {
+              const checked = selectedScenarioIds.includes(scenario.id);
+
+              return (
+                <label key={scenario.id}>
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    disabled={checked && selectedScenarioIds.length === 1}
+                    onChange={() => onToggleScenario(scenario.id)}
+                  />
+                  <span>{scenario.label}</span>
+                </label>
+              );
+            })}
+          </div>
+        </details>
       </header>
       <p className="chart-description-wide">
-        Every expected call in the filtered results contributes to one success
-        or failure rate. Bars are ranked from strongest to weakest regardless of
-        sample size.
+        Every expected call in the selected scenarios contributes to one
+        success or failure rate. Bars rank the selected setups from strongest
+        to weakest.
       </p>
       <div className="raster-legend" aria-label="Success ranking legend">
         <span>
-          <i className="legend-block legend-block-called" /> Success
+          <i className="legend-block legend-block-model" /> Model color = success
         </span>
         <span>
           <i className="legend-block legend-block-missed" /> Failure
@@ -122,21 +191,27 @@ export function OutcomeBarsChart({ results }: OutcomeBarsChartProps) {
             <YAxis
               type="category"
               dataKey="label"
-              width={190}
+              width={230}
               interval={0}
               stroke="var(--color-chart-label)"
               tickLine={false}
               axisLine={false}
             />
-            <Tooltip content={OutcomeTooltip} />
+            <Tooltip
+              content={OutcomeTooltip}
+              isAnimationActive={false}
+              wrapperStyle={{ transition: 'none' }}
+            />
             <Bar
               dataKey="successRate"
               name="Success"
               stackId="outcome"
-              fill="var(--color-call)"
               radius={[5, 0, 0, 5]}
               isAnimationActive={false}
             >
+              {data.map((result) => (
+                <Cell key={result.cellId} fill={result.color} />
+              ))}
               <LabelList
                 dataKey="successRate"
                 position="insideLeft"
@@ -148,14 +223,14 @@ export function OutcomeBarsChart({ results }: OutcomeBarsChartProps) {
               dataKey="failureRate"
               name="Failure"
               stackId="outcome"
-              fill="var(--color-miss)"
+              fill="var(--color-neutral-failure)"
               radius={[0, 5, 5, 0]}
               isAnimationActive={false}
             >
               <LabelList
                 dataKey="failureRate"
                 position="insideRight"
-                fill="#ffffff"
+                fill="var(--color-text)"
                 formatter={percentageLabel}
               />
             </Bar>

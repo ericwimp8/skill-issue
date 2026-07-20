@@ -57,7 +57,7 @@ export const siteData = {
   },
   evaluationMetrics: [
     { value: '30', label: 'conversation turns' },
-    { value: '4', label: 'illustrative harnesses' },
+    { value: '7', label: 'illustrative harnesses' },
     { value: '10', label: 'comparison cells' },
   ],
   method: {

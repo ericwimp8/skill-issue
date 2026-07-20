@@ -10,7 +10,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
-	"sort"
+	"slices"
 	"strings"
 
 	skillissue "github.com/ericwimp8/skill-issue"
@@ -91,7 +91,7 @@ func LoadSkills(root string) ([]Skill, error) {
 		}
 		skills = append(skills, Skill{Name: entry.Name(), Files: files})
 	}
-	sort.Slice(skills, func(i, j int) bool { return skills[i].Name < skills[j].Name })
+	slices.SortFunc(skills, func(left, right Skill) int { return strings.Compare(left.Name, right.Name) })
 	return skills, nil
 }
 
@@ -143,7 +143,7 @@ func readSkills() ([]Skill, error) {
 	if len(components) != 0 {
 		return nil, fmt.Errorf("payload manifest references absent canonical skills")
 	}
-	sort.Slice(skills, func(i, j int) bool { return skills[i].Name < skills[j].Name })
+	slices.SortFunc(skills, func(left, right Skill) int { return strings.Compare(left.Name, right.Name) })
 	return skills, nil
 }
 

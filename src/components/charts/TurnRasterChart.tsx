@@ -2,6 +2,7 @@ import type {
   EvaluationResult,
   WebsiteEvaluationPoint,
 } from '../../data/evaluationData';
+import { chartColorForCell } from './chartTheme';
 
 type TurnRasterChartProps = {
   results: EvaluationResult[];
@@ -33,12 +34,12 @@ export function TurnRasterChart({ results }: TurnRasterChartProps) {
       </header>
       <p className="chart-description-wide">
         Each strip contains only scored turns, ordered from earliest to latest.
-        More red toward the right reveals reliability falling later in the
+        More gray toward the right reveals reliability falling later in the
         conversation.
       </p>
       <div className="raster-legend" aria-label="Outcome strip legend">
         <span>
-          <i className="legend-block legend-block-called" /> Called
+          <i className="legend-block legend-block-model" /> Model color = called
         </span>
         <span>
           <i className="legend-block legend-block-missed" /> Missed
@@ -77,6 +78,15 @@ export function TurnRasterChart({ results }: TurnRasterChartProps) {
                         <span
                           className={`outcome-call outcome-call-${outcome}`}
                           key={`${outcome}-${index}`}
+                          style={
+                            outcome === 'called'
+                              ? {
+                                  backgroundColor: chartColorForCell(
+                                    result.cellId,
+                                  ),
+                                }
+                              : undefined
+                          }
                         />
                       ))}
                     </div>

@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 )
 
 type ID string
@@ -157,11 +158,11 @@ func IncludeSkillFile(id ID, relative string) (bool, error) {
 		return false, err
 	}
 	relative = path.Clean(relative)
-	if contains(spec.HarnessSkillFiles, relative) {
+	if slices.Contains(spec.HarnessSkillFiles, relative) {
 		return true, nil
 	}
 	for _, candidate := range specs {
-		if contains(candidate.HarnessSkillFiles, relative) {
+		if slices.Contains(candidate.HarnessSkillFiles, relative) {
 			return false, nil
 		}
 	}
@@ -174,15 +175,6 @@ func SupportsDisableModelInvocation(id ID) (bool, error) {
 		return false, err
 	}
 	return spec.DisableModelInvocation, nil
-}
-
-func contains(values []string, wanted string) bool {
-	for _, value := range values {
-		if value == wanted {
-			return true
-		}
-	}
-	return false
 }
 
 func homePath(parts ...string) func(string) string {

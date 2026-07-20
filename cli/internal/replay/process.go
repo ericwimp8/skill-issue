@@ -158,7 +158,7 @@ func (session *processSession) SendPrompt(ctx context.Context, prompt string) er
 	return nil
 }
 
-func (session *processSession) Wait(context.Context) (Capture, error) {
+func (session *processSession) Wait(_ context.Context) (Capture, error) {
 	if session.pending == nil {
 		return Capture{}, errors.New("no prompt is running")
 	}
@@ -569,8 +569,8 @@ func checkKiloAuthentication(ctx context.Context, path, model string, env []stri
 	if err != nil {
 		return fmt.Errorf("Kilo version check failed: %w", err)
 	}
-	if strings.TrimSpace(version) != qualifiedKiloVersion {
-		return fmt.Errorf("Kilo version %q is unsupported; install qualified version %s", strings.TrimSpace(version), qualifiedKiloVersion)
+	if err := requireQualifiedVersion("Kilo", strings.TrimSpace(version), qualifiedKiloVersion); err != nil {
+		return err
 	}
 	provider, _, found := strings.Cut(model, "/")
 	if !found || provider == "" {
@@ -598,8 +598,8 @@ func checkOpenCodeAuthentication(ctx context.Context, path, model string, env []
 	if err != nil {
 		return fmt.Errorf("OpenCode version check failed: %w", err)
 	}
-	if strings.TrimSpace(version) != qualifiedOpenCodeVersion {
-		return fmt.Errorf("OpenCode version %q is unsupported; install qualified version %s", strings.TrimSpace(version), qualifiedOpenCodeVersion)
+	if err := requireQualifiedVersion("OpenCode", strings.TrimSpace(version), qualifiedOpenCodeVersion); err != nil {
+		return err
 	}
 	provider, _, found := strings.Cut(model, "/")
 	if !found || provider == "" {
@@ -620,6 +620,21 @@ func checkOpenCodeAuthentication(ctx context.Context, path, model string, env []
 		return fmt.Errorf("OpenCode model %q is unavailable for provider %q", model, provider)
 	}
 	return nil
+}
+
+// allowUnqualifiedHarnessEnv opts out of the exact harness version pin so a
+// patch release does not hard-block evaluations; mismatches become warnings.
+const allowUnqualifiedHarnessEnv = "SKILL_ISSUE_ALLOW_UNQUALIFIED_HARNESS"
+
+func requireQualifiedVersion(name, version, qualified string) error {
+	if version == qualified {
+		return nil
+	}
+	if os.Getenv(allowUnqualifiedHarnessEnv) == "1" {
+		fmt.Fprintf(os.Stderr, "warning: %s version %q is not the qualified version %s; continuing because %s=1\n", name, version, qualified, allowUnqualifiedHarnessEnv)
+		return nil
+	}
+	return fmt.Errorf("%s version %q is unsupported; install qualified version %s or set %s=1 to proceed anyway", name, version, qualified, allowUnqualifiedHarnessEnv)
 }
 
 func runStatusCommand(ctx context.Context, path string, env []string, clean bool, args ...string) (string, error) {
@@ -705,8 +720,11 @@ func parseEvents(output []byte) ([]json.RawMessage, error) {
 	}
 	var array []json.RawMessage
 	if trimmed[0] == '[' {
-		if err := json.Unmarshal(trimmed, &array); err != nil || len(array) == 0 {
-			return nil, fmt.Errorf("%w: invalid JSON event array", ErrProtocol)
+		if err := json.Unmarshal(trimmed, &array); err != nil {
+			return nil, fmt.Errorf("%w: invalid JSON event array: %v", ErrProtocol, err)
+		}
+		if len(array) == 0 {
+			return nil, fmt.Errorf("%w: empty JSON event array", ErrProtocol)
 		}
 		for _, event := range array {
 			if !isJSONObject(event) {

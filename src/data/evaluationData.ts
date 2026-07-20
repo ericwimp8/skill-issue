@@ -19,6 +19,8 @@ export type EvaluationResult = WebsiteEvaluationArtifact & {
   cellId: string;
   cellLabel: string;
   harnessLabel: string;
+  modelLabel: string;
+  reasoningLabel: string;
   scenarioLabel: string;
   sampleSize: number;
 };
@@ -57,17 +59,28 @@ const harnessLabels: Record<string, string> = {
   codex: 'OpenAI Codex',
   'claude-code': 'Claude Code',
   cursor: 'Cursor',
+  kilo: 'Kilo Code',
+  opencode: 'OpenCode',
   pi: 'Pi',
 };
 
 const modelLabels: Record<string, string> = {
   'codex-sol': 'Codex Sol',
-  'claude-opus-4-8': 'Claude Opus 4.8',
   'claude-fable': 'Claude Fable',
+  composer: 'Composer',
   grok: 'Grok',
 };
 
 const cellDefinitions = [
+  {
+    harness: 'claude-code',
+    model: 'codex-sol',
+    outcomes: [
+      [1, 1, 1, 0],
+      [1, 1, 1, 1],
+      [1, 0, 1, 1],
+    ],
+  },
   {
     harness: 'codex',
     model: 'codex-sol',
@@ -75,15 +88,6 @@ const cellDefinitions = [
       [1, 1, 1, 1],
       [1, 1, 0, 1],
       [1, 1, 1, 1],
-    ],
-  },
-  {
-    harness: 'claude-code',
-    model: 'claude-opus-4-8',
-    outcomes: [
-      [1, 1, 1, 0],
-      [1, 1, 1, 1],
-      [1, 0, 1, 1],
     ],
   },
   {
@@ -97,29 +101,20 @@ const cellDefinitions = [
   },
   {
     harness: 'cursor',
+    model: 'claude-fable',
+    outcomes: [
+      [1, 1, 1, 1],
+      [1, 0, 1, 1],
+      [1, 1, 0, 0],
+    ],
+  },
+  {
+    harness: 'cursor',
     model: 'codex-sol',
     outcomes: [
       [1, 1, 0, 1],
       [1, 1, 1, 0],
       [1, 1, 1, 1],
-    ],
-  },
-  {
-    harness: 'cursor',
-    model: 'claude-opus-4-8',
-    outcomes: [
-      [1, 1, 1, 1],
-      [1, 1, 1, 0],
-      [1, 1, 0, 1],
-    ],
-  },
-  {
-    harness: 'cursor',
-    model: 'claude-fable',
-    outcomes: [
-      [1, 1, 0, 1],
-      [1, 0, 1, 1],
-      [1, 1, 0, 0],
     ],
   },
   {
@@ -132,6 +127,15 @@ const cellDefinitions = [
     ],
   },
   {
+    harness: 'cursor',
+    model: 'composer',
+    outcomes: [
+      [1, 1, 1, 1],
+      [1, 1, 1, 0],
+      [1, 1, 1, 1],
+    ],
+  },
+  {
     harness: 'pi',
     model: 'codex-sol',
     outcomes: [
@@ -141,21 +145,21 @@ const cellDefinitions = [
     ],
   },
   {
-    harness: 'pi',
-    model: 'claude-opus-4-8',
+    harness: 'opencode',
+    model: 'codex-sol',
     outcomes: [
       [1, 1, 1, 0],
-      [1, 1, 0, 1],
-      [1, 0, 1, 1],
+      [1, 1, 0, 0],
+      [1, 1, 1, 0],
     ],
   },
   {
-    harness: 'pi',
-    model: 'claude-fable',
+    harness: 'kilo',
+    model: 'codex-sol',
     outcomes: [
-      [1, 1, 0, 0],
-      [1, 0, 1, 0],
-      [1, 0, 0, 1],
+      [1, 1, 0, 1],
+      [1, 0, 1, 1],
+      [1, 1, 0, 1],
     ],
   },
 ] as const satisfies readonly CellDefinition[];
@@ -208,8 +212,10 @@ export function adaptWebsiteArtifacts(
     return {
       ...artifact,
       cellId: cellId(artifact.harness, artifact.model),
-      cellLabel: `${harnessLabel} · ${modelLabel}`,
+      cellLabel: `${harnessLabel} · ${modelLabel} · Medium`,
       harnessLabel,
+      modelLabel,
+      reasoningLabel: 'Medium',
       scenarioLabel: scenario?.label ?? artifact.scenario_id,
       sampleSize: artifact.points.reduce(
         (total, point) => total + point.called + point.missed,
@@ -231,13 +237,14 @@ export const availableCells = evaluationResults
     harness: result.harness,
     harnessLabel: result.harnessLabel,
     model: result.model,
-    modelLabel: modelLabels[result.model] ?? result.model,
+    modelLabel: result.modelLabel,
+    reasoningLabel: result.reasoningLabel,
     label: result.cellLabel,
   }));
 
 export const defaultCellIds = [
-  cellId('codex', 'codex-sol'),
-  cellId('claude-code', 'claude-opus-4-8'),
+  cellId('cursor', 'claude-fable'),
   cellId('cursor', 'codex-sol'),
-  cellId('pi', 'codex-sol'),
+  cellId('cursor', 'grok'),
+  cellId('cursor', 'composer'),
 ] as const;

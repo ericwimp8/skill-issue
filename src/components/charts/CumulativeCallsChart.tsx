@@ -9,21 +9,30 @@ import {
 } from 'recharts';
 
 import type { EvaluationResult } from '../../data/evaluationData';
-import { chartColorForCell, tooltipStyle } from './chartTheme';
+import { SeriesMarkerDot, SeriesMarkerIcon } from './SeriesMarker';
+import {
+  chartColorForCell,
+  chartMarkerForCell,
+  tooltipStyle,
+} from './chartTheme';
 
 type CumulativeCallsChartProps = {
   results: EvaluationResult[];
 };
 
 export function CumulativeCallsChart({ results }: CumulativeCallsChartProps) {
-  const totalTurns = results[0]?.total_turns ?? 30;
-  const data = Array.from({ length: totalTurns }, (_, index) => {
-    const turn = index + 1;
-    const row: Record<string, number> = { turn };
+  const expectedCallCount = Math.max(
+    0,
+    ...results.map((result) => result.points.length),
+  );
+  const data = Array.from({ length: expectedCallCount }, (_, index) => {
+    const expectedCall = index + 1;
+    const row: Record<string, number> = { expectedCall };
 
     results.forEach((result) => {
-      row[result.cellId] = result.points
-        .filter((point) => point.turn <= turn)
+      row[result.cellId] = [...result.points]
+        .sort((left, right) => left.turn - right.turn)
+        .slice(0, expectedCall)
         .reduce((total, point) => total + point.called, 0);
     });
 
@@ -35,14 +44,14 @@ export function CumulativeCallsChart({ results }: CumulativeCallsChartProps) {
       <header className="exploration-chart-header">
         <div>
           <span className="chart-number">02</span>
-          <p className="card-kicker">Cumulative curve</p>
-          <h3>How quickly successful calls accumulate.</h3>
+          <p className="card-kicker">Expected-call curve</p>
+          <h3>Where each model calls or misses.</h3>
         </div>
         <span className="chart-purpose">Timing</span>
       </header>
       <p className="chart-description-wide">
-        Step lines make the scored moments explicit while keeping all thirty
-        turns available for direct overlays.
+        Each point is one expected skill call. A successful call moves the line
+        up; a miss leaves it flat.
       </p>
       <div className="chart-canvas chart-canvas-standard">
         <ResponsiveContainer width="100%" height="100%">
@@ -56,17 +65,23 @@ export function CumulativeCallsChart({ results }: CumulativeCallsChartProps) {
               vertical={false}
             />
             <XAxis
-              dataKey="turn"
+              dataKey="expectedCall"
               type="number"
-              domain={[1, totalTurns]}
-              ticks={[1, 5, 10, 15, 20, 25, 30]}
+              domain={[1, expectedCallCount]}
+              ticks={Array.from(
+                { length: expectedCallCount },
+                (_, index) => index + 1,
+              )}
               stroke="var(--color-chart-label)"
               tickLine={false}
               axisLine={false}
             />
             <YAxis
-              domain={[0, 4]}
-              ticks={[0, 1, 2, 3, 4]}
+              domain={[0, expectedCallCount]}
+              ticks={Array.from(
+                { length: expectedCallCount + 1 },
+                (_, index) => index,
+              )}
               allowDecimals={false}
               stroke="var(--color-chart-label)"
               tickLine={false}
@@ -74,28 +89,49 @@ export function CumulativeCallsChart({ results }: CumulativeCallsChartProps) {
             />
             <Tooltip
               contentStyle={tooltipStyle}
-              labelFormatter={(turn) => `Turn ${turn}`}
+              isAnimationActive={false}
+              labelFormatter={(expectedCall) =>
+                `Expected call ${expectedCall}`
+              }
+              wrapperStyle={{ transition: 'none' }}
             />
-            {results.map((result) => (
-              <Line
-                key={result.cellId}
-                type="stepAfter"
-                dataKey={result.cellId}
-                name={result.cellLabel}
-                stroke={chartColorForCell(result.cellId)}
-                strokeWidth={2.5}
-                dot={{ r: 2.5, strokeWidth: 0 }}
-                activeDot={{ r: 5, strokeWidth: 0 }}
-                isAnimationActive={false}
-              />
-            ))}
+            {results.map((result) => {
+              const color = chartColorForCell(result.cellId);
+              const shape = chartMarkerForCell(result.cellId);
+
+              return (
+                <Line
+                  key={result.cellId}
+                  type="linear"
+                  dataKey={result.cellId}
+                  name={result.cellLabel}
+                  stroke={color}
+                  strokeWidth={2.5}
+                  dot={(props) => (
+                    <SeriesMarkerDot {...props} color={color} shape={shape} />
+                  )}
+                  activeDot={(props) => (
+                    <SeriesMarkerDot
+                      {...props}
+                      color={color}
+                      shape={shape}
+                      size={20}
+                    />
+                  )}
+                  isAnimationActive={false}
+                />
+              );
+            })}
           </LineChart>
         </ResponsiveContainer>
       </div>
       <div className="series-key" aria-label="Selected comparison series">
         {results.map((result) => (
           <span key={result.cellId}>
-            <i style={{ backgroundColor: chartColorForCell(result.cellId) }} />
+            <SeriesMarkerIcon
+              color={chartColorForCell(result.cellId)}
+              shape={chartMarkerForCell(result.cellId)}
+            />
             {result.cellLabel}
           </span>
         ))}

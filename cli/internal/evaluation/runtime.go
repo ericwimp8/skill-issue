@@ -2,12 +2,14 @@ package evaluation
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -305,7 +307,7 @@ func prepareCursorRuntime(root, workspace, stateRoot, executable, cliPath string
 		return runtimePreparation{}, fmt.Errorf("resolve user home: %w", err)
 	}
 	keychain := filepath.Join(home, "Library", "Keychains")
-	if err := os.Symlink(filepath.Join(userHome, "Library", "Keychains"), keychain); err != nil && !os.IsExist(err) {
+	if err := os.Symlink(filepath.Join(userHome, "Library", "Keychains"), keychain); err != nil && !errors.Is(err, fs.ErrExist) {
 		return runtimePreparation{}, fmt.Errorf("link Cursor keychain: %w", err)
 	}
 	signalExecutable := filepath.Join(bin, "skill-issue")
@@ -587,13 +589,13 @@ func codexSkillsToDisable() ([]string, error) {
 	for file := range unique {
 		skills = append(skills, file)
 	}
-	sort.Strings(skills)
+	slices.Sort(skills)
 	return skills, nil
 }
 
 func skillFilesUnder(root string) ([]string, error) {
 	resolved, err := filepath.EvalSymlinks(root)
-	if os.IsNotExist(err) {
+	if errors.Is(err, fs.ErrNotExist) {
 		return nil, nil
 	}
 	if err != nil {

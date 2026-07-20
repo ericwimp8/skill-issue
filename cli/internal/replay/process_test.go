@@ -224,3 +224,16 @@ printf '[{"name":"alpha"},{"name":"beta"}]\n'
 		t.Fatal("missing OpenCode evaluation skill was accepted")
 	}
 }
+
+func TestRequireQualifiedVersionEscapeHatch(t *testing.T) {
+	if err := requireQualifiedVersion("Kilo", "9.9.9", qualifiedKiloVersion); err == nil {
+		t.Fatal("unqualified version was accepted without the escape hatch")
+	}
+	if err := requireQualifiedVersion("Kilo", qualifiedKiloVersion, qualifiedKiloVersion); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv(allowUnqualifiedHarnessEnv, "1")
+	if err := requireQualifiedVersion("Kilo", "9.9.9", qualifiedKiloVersion); err != nil {
+		t.Fatalf("escape hatch did not downgrade the mismatch: %v", err)
+	}
+}

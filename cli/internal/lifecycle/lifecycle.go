@@ -336,15 +336,26 @@ func parseOptions(args []string, flags ...string) (map[string]string, error) {
 		if !strings.HasPrefix(argument, "--") {
 			return nil, fmt.Errorf("unexpected argument %q", argument)
 		}
-		key := strings.TrimPrefix(argument, "--")
+		key, inlineValue, hasInline := strings.Cut(strings.TrimPrefix(argument, "--"), "=")
 		if key == "" {
 			return nil, fmt.Errorf("invalid option %q", argument)
 		}
 		if _, exists := options[key]; exists {
-			return nil, fmt.Errorf("duplicate option %s", argument)
+			return nil, fmt.Errorf("duplicate option --%s", key)
 		}
 		if boolean[key] {
-			options[key] = "true"
+			if hasInline && inlineValue != "true" && inlineValue != "false" {
+				return nil, fmt.Errorf("--%s accepts only true or false", key)
+			}
+			if hasInline {
+				options[key] = inlineValue
+			} else {
+				options[key] = "true"
+			}
+			continue
+		}
+		if hasInline {
+			options[key] = inlineValue
 			continue
 		}
 		if index+1 >= len(args) || strings.HasPrefix(args[index+1], "--") {
@@ -357,9 +368,12 @@ func parseOptions(args []string, flags ...string) (map[string]string, error) {
 }
 
 func required(options map[string]string, key string) (string, error) {
-	value := options[key]
-	if value == "" {
+	value, ok := options[key]
+	if !ok {
 		return "", fmt.Errorf("--%s is required", key)
+	}
+	if value == "" {
+		return "", fmt.Errorf("--%s must not be empty", key)
 	}
 	return value, nil
 }

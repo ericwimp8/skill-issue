@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import {
   availableCells,
@@ -6,55 +6,31 @@ import {
   evaluationResults,
   scenarioOptions,
 } from '../data/evaluationData';
-import { CheckpointBarsChart } from './charts/CheckpointBarsChart';
 import { CumulativeCallsChart } from './charts/CumulativeCallsChart';
 import { chartColorForCell } from './charts/chartTheme';
 import { OutcomeBarsChart } from './charts/OutcomeBarsChart';
 import { TurnRasterChart } from './charts/TurnRasterChart';
-
-const allFilter = 'all';
 
 export function EvaluationExplorer() {
   const [scenarioId, setScenarioId] = useState<string>(scenarioOptions[0].id);
   const [selectedCellIds, setSelectedCellIds] = useState<string[]>([
     ...defaultCellIds,
   ]);
-  const [harnessFilter, setHarnessFilter] = useState(allFilter);
-  const [modelFilter, setModelFilter] = useState(allFilter);
+  const [rankingScenarioIds, setRankingScenarioIds] = useState<string[]>(
+    scenarioOptions.map((scenario) => scenario.id),
+  );
   const [searchQuery, setSearchQuery] = useState('');
 
-  const harnessOptions = useMemo(
-    () =>
-      Array.from(
-        new Map(
-          availableCells.map((cell) => [
-            cell.harness,
-            { id: cell.harness, label: cell.harnessLabel },
-          ]),
-        ).values(),
-      ),
-    [],
-  );
-  const modelOptions = useMemo(
-    () =>
-      Array.from(
-        new Map(
-          availableCells.map((cell) => [
-            cell.model,
-            { id: cell.model, label: cell.modelLabel },
-          ]),
-        ).values(),
-      ),
-    [],
-  );
   const scenarioResults = evaluationResults.filter(
     (result) => result.scenario_id === scenarioId,
   );
   const visibleResults = scenarioResults.filter(
+    (result) => selectedCellIds.includes(result.cellId),
+  );
+  const rankingResults = evaluationResults.filter(
     (result) =>
       selectedCellIds.includes(result.cellId) &&
-      (harnessFilter === allFilter || result.harness === harnessFilter) &&
-      (modelFilter === allFilter || result.model === modelFilter),
+      rankingScenarioIds.includes(result.scenario_id),
   );
   const searchableCells = availableCells.filter((cell) =>
     cell.label.toLowerCase().includes(searchQuery.trim().toLowerCase()),
@@ -70,9 +46,21 @@ export function EvaluationExplorer() {
 
   function resetSelection() {
     setSelectedCellIds([...defaultCellIds]);
-    setHarnessFilter(allFilter);
-    setModelFilter(allFilter);
+    setScenarioId(scenarioOptions[0].id);
+    setRankingScenarioIds(scenarioOptions.map((scenario) => scenario.id));
     setSearchQuery('');
+  }
+
+  function toggleRankingScenario(nextScenarioId: string) {
+    setRankingScenarioIds((current) => {
+      if (!current.includes(nextScenarioId)) {
+        return [...current, nextScenarioId];
+      }
+
+      return current.length === 1
+        ? current
+        : current.filter((id) => id !== nextScenarioId);
+    });
   }
 
   return (
@@ -120,7 +108,9 @@ export function EvaluationExplorer() {
                   />
                   <span>
                     <strong>{cell.modelLabel}</strong>
-                    <small>{cell.harnessLabel}</small>
+                    <small>
+                      {cell.harnessLabel} · {cell.reasoningLabel} reasoning
+                    </small>
                   </span>
                   <i
                     aria-hidden="true"
@@ -147,36 +137,6 @@ export function EvaluationExplorer() {
             </div>
           </div>
         </details>
-
-        <label className="filter-control filter-control-compact">
-          <span>Harness</span>
-          <select
-            value={harnessFilter}
-            onChange={(event) => setHarnessFilter(event.target.value)}
-          >
-            <option value={allFilter}>All harnesses</option>
-            {harnessOptions.map((harness) => (
-              <option key={harness.id} value={harness.id}>
-                {harness.label}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="filter-control filter-control-compact">
-          <span>Model</span>
-          <select
-            value={modelFilter}
-            onChange={(event) => setModelFilter(event.target.value)}
-          >
-            <option value={allFilter}>All models</option>
-            {modelOptions.map((model) => (
-              <option key={model.id} value={model.id}>
-                {model.label}
-              </option>
-            ))}
-          </select>
-        </label>
       </div>
 
       <div className="selection-summary">
@@ -207,11 +167,12 @@ export function EvaluationExplorer() {
       ) : (
         <div className="chart-explorations">
           <TurnRasterChart results={visibleResults} />
-          <div className="chart-explorations-grid">
-            <CumulativeCallsChart results={visibleResults} />
-            <CheckpointBarsChart results={visibleResults} />
-          </div>
-          <OutcomeBarsChart results={visibleResults} />
+          <CumulativeCallsChart results={visibleResults} />
+          <OutcomeBarsChart
+            results={rankingResults}
+            selectedScenarioIds={rankingScenarioIds}
+            onToggleScenario={toggleRankingScenario}
+          />
         </div>
       )}
     </div>

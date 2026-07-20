@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	goruntime "runtime"
 	"strings"
 	"time"
 
@@ -77,6 +78,11 @@ func ResolveRequest(request RunRequest) (RunRequest, error) {
 }
 
 func PrepareRequest(request RunRequest) (RunRequest, error) {
+	// Evaluation runtimes assume a Unix environment (path layout, process
+	// groups, controlled PATH); fail up front instead of deep in a run.
+	if goruntime.GOOS != "darwin" && goruntime.GOOS != "linux" {
+		return RunRequest{}, fmt.Errorf("evaluation requires macOS or Linux; %s is not supported", goruntime.GOOS)
+	}
 	request, err := ResolveRequest(request)
 	if err != nil {
 		return RunRequest{}, err
@@ -1054,7 +1060,7 @@ func writeJSON(path string, value any) error {
 }
 
 func writeEventsJSONL(path string, events []runstate.Event) error {
-	data := make([]byte, 0)
+	var data []byte
 	for _, event := range events {
 		encoded, err := json.Marshal(event)
 		if err != nil {

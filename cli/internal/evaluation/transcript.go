@@ -9,7 +9,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -66,8 +66,8 @@ func newTranscriptSanitizer(config transcriptSanitizerConfig) (transcriptSanitiz
 		sanitizer.addPath(current.HomeDir, "[home]")
 	}
 
-	sort.SliceStable(sanitizer.replacements, func(left, right int) bool {
-		return len(sanitizer.replacements[left].value) > len(sanitizer.replacements[right].value)
+	slices.SortStableFunc(sanitizer.replacements, func(left, right transcriptReplacement) int {
+		return len(right.value) - len(left.value)
 	})
 	return sanitizer, nil
 }
@@ -101,10 +101,8 @@ func (sanitizer *transcriptSanitizer) addReplacement(value, replacement string, 
 	if value == "" {
 		return
 	}
-	for _, existing := range sanitizer.replacements {
-		if existing.value == value {
-			return
-		}
+	if slices.ContainsFunc(sanitizer.replacements, func(existing transcriptReplacement) bool { return existing.value == value }) {
+		return
 	}
 	sanitizer.replacements = append(sanitizer.replacements, transcriptReplacement{value: value, replacement: replacement, identity: identity})
 	escaped, err := json.Marshal(value)

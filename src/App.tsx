@@ -165,8 +165,8 @@ export function App() {
                     <h2 id="results-title">Compare every expected call.</h2>
                   </div>
                   <p>
-                    Explore four views of the same CLI-shaped evidence. Filter
-                    by scenario, harness, model, or individual comparison cell.
+                    Explore three views of the same CLI-shaped evidence. Choose
+                    a scenario, then compare any model and harness combination.
                   </p>
                 </header>
 

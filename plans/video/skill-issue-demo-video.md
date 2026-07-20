@@ -2,17 +2,21 @@
 
 ## Opening
 
-Start on a dark screen with a blinking terminal cursor. Type `skill issue`, then let the words **Skill Issue** expand into the centre with a short, soft spring animation. Bring in the hook underneath:
+Use the website’s light visual language and fine background grid. Centre the complete **S/** circular mark and **Skill Issue** wordmark, matching the website’s Inter-first sans-serif stack, monospaced mark, tight letter spacing, near-black text, and fine neutral border. Bring it forward with a quick scale-and-opacity pop that settles cleanly without a distracting bounce.
 
-> It’s not always a skill problem, but it’s always a Skill Issue.
+Build the opening hierarchy in this order:
 
-Keep the opening simple, familiar, and quick. Move into the product within the first six seconds.
+1. **S/ Skill Issue** is the largest and strongest element.
+2. **Built with Codex** appears directly underneath in small, readable monospaced text with the least emphasis.
+3. **It’s not a skill issue, but it’s always a _skills_ issue.** appears below the credit. It is larger and more prominent than **Built with Codex**, and sits much closer to the wordmark in size and emphasis. Preserve the website’s italic treatment for _skills_.
+
+Stagger the entrances across the first four seconds: pop in the wordmark, fade in **Built with Codex**, then fade and lift in the hook. Hold the complete lockup briefly, then use a gentle scale-forward crossfade into the first environment-evaluation screen by 0:06.
 
 ## Draft Transcript and Screen Plan
 
 | Time      | Voiceover                                                                                                                                                                                                                   | What we show                                                                                                      |
 | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| 0:00–0:06 | “Skill Issue. It’s not always a skill problem, but it’s always a Skills Issue.”                                                                                                                                              | Opening animation and hook.                                                                                       |
+| 0:00–0:06 | “Skill Issue. It’s not a skill issue, but it’s always a skills issue.”                                                                                                                                                      | Pop in the website-matched wordmark, then fade in **Built with Codex** and the larger hook before transitioning.  |
 | 0:06–0:28 | “Before you rewrite a failing skill, ask a more basic question: can your model-and-harness environment discover and invoke skills reliably as the conversation grows?”                                                      | Move from the title to a missed skill call, then reveal the model-and-harness environment around it.              |
 | 0:28–0:52 | “Skill Issue runs fixed, governed multi-turn scenarios through the agent you already use. It records each expected skill call, what was actually observed, and the turn where calls or misses occurred.”                    | Show the CLI launching an evaluation, followed by a thirty-turn timeline with expected calls and observed misses. |
 | 0:52–1:16 | “Those results become comparable charts across scenarios, models, and harnesses. They show what happened in each completed run, without turning one campaign into a universal winner or guarantee.”                         | Show accepted result charts and filter them by scenario, harness, and model.                                      |

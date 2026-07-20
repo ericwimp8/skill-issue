@@ -8,7 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strings"
 
 	"github.com/ericwimp8/skill-issue/cli/internal/harness"
@@ -142,8 +142,8 @@ func (Service) PrepareEvaluation(request Request) (EvaluationInstallation, Insta
 			return EvaluationInstallation{}, Installation{}, fmt.Errorf("inspect evaluation skill destination: %w", statErr)
 		}
 	}
-	sort.Strings(state.Preexisting)
-	sort.Strings(differing)
+	slices.Sort(state.Preexisting)
+	slices.Sort(differing)
 	if len(differing) > 0 {
 		if request.ConfirmReplace == nil {
 			return EvaluationInstallation{}, Installation{}, fmt.Errorf("preexisting skills differ from their canonical versions: %s", strings.Join(differing, ", "))
@@ -311,7 +311,7 @@ func skillNamesSorted(skills []payload.Skill) []string {
 	for _, skill := range skills {
 		names = append(names, skill.Name)
 	}
-	sort.Strings(names)
+	slices.Sort(names)
 	return names
 }
 
@@ -520,15 +520,13 @@ func instrument(skills []payload.Skill, cliPath, signalStateRoot string, tokens 
 	if !filepath.IsAbs(signalStateRoot) {
 		return nil, errors.New("evaluation signal state root must be absolute")
 	}
+	tokenBySkill := make(map[string]string, len(tokens))
+	for token, name := range tokens {
+		tokenBySkill[name] = token
+	}
 	result := make([]payload.Skill, 0, len(skills))
 	for _, skill := range skills {
-		token := ""
-		for candidate, name := range tokens {
-			if name == skill.Name {
-				token = candidate
-				break
-			}
-		}
+		token := tokenBySkill[skill.Name]
 		if token == "" {
 			return nil, fmt.Errorf("skill %q has no opaque token", skill.Name)
 		}

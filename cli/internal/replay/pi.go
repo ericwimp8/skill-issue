@@ -11,7 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -350,7 +350,7 @@ func explicitPiSkills(root string) ([]string, error) {
 		}
 		paths = append(paths, filepath.Join(root, entry.Name()))
 	}
-	sort.Strings(paths)
+	slices.Sort(paths)
 	if len(paths) == 0 {
 		return nil, errors.New("Pi evaluation requires at least one supplied skill")
 	}

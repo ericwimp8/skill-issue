@@ -153,7 +153,7 @@ Skill Issue does not edit, move, or copy the user's Codex configuration, credent
 
 ### OpenCode runtime isolation
 
-OpenCode evaluation support is qualified against OpenCode `1.18.4`. The CLI requires that exact version, a pre-existing native provider login, and availability of the selected `provider/model` before temporary skills are installed. The default route uses OpenCode's native OpenAI ChatGPT OAuth provider with `openai/gpt-5.6-sol` and the `medium` variant.
+OpenCode evaluation support is qualified against OpenCode `1.18.4`. The CLI requires that exact version (set `SKILL_ISSUE_ALLOW_UNQUALIFIED_HARNESS=1` to downgrade a version mismatch to a warning), a pre-existing native provider login, and availability of the selected `provider/model` before temporary skills are installed. The default route uses OpenCode's native OpenAI ChatGPT OAuth provider with `openai/gpt-5.6-sol` and the `medium` variant.
 
 Each run creates private XDG configuration, state, cache, and temporary roots while retaining the operator-owned XDG data root that contains native authentication. The generated OpenCode configuration disables sharing, updates, snapshots, formatters, LSP, external plugins, MCP configuration, added instructions, project configuration, Claude compatibility, external skill discovery, and the file watcher. Compiled internal plugins remain available because OpenCode's native OpenAI OAuth provider depends on them.
 
@@ -163,7 +163,7 @@ On completion, cancellation, or timeout, the adapter terminates only its owned p
 
 ### Kilo runtime isolation
 
-Kilo evaluation support is qualified against Kilo `7.4.11`. The CLI requires that exact version, a pre-existing native provider login, and availability of the selected `provider/model` before temporary skills are installed. The default route uses Kilo's native OpenAI ChatGPT OAuth provider with `openai/gpt-5.6-sol` and the `medium` variant.
+Kilo evaluation support is qualified against Kilo `7.4.11`. The CLI requires that exact version (set `SKILL_ISSUE_ALLOW_UNQUALIFIED_HARNESS=1` to downgrade a version mismatch to a warning), a pre-existing native provider login, and availability of the selected `provider/model` before temporary skills are installed. The default route uses Kilo's native OpenAI ChatGPT OAuth provider with `openai/gpt-5.6-sol` and the `medium` variant.
 
 Each run creates private XDG configuration, state, cache, and temporary roots while retaining `HOME` and the operator-owned XDG data root that contains native authentication. The generated Kilo configuration selects the `code` agent, supplies only the run-owned skill path, and disables sharing, remote control, updates, snapshots, formatters, LSP, indexing, added remote skills, project configuration, Claude compatibility, external skill discovery, session ingest, presence, and the file watcher. Pure mode excludes external plugins while preserving the compiled internal OAuth provider. Daemon use is disabled.
 

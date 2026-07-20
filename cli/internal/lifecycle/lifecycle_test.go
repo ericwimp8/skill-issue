@@ -2,6 +2,7 @@ package lifecycle
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 
 	"github.com/ericwimp8/skill-issue/cli/internal/evaluation"
@@ -65,5 +66,33 @@ func TestWriteTurnProgressReportsStartAndFinish(t *testing.T) {
 	wanted := "Starting turn 2 of 3: turn-2\nFinished turn 2 of 3: turn-2\n"
 	if output.String() != wanted {
 		t.Fatalf("progress output = %q", output.String())
+	}
+}
+
+func TestParseOptionsSupportsInlineValues(t *testing.T) {
+	options, err := parseOptions([]string{"--workspace=/tmp/w", "--events", "--transcript=false", "--scenario=--odd-name"}, "events", "transcript")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if options["workspace"] != "/tmp/w" || options["events"] != "true" || options["transcript"] != "false" || options["scenario"] != "--odd-name" {
+		t.Fatalf("unexpected options: %v", options)
+	}
+	if _, err := parseOptions([]string{"--events=maybe"}, "events"); err == nil {
+		t.Fatal("non-boolean inline value for a boolean flag was accepted")
+	}
+	if _, err := parseOptions([]string{"--workspace=/a", "--workspace", "/b"}); err == nil {
+		t.Fatal("duplicate option was accepted")
+	}
+	if _, err := parseOptions([]string{"--workspace"}); err == nil {
+		t.Fatal("value option without a value was accepted")
+	}
+}
+
+func TestRequiredDistinguishesMissingFromEmpty(t *testing.T) {
+	if _, err := required(map[string]string{}, "output"); err == nil || !strings.Contains(err.Error(), "required") {
+		t.Fatalf("missing option error = %v", err)
+	}
+	if _, err := required(map[string]string{"output": ""}, "output"); err == nil || !strings.Contains(err.Error(), "empty") {
+		t.Fatalf("explicitly empty option error = %v", err)
 	}
 }

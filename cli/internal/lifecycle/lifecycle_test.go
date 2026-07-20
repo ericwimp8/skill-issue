@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/ericwimp8/skill-issue/cli/internal/evaluation"
 	"github.com/ericwimp8/skill-issue/cli/internal/replay"
@@ -59,13 +60,18 @@ func TestEvaluationCleanupAndSignalRequireOutputOwnedState(t *testing.T) {
 	}
 }
 
-func TestWriteTurnProgressReportsStartAndFinish(t *testing.T) {
+func TestTurnProgressRendererReportsStartAndFinishWithStats(t *testing.T) {
 	var output bytes.Buffer
-	writeTurnProgress(&output, evaluation.TurnProgress{TurnID: "turn-2", Index: 2, Total: 3, Phase: replay.BoundaryBefore})
-	writeTurnProgress(&output, evaluation.TurnProgress{TurnID: "turn-2", Index: 2, Total: 3, Phase: replay.BoundaryAfter})
-	wanted := "Starting turn 2 of 3: turn-2\nFinished turn 2 of 3: turn-2\n"
+	renderer := newTurnProgressRenderer(&output)
+	defer renderer.stop()
+	renderer.handle(evaluation.TurnProgress{TurnID: "turn-2", Index: 2, Total: 3, Phase: replay.BoundaryBefore})
+	renderer.handle(evaluation.TurnProgress{TurnID: "turn-2", Index: 2, Total: 3, Phase: replay.BoundaryAfter, Duration: 12 * time.Second, HarnessEvents: 34, SkillCalls: 1})
+	wanted := "Starting turn 2 of 3: turn-2\nFinished turn 2 of 3: turn-2 (12s, 34 harness events, 1 skill call)\n"
 	if output.String() != wanted {
 		t.Fatalf("progress output = %q", output.String())
+	}
+	if renderer.interactive {
+		t.Fatal("plain writer was treated as an interactive terminal")
 	}
 }
 
@@ -94,5 +100,24 @@ func TestRequiredDistinguishesMissingFromEmpty(t *testing.T) {
 	}
 	if _, err := required(map[string]string{"output": ""}, "output"); err == nil || !strings.Contains(err.Error(), "empty") {
 		t.Fatalf("explicitly empty option error = %v", err)
+	}
+}
+
+func TestTurnProgressRendererSpinnerRendersAndClearsWhenInteractive(t *testing.T) {
+	var output bytes.Buffer
+	renderer := newTurnProgressRenderer(&output)
+	renderer.interactive = true
+	renderer.handle(evaluation.TurnProgress{TurnID: "turn-1", Index: 1, Total: 2, Phase: replay.BoundaryBefore})
+	time.Sleep(300 * time.Millisecond)
+	renderer.handle(evaluation.TurnProgress{TurnID: "turn-1", Index: 1, Total: 2, Phase: replay.BoundaryAfter})
+	text := output.String()
+	if !strings.Contains(text, "turn 1 of 2 running") {
+		t.Fatalf("spinner label missing from output: %q", text)
+	}
+	if !strings.Contains(text, "\r\x1b[2K") {
+		t.Fatalf("spinner did not redraw and clear its line: %q", text)
+	}
+	if !strings.HasSuffix(text, "Finished turn 1 of 2: turn-1 (0s, 0 harness events, 0 skill calls)\n") {
+		t.Fatalf("finished line missing after spinner: %q", text)
 	}
 }

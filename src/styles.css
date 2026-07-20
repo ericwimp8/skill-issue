@@ -435,7 +435,7 @@ h1 {
 .arm-introduction h2 {
   max-width: 54rem;
   margin-bottom: var(--space-5);
-  font-size: clamp(2.6rem, 5.6vw, 5.4rem);
+  font-size: clamp(2.6rem, 4.4vw, 4.2rem);
   font-weight: 560;
   line-height: 0.98;
 }

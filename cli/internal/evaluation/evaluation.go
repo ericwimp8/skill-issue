@@ -62,6 +62,10 @@ type TurnProgress struct {
 	Index  int
 	Total  int
 	Phase  replay.BoundaryPhase
+	// The following fields are populated only on the "after" phase.
+	Duration      time.Duration
+	HarnessEvents int
+	SkillCalls    int
 }
 
 func ResolveRequest(request RunRequest) (RunRequest, error) {
@@ -343,10 +347,12 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 		service.setStatus(runID, runstate.StatusToolingFailed)
 		return Result{}, fmt.Errorf("evaluation encountered a tooling error: %w", err)
 	}
+	var turnStartedAt time.Time
 	runner := replay.Runner{
 		Adapter: adapter,
 		OnBoundary: func(_ context.Context, boundary replay.Boundary) error {
 			if boundary.Phase == replay.BoundaryBefore {
+				turnStartedAt = time.Now()
 				if request.Progress != nil {
 					request.Progress(TurnProgress{TurnID: boundary.TurnID, Index: boundary.TurnIndex, Total: boundary.TurnTotal, Phase: boundary.Phase})
 				}
@@ -371,7 +377,20 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 				return err
 			}
 			if request.Progress != nil {
-				request.Progress(TurnProgress{TurnID: boundary.TurnID, Index: boundary.TurnIndex, Total: boundary.TurnTotal, Phase: boundary.Phase})
+				progress := TurnProgress{TurnID: boundary.TurnID, Index: boundary.TurnIndex, Total: boundary.TurnTotal, Phase: boundary.Phase, Duration: time.Since(turnStartedAt)}
+				if boundary.Capture != nil {
+					progress.HarnessEvents = len(boundary.Capture.Events)
+				}
+				recorded, err := service.runs.Events(runID)
+				if err != nil {
+					return err
+				}
+				for _, event := range recorded {
+					if event.TurnID == boundary.TurnID {
+						progress.SkillCalls++
+					}
+				}
+				request.Progress(progress)
 			}
 			return nil
 		},

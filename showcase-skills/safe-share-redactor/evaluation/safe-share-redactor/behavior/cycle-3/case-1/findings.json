@@ -1,0 +1,53 @@
+{
+  "findings": [
+    {
+      "column": 10,
+      "kind": "deterministic",
+      "line": 2,
+      "replacement": "<REDACTED:SECRET>",
+      "rule_id": "quoted-secret-value"
+    },
+    {
+      "column": 23,
+      "kind": "deterministic",
+      "line": 3,
+      "replacement": "<REDACTED:AUTHORIZATION>",
+      "rule_id": "authorization-value"
+    },
+    {
+      "column": 9,
+      "kind": "deterministic",
+      "line": 4,
+      "replacement": "<REDACTED:EMAIL>",
+      "rule_id": "email-address"
+    },
+    {
+      "column": 6,
+      "kind": "deterministic",
+      "line": 5,
+      "replacement": "<REDACTED:IP_ADDRESS>",
+      "rule_id": "ip-address"
+    },
+    {
+      "column": 14,
+      "kind": "deterministic",
+      "line": 6,
+      "replacement": "<REDACTED:USER>",
+      "rule_id": "user-home-segment"
+    }
+  ],
+  "limitations": [
+    "Contextual or unsupported sensitive material may remain unchanged.",
+    "Automated redaction does not guarantee complete privacy or secrecy."
+  ],
+  "sanitized_output": "sanitized.log",
+  "schema_version": 1,
+  "source_sha256_after": "153bfccf86b989d38fcab9fb5a1881773acf7248a65edb0faaf2447dda5a04cc",
+  "source_sha256_before": "153bfccf86b989d38fcab9fb5a1881773acf7248a65edb0faaf2447dda5a04cc",
+  "summary": {
+    "ambiguous_risk_count": 0,
+    "changed": true,
+    "deterministic_count": 5,
+    "review_required": true
+  }
+}

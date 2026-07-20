@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"sort"
 )
 
 type ID string
@@ -36,6 +35,11 @@ type Spec struct {
 	UserSkillDir    func(home string) string
 }
 
+type EvaluationDefaults struct {
+	Model     string
+	Reasoning string
+}
+
 var specs = map[ID]Spec{
 	Copilot:    {ID: Copilot, Executable: "copilot", ProjectSkillDir: ".github/skills", UserSkillDir: homePath(".copilot", "skills")},
 	ClaudeCode: {ID: ClaudeCode, Executable: "claude", ProjectSkillDir: ".claude/skills", UserSkillDir: claudeUserPath},
@@ -43,9 +47,16 @@ var specs = map[ID]Spec{
 	Cursor:     {ID: Cursor, Executable: "cursor-agent", ProjectSkillDir: ".cursor/skills", UserSkillDir: homePath(".cursor", "skills")},
 	GeminiCLI:  {ID: GeminiCLI, Executable: "gemini", ProjectSkillDir: ".gemini/skills", UserSkillDir: homePath(".gemini", "skills")},
 	GrokBuild:  {ID: GrokBuild, Executable: "grok", ProjectSkillDir: ".grok/skills", UserSkillDir: homePath(".grok", "skills")},
-	OpenCode:   {ID: OpenCode, Executable: "opencode", ProjectSkillDir: ".opencode/skills", UserSkillDir: openCodeUserPath},
+	OpenCode:   {ID: OpenCode, Executable: "opencode", ProjectSkillDir: ".opencode/skills", UserSkillDir: homePath(".config", "opencode", "skills")},
 	KiloCode:   {ID: KiloCode, Executable: "kilo", ProjectSkillDir: ".kilo/skills", UserSkillDir: homePath(".kilo", "skills")},
 	Pi:         {ID: Pi, Executable: "pi", ProjectSkillDir: ".pi/skills", UserSkillDir: homePath(".pi", "agent", "skills")},
+}
+
+var evaluationDefaults = map[ID]EvaluationDefaults{
+	ClaudeCode: {Model: "opus", Reasoning: "medium"},
+	Codex:      {Model: "gpt-5.6-sol", Reasoning: "medium"},
+	Cursor:     {Model: "auto", Reasoning: "medium"},
+	Pi:         {Model: "openai-codex/gpt-5.6-sol", Reasoning: "medium"},
 }
 
 func ParseID(value string) (ID, error) {
@@ -54,6 +65,25 @@ func ParseID(value string) (ID, error) {
 		return "", fmt.Errorf("unsupported harness %q", value)
 	}
 	return id, nil
+}
+
+func ParseEvaluationID(value string) (ID, error) {
+	id, err := ParseID(value)
+	if err != nil {
+		return "", err
+	}
+	if _, ok := evaluationDefaults[id]; !ok {
+		return "", fmt.Errorf("unsupported evaluation harness %q", value)
+	}
+	return id, nil
+}
+
+func EvaluationDefaultsFor(id ID) (EvaluationDefaults, error) {
+	defaults, ok := evaluationDefaults[id]
+	if !ok {
+		return EvaluationDefaults{}, fmt.Errorf("unsupported evaluation harness %q", id)
+	}
+	return defaults, nil
 }
 
 func ParseScope(value string) (Scope, error) {
@@ -70,15 +100,6 @@ func Lookup(id ID) (Spec, error) {
 		return Spec{}, fmt.Errorf("unsupported harness %q", id)
 	}
 	return spec, nil
-}
-
-func IDs() []ID {
-	ids := make([]ID, 0, len(specs))
-	for id := range specs {
-		ids = append(ids, id)
-	}
-	sort.Slice(ids, func(i, j int) bool { return ids[i] < ids[j] })
-	return ids
 }
 
 func SkillRoot(id ID, scope Scope, workspace, home string) (string, error) {
@@ -117,11 +138,4 @@ func claudeUserPath(home string) string {
 		return filepath.Join(configured, "skills")
 	}
 	return filepath.Join(home, ".claude", "skills")
-}
-
-func openCodeUserPath(home string) string {
-	if configured := os.Getenv("XDG_CONFIG_HOME"); configured != "" {
-		return filepath.Join(configured, "opencode", "skills")
-	}
-	return filepath.Join(home, ".config", "opencode", "skills")
 }

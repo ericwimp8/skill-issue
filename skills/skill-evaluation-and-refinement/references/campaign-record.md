@@ -9,6 +9,7 @@ Keep one directory per target and separate description and behavior loops:
   contract.md
   status.md
   description/round-<n>/trial-<n>.md
+  references/<reference-path>/round-<n>/trial-<n>.md
   behavior/cycle-<n>/case-<n>.md
   fixtures/
   retained-evidence/
@@ -24,6 +25,7 @@ Record:
 - environment-qualification record used;
 - refinement mode;
 - description state as `unvalidated`, `passed`, `not-applicable`, `failed`, or `blocked`, with four trial-record paths for `passed` or an explicit-only reason for `not-applicable`;
+- reference state as `not-applicable`, `unvalidated`, `passed`, `failed`, or `blocked`, with one entry per current reference file and the trial-record paths supporting each passed entry;
 - current loop, round or cycle, and per-loop failure count;
 - total campaign allowance and remaining attempts;
 - last completed trial and next action;
@@ -49,4 +51,4 @@ Before rerunning a loop:
 
 Resume only when `status.md` identifies the exact target, loop, count, last evidence, applied refinement, completed cleanup, and next action. When any item is uncertain, reconstruct it from retained evidence before running another trial.
 
-Body work may resume only when `status.md` also satisfies the description-state evidence requirement above.
+Body work may resume only when `status.md` also satisfies the description-state evidence requirement above. General body cases may begin only when every current reference entry is `passed` or the reference state is `not-applicable` because the target has no `references/` files.

@@ -1,0 +1,5 @@
+Sample diagnostics
+status: healthy
+attempts: 3
+feature: enabled
+message: retry completed

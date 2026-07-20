@@ -8,28 +8,29 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"time"
 )
 
 type Run struct {
-	SchemaVersion  int               `json:"schema_version"`
-	ID             string            `json:"id"`
-	Workspace      string            `json:"workspace"`
-	Harness        string            `json:"harness"`
-	Model          string            `json:"model"`
-	Scenario       string            `json:"scenario"`
-	Scope          string            `json:"scope"`
-	Status         string            `json:"status"`
-	ActiveTurn     string            `json:"active_turn,omitempty"`
-	HarnessSession string            `json:"harness_session,omitempty"`
-	Tokens         map[string]string `json:"tokens"`
-	PriorReceipt   string            `json:"prior_receipt,omitempty"`
-	EvidencePath   string            `json:"evidence_path,omitempty"`
-	TranscriptPath string            `json:"transcript_path,omitempty"`
-	CreatedAt      time.Time         `json:"created_at"`
-	UpdatedAt      time.Time         `json:"updated_at"`
+	SchemaVersion     int               `json:"schema_version"`
+	ID                string            `json:"id"`
+	Workspace         string            `json:"workspace"`
+	Harness           string            `json:"harness"`
+	Model             string            `json:"model"`
+	Reasoning         string            `json:"reasoning"`
+	EvaluationID      string            `json:"evaluation_id"`
+	Scenario          string            `json:"scenario"`
+	Scope             string            `json:"scope"`
+	Status            string            `json:"status"`
+	ActiveTurn        string            `json:"active_turn,omitempty"`
+	HarnessSession    string            `json:"harness_session,omitempty"`
+	Tokens            map[string]string `json:"tokens"`
+	InstallationState string            `json:"installation_state,omitempty"`
+	EvidencePath      string            `json:"evidence_path,omitempty"`
+	TranscriptPath    string            `json:"transcript_path,omitempty"`
+	CreatedAt         time.Time         `json:"created_at"`
+	UpdatedAt         time.Time         `json:"updated_at"`
 }
 
 type Event struct {
@@ -40,33 +41,14 @@ type Event struct {
 	Attributed    bool      `json:"attributed"`
 	Harness       string    `json:"harness"`
 	Model         string    `json:"model"`
+	Reasoning     string    `json:"reasoning"`
+	EvaluationID  string    `json:"evaluation_id"`
 	Skill         string    `json:"skill"`
 	RecordedAt    time.Time `json:"recorded_at"`
 }
 
 type Store struct {
 	root string
-}
-
-func DefaultRoot() (string, error) {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return "", fmt.Errorf("resolve home directory: %w", err)
-	}
-	switch runtime.GOOS {
-	case "darwin":
-		return filepath.Join(home, "Library", "Application Support", "Skill Issue"), nil
-	case "windows":
-		if local := os.Getenv("LOCALAPPDATA"); local != "" {
-			return filepath.Join(local, "Skill Issue"), nil
-		}
-		return filepath.Join(home, "AppData", "Local", "Skill Issue"), nil
-	default:
-		if state := os.Getenv("XDG_STATE_HOME"); state != "" {
-			return filepath.Join(state, "skill-issue"), nil
-		}
-		return filepath.Join(home, ".local", "state", "skill-issue"), nil
-	}
 }
 
 func NewStore(root string) Store {
@@ -188,6 +170,8 @@ func (store Store) Mark(token string) error {
 			Attributed:    run.ActiveTurn != "",
 			Harness:       run.Harness,
 			Model:         run.Model,
+			Reasoning:     run.Reasoning,
+			EvaluationID:  run.EvaluationID,
 			Skill:         skill,
 			RecordedAt:    time.Now().UTC(),
 		}
@@ -247,6 +231,21 @@ func (store Store) RunDir(runID string) string {
 	return store.runDir(runID)
 }
 
+func (store Store) DeleteRun(runID string) error {
+	if runID == "" || strings.ContainsAny(runID, `/\\`) {
+		return errors.New("run ID is invalid")
+	}
+	if err := os.RemoveAll(store.runDir(runID)); err != nil {
+		return fmt.Errorf("remove private run state: %w", err)
+	}
+	for _, path := range []string{store.tokenDir(), filepath.Join(store.root, "runs"), store.root} {
+		if err := removeEmptyDirectory(path); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (store Store) withLock(runID string, action func() error) error {
 	lockPath := filepath.Join(store.runDir(runID), ".lock")
 	for attempt := 0; attempt < 100; attempt++ {
@@ -293,6 +292,18 @@ func validateToken(token string) error {
 		return errors.New("opaque token is invalid")
 	}
 	return nil
+}
+
+func removeEmptyDirectory(path string) error {
+	err := os.Remove(path)
+	if err == nil || errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	entries, readErr := os.ReadDir(path)
+	if readErr == nil && len(entries) > 0 {
+		return nil
+	}
+	return fmt.Errorf("remove empty private state directory: %w", err)
 }
 
 func writeAtomic(path string, data []byte, mode os.FileMode) error {

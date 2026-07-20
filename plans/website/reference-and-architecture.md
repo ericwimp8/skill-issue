@@ -6,20 +6,20 @@ Skill Issue needs a public facade for a local-first skill-evaluation product. Th
 
 ## Direct Visual Research
 
-Each reference below was opened directly in the Codex in-app browser at a consistent 1440 × 900 viewport on 19 July 2026. The local screenshot is the visual evidence used for this decision.
+Each reference below was opened directly in the Codex in-app browser at a consistent 1440 × 900 viewport on 19 July 2026. The resulting observations informed this decision; the disposable screenshots were removed after the direction was implemented and validated.
 
-| Reference                           | Relevant visible characteristics                                                               | Screenshot                              |
-| ----------------------------------- | ---------------------------------------------------------------------------------------------- | --------------------------------------- |
-| [Linear](https://linear.app/)       | Near-black canvas, hairline header boundary, restrained navigation, large negative space       | [linear.png](references/linear.png)     |
-| [Vercel](https://vercel.com/)       | Monochrome palette, split hero, geometric focal element, compact pill actions                  | [vercel.png](references/vercel.png)     |
-| [Raycast](https://www.raycast.com/) | Floating rounded navigation surface, centered download actions, low-contrast depth             | [raycast.png](references/raycast.png)   |
-| [Resend](https://resend.com/)       | Sparse black canvas, compact navigation, minimal outlined primary action                       | [resend.png](references/resend.png)     |
-| [Clerk](https://clerk.com/)         | Light technical grid, oversized centered headline, narrow copy, floating navigation            | [clerk.png](references/clerk.png)       |
-| [Warp](https://www.warp.dev/)       | Editorial two-column hero, clear download command treatment, strong black-on-white contrast    | [warp.png](references/warp.png)         |
-| [Supabase](https://supabase.com/)   | Dark modular card grid, one restrained accent, product data presented inside reusable surfaces | [supabase.png](references/supabase.png) |
-| [Railway](https://railway.com/)     | Bounded hero surface, centered serif headline, muted purple accent, framed product preview     | [railway.png](references/railway.png)   |
-| [shadcn/ui](https://ui.shadcn.com/) | Monochrome tokens, centered hero, pill controls, thin borders, varied reusable card grid       | [shadcn.png](references/shadcn.png)     |
-| [OpenAI](https://openai.com/)       | Black canvas, modest top navigation, centered interaction surface, large calm spacing          | [openai.png](references/openai.png)     |
+| Reference                           | Relevant visible characteristics                                                               |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------- |
+| [Linear](https://linear.app/)       | Near-black canvas, hairline header boundary, restrained navigation, large negative space       |
+| [Vercel](https://vercel.com/)       | Monochrome palette, split hero, geometric focal element, compact pill actions                  |
+| [Raycast](https://www.raycast.com/) | Floating rounded navigation surface, centered download actions, low-contrast depth             |
+| [Resend](https://resend.com/)       | Sparse black canvas, compact navigation, minimal outlined primary action                       |
+| [Clerk](https://clerk.com/)         | Light technical grid, oversized centered headline, narrow copy, floating navigation            |
+| [Warp](https://www.warp.dev/)       | Editorial two-column hero, clear download command treatment, strong black-on-white contrast    |
+| [Supabase](https://supabase.com/)   | Dark modular card grid, one restrained accent, product data presented inside reusable surfaces |
+| [Railway](https://railway.com/)     | Bounded hero surface, centered serif headline, muted purple accent, framed product preview     |
+| [shadcn/ui](https://ui.shadcn.com/) | Monochrome tokens, centered hero, pill controls, thin borders, varied reusable card grid       |
+| [OpenAI](https://openai.com/)       | Black canvas, modest top navigation, centered interaction surface, large calm spacing          |
 
 ## Selected Direction
 
@@ -71,14 +71,15 @@ Use **Recharts 3.9**.
 - Its official examples include multi-series line charts and responsive containers, matching skill calls and skill misses over consumed context.
 - SVG output can inherit the website's theme tokens, while adjacent semantic summaries keep the chart meaning available without relying only on color.
 
-The chart owner will accept a typed graph definition and render both series from data. Additional harness graphs will be added by appending another definition to the local data source.
+The website uses typed evaluation artifacts, derives display identities and selection inputs in `src/data/evaluationData.ts`, and renders concrete comparison views through `src/components/EvaluationExplorer.tsx` and `src/components/charts/`.
 
 ## Data And Release Ownership
 
-- `src/data/siteData.ts` will own all product copy, release metadata, summary metrics, methodology labels, graph descriptions, and mock series values.
-- `src/components/EvaluationChart.tsx` will own conversion of a graph definition into the shared chart surface.
-- `src/styles.css` will own theme and layout tokens.
-- The release button will use a configurable GitHub Releases URL from the local data source. Until a real CLI asset exists, it will point to the repository's latest-release page rather than imply a working binary download.
+- `src/data/siteData.ts` owns product copy, release metadata, summary metrics, and methodology text.
+- `src/data/evaluationData.ts` owns website artifact adaptation, display identities, selection inputs, and temporary illustrative result data.
+- `src/components/EvaluationExplorer.tsx` and `src/components/charts/` own evaluation interaction and chart presentation.
+- `src/styles.css` owns shared theme and layout tokens.
+- The release button uses the configurable GitHub Releases URL in the local data source. Until a real CLI asset exists, it points to the repository's latest-release page rather than implying a working binary download.
 
 ## Source Basis
 
@@ -86,4 +87,4 @@ The chart owner will accept a typed graph definition and render both series from
 - [Recharts official examples](https://recharts.github.io/en-US/examples/SimpleLineChart/)
 - [Recharts MIT license](https://github.com/recharts/recharts/blob/main/LICENSE)
 - [GitHub Pages documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)
-- Existing repository research: [Free Website Hosting and CLI Downloads](../deep-research/free-website-hosting-cli-downloads/free-website-hosting-cli-downloads-deep-research.md)
+- Existing repository research: [Free Website Hosting and CLI Downloads](../../research/deep-research/free-website-hosting-cli-downloads/free-website-hosting-cli-downloads-deep-research.md)

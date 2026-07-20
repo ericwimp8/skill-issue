@@ -7,28 +7,23 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"syscall"
 
 	"github.com/ericwimp8/skill-issue/cli/internal/evaluation"
 	"github.com/ericwimp8/skill-issue/cli/internal/harness"
 	"github.com/ericwimp8/skill-issue/cli/internal/installer"
-	"github.com/ericwimp8/skill-issue/cli/internal/runstate"
 )
 
 type Action string
 
 const (
 	ActionInstall   Action = "install"
-	ActionVerify    Action = "verify"
-	ActionRepair    Action = "repair"
-	ActionUpdate    Action = "update"
 	ActionUninstall Action = "uninstall"
 	ActionEvaluate  Action = "evaluate"
 	ActionMark      Action = "mark"
 )
-
-var ErrUnavailable = errors.New("verified harness adapters are not included")
 
 type Result struct {
 	Action Action `json:"action"`
@@ -36,36 +31,21 @@ type Result struct {
 	Data   any    `json:"data,omitempty"`
 }
 
-type Manager interface {
-	Execute(action Action, args []string) (Result, error)
-	Ready() bool
-}
-
 type Service struct {
-	version    string
-	installer  installer.Service
-	evaluation evaluation.Service
+	installer installer.Service
 }
 
-func New(stateRoot, version string) Service {
+type EvaluationReviewer func(evaluation.RunRequest) (bool, error)
+
+func New() Service {
 	return Service{
-		version:    version,
-		installer:  installer.New(stateRoot),
-		evaluation: evaluation.New(stateRoot),
+		installer: installer.New(),
 	}
-}
-
-func (service Service) Ready() bool {
-	return true
 }
 
 func (service Service) Execute(action Action, args []string) (Result, error) {
 	switch action {
 	case ActionInstall:
-		return service.install(action, args)
-	case ActionVerify:
-		return service.verify(action, args)
-	case ActionRepair, ActionUpdate:
 		return service.install(action, args)
 	case ActionUninstall:
 		return service.uninstall(action, args)
@@ -78,12 +58,16 @@ func (service Service) Execute(action Action, args []string) (Result, error) {
 	}
 }
 
+func (service Service) ExecuteEvaluationRun(args []string, reviewer EvaluationReviewer) (Result, error) {
+	return service.evaluationRun(args, reviewer)
+}
+
 func (service Service) install(action Action, args []string) (Result, error) {
 	options, err := parseOptions(args)
 	if err != nil {
 		return Result{}, err
 	}
-	request, err := installRequest(options, service.version)
+	request, err := installRequest(options)
 	if err != nil {
 		return Result{}, err
 	}
@@ -94,43 +78,20 @@ func (service Service) install(action Action, args []string) (Result, error) {
 	return Result{Action: action, Status: "installed", Data: installed}, nil
 }
 
-func (service Service) verify(action Action, args []string) (Result, error) {
-	options, err := parseOptions(args)
-	if err != nil {
-		return Result{}, err
-	}
-	id, scope, workspace, home, err := installationTarget(options)
-	if err != nil {
-		return Result{}, err
-	}
-	receiptID, err := service.installer.ReceiptID(id, scope, workspace, home)
-	if err != nil {
-		return Result{}, err
-	}
-	installed, err := service.installer.Verify(receiptID)
-	if err != nil {
-		return Result{}, err
-	}
-	return Result{Action: action, Status: "verified", Data: installed}, nil
-}
-
 func (service Service) uninstall(action Action, args []string) (Result, error) {
 	options, err := parseOptions(args)
 	if err != nil {
 		return Result{}, err
 	}
-	id, scope, workspace, home, err := installationTarget(options)
+	request, err := installRequest(options)
 	if err != nil {
 		return Result{}, err
 	}
-	receiptID, err := service.installer.ReceiptID(id, scope, workspace, home)
+	removed, err := service.installer.Uninstall(request)
 	if err != nil {
 		return Result{}, err
 	}
-	if err := service.installer.Uninstall(receiptID); err != nil {
-		return Result{}, err
-	}
-	return Result{Action: action, Status: "uninstalled"}, nil
+	return Result{Action: action, Status: "uninstalled", Data: removed}, nil
 }
 
 func (service Service) evaluate(args []string) (Result, error) {
@@ -139,21 +100,7 @@ func (service Service) evaluate(args []string) (Result, error) {
 	}
 	switch args[0] {
 	case "run":
-		options, err := parseOptions(args[1:])
-		if err != nil {
-			return Result{}, err
-		}
-		request, err := evaluationRunRequest(options, service.version)
-		if err != nil {
-			return Result{}, err
-		}
-		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-		defer stop()
-		result, err := service.evaluation.Run(ctx, request)
-		if err != nil {
-			return Result{}, err
-		}
-		return Result{Action: ActionEvaluate, Status: "complete", Data: result}, nil
+		return service.evaluationRun(args[1:], nil)
 	case "cleanup":
 		options, err := parseOptions(args[1:])
 		if err != nil {
@@ -163,7 +110,11 @@ func (service Service) evaluate(args []string) (Result, error) {
 		if err != nil {
 			return Result{}, err
 		}
-		if err := service.evaluation.Cleanup(runID); err != nil {
+		output, err := requiredOutput(options)
+		if err != nil {
+			return Result{}, err
+		}
+		if err := evaluation.New(evaluationStateRoot(output)).Cleanup(runID); err != nil {
 			return Result{}, err
 		}
 		return Result{Action: ActionEvaluate, Status: "cleaned"}, nil
@@ -172,22 +123,56 @@ func (service Service) evaluate(args []string) (Result, error) {
 	}
 }
 
-func (service Service) mark(args []string) (Result, error) {
-	if len(args) != 1 {
-		return Result{}, errors.New("signal requires one opaque token")
+func (service Service) evaluationRun(args []string, reviewer EvaluationReviewer) (Result, error) {
+	options, err := parseOptions(args, "events", "transcript")
+	if err != nil {
+		return Result{}, err
 	}
-	if err := service.evaluation.Mark(args[0]); err != nil {
+	request, err := evaluationRunRequest(options)
+	if err != nil {
+		return Result{}, err
+	}
+	if reviewer != nil {
+		confirmed, err := reviewer(request)
+		if err != nil {
+			return Result{}, err
+		}
+		if !confirmed {
+			return Result{Action: ActionEvaluate, Status: "cancelled"}, nil
+		}
+	}
+	return service.runEvaluation(request)
+}
+
+func (service Service) runEvaluation(request evaluation.RunRequest) (Result, error) {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	result, err := evaluation.New(evaluationStateRoot(request.OutputRoot)).Run(ctx, request)
+	if err != nil {
+		return Result{}, err
+	}
+	return Result{Action: ActionEvaluate, Status: "complete", Data: result}, nil
+}
+
+func (service Service) mark(args []string) (Result, error) {
+	if len(args) != 2 {
+		return Result{}, errors.New("signal requires one opaque token and state root")
+	}
+	if !filepath.IsAbs(args[1]) {
+		return Result{}, errors.New("signal state root must be absolute")
+	}
+	if err := evaluation.New(args[1]).Mark(args[0]); err != nil {
 		return Result{}, err
 	}
 	return Result{Action: ActionMark, Status: "recorded"}, nil
 }
 
-func evaluationRunRequest(options map[string]string, version string) (evaluation.RunRequest, error) {
+func evaluationRunRequest(options map[string]string) (evaluation.RunRequest, error) {
 	harnessValue, err := required(options, "harness")
 	if err != nil {
 		return evaluation.RunRequest{}, err
 	}
-	id, err := harness.ParseID(harnessValue)
+	id, err := harness.ParseEvaluationID(harnessValue)
 	if err != nil {
 		return evaluation.RunRequest{}, err
 	}
@@ -199,53 +184,83 @@ func evaluationRunRequest(options map[string]string, version string) (evaluation
 	if err != nil {
 		return evaluation.RunRequest{}, fmt.Errorf("resolve workspace: %w", err)
 	}
-	model, err := required(options, "model")
+	output, err := requiredOutput(options)
 	if err != nil {
 		return evaluation.RunRequest{}, err
 	}
-	output, err := required(options, "output")
+	evaluationID := options["evaluation"]
+	skills := options["skills"]
+	scenario := options["scenario"]
+	answer := options["answer-sheet"]
+	turnLimit, err := optionalPositiveInteger(options, "turns")
 	if err != nil {
 		return evaluation.RunRequest{}, err
+	}
+	if evaluationID != "" && (skills != "" || scenario != "" || answer != "") {
+		return evaluation.RunRequest{}, errors.New("--evaluation cannot be combined with --skills, --scenario, or --answer-sheet")
+	}
+	if evaluationID == "" && (skills == "" || scenario == "" || answer == "") {
+		return evaluation.RunRequest{}, errors.New("use --evaluation or supply --skills, --scenario, and --answer-sheet")
+	}
+	request := evaluation.RunRequest{
+		Workspace:         workspace,
+		OutputRoot:        output,
+		Harness:           id,
+		Model:             options["model"],
+		ModelOverride:     options["model"] != "",
+		Reasoning:         options["reasoning"],
+		ReasoningOverride: options["reasoning"] != "",
+		EvaluationID:      evaluationID,
+		SkillsPath:        skills,
+		ScenarioPath:      scenario,
+		AnswerSheet:       answer,
+		Executable:        options["executable"],
+		CLIPath:           options["cli-path"],
+		IncludeEvents:     options["events"] == "true",
+		IncludeTranscript: options["transcript"] == "true",
+		TurnLimit:         turnLimit,
+	}
+	return evaluation.PrepareRequest(request)
+}
+
+func optionalPositiveInteger(options map[string]string, key string) (int, error) {
+	value := options[key]
+	if value == "" {
+		return 0, nil
+	}
+	number, err := strconv.Atoi(value)
+	if err != nil || number < 1 {
+		return 0, fmt.Errorf("--%s must be a positive integer", key)
+	}
+	return number, nil
+}
+
+func requiredOutput(options map[string]string) (string, error) {
+	output, err := required(options, "output")
+	if err != nil {
+		return "", err
 	}
 	output, err = filepath.Abs(output)
 	if err != nil {
-		return evaluation.RunRequest{}, fmt.Errorf("resolve output directory: %w", err)
+		return "", fmt.Errorf("resolve output directory: %w", err)
 	}
-	evaluationID := options["evaluation"]
-	scenario := options["scenario"]
-	answer := options["answer-sheet"]
-	if evaluationID != "" && (scenario != "" || answer != "") {
-		return evaluation.RunRequest{}, errors.New("--evaluation cannot be combined with --scenario or --answer-sheet")
-	}
-	if evaluationID == "" && (scenario == "" || answer == "") {
-		return evaluation.RunRequest{}, errors.New("use --evaluation or supply both --scenario and --answer-sheet")
-	}
-	return evaluation.RunRequest{
-		Workspace:      workspace,
-		OutputRoot:     output,
-		Harness:        id,
-		Model:          model,
-		EvaluationID:   evaluationID,
-		ScenarioPath:   scenario,
-		AnswerSheet:    answer,
-		Executable:     options["executable"],
-		CLIPath:        options["cli-path"],
-		ProductVersion: version,
-	}, nil
+	return output, nil
 }
 
-func installRequest(options map[string]string, version string) (installer.Request, error) {
+func evaluationStateRoot(outputRoot string) string {
+	return filepath.Join(outputRoot, ".skill-issue")
+}
+
+func installRequest(options map[string]string) (installer.Request, error) {
 	id, scope, workspace, home, err := installationTarget(options)
 	if err != nil {
 		return installer.Request{}, err
 	}
 	return installer.Request{
-		Harness:        id,
-		Scope:          scope,
-		Workspace:      workspace,
-		Home:           home,
-		ProductVersion: version,
-		Mode:           installer.ModeOrdinary,
+		Harness:   id,
+		Scope:     scope,
+		Workspace: workspace,
+		Home:      home,
 	}, nil
 }
 
@@ -283,19 +298,30 @@ func installationTarget(options map[string]string) (harness.ID, harness.Scope, s
 	return id, scope, workspace, home, nil
 }
 
-func parseOptions(args []string) (map[string]string, error) {
+func parseOptions(args []string, flags ...string) (map[string]string, error) {
 	options := map[string]string{}
+	boolean := map[string]bool{}
+	for _, flag := range flags {
+		boolean[flag] = true
+	}
 	for index := 0; index < len(args); index++ {
 		argument := args[index]
 		if !strings.HasPrefix(argument, "--") {
 			return nil, fmt.Errorf("unexpected argument %q", argument)
 		}
 		key := strings.TrimPrefix(argument, "--")
-		if key == "" || index+1 >= len(args) || strings.HasPrefix(args[index+1], "--") {
-			return nil, fmt.Errorf("%s requires a value", argument)
+		if key == "" {
+			return nil, fmt.Errorf("invalid option %q", argument)
 		}
 		if _, exists := options[key]; exists {
 			return nil, fmt.Errorf("duplicate option %s", argument)
+		}
+		if boolean[key] {
+			options[key] = "true"
+			continue
+		}
+		if index+1 >= len(args) || strings.HasPrefix(args[index+1], "--") {
+			return nil, fmt.Errorf("%s requires a value", argument)
 		}
 		options[key] = args[index+1]
 		index++
@@ -309,18 +335,4 @@ func required(options map[string]string, key string) (string, error) {
 		return "", fmt.Errorf("--%s is required", key)
 	}
 	return value, nil
-}
-
-type UnavailableManager struct{}
-
-func (UnavailableManager) Execute(action Action, _ []string) (Result, error) {
-	return Result{}, fmt.Errorf("%s: %w", action, ErrUnavailable)
-}
-
-func (UnavailableManager) Ready() bool {
-	return false
-}
-
-func DefaultStateRoot() (string, error) {
-	return runstate.DefaultRoot()
 }

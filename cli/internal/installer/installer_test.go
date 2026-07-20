@@ -1,18 +1,24 @@
 package installer
 
 import (
+	"fmt"
+	"path/filepath"
 	"strings"
 	"testing"
 )
 
 func TestInjectedInstructionIsNeutral(t *testing.T) {
 	source := []byte("---\nname: example\ndescription: Example.\n---\n\n# Example\n")
-	result, err := inject(source, "/opt/skill-issue", "opaque-token")
+	temporaryRoot := t.TempDir()
+	cliPath := filepath.Join(temporaryRoot, "skill-issue")
+	stateRoot := filepath.Join(temporaryRoot, "state")
+	result, err := inject(source, cliPath, stateRoot, "opaque-token")
 	if err != nil {
 		t.Fatal(err)
 	}
 	text := string(result)
-	if !strings.Contains(text, "Run \"/opt/skill-issue\" signal \"opaque-token\", then continue normally.") {
+	expected := fmt.Sprintf("Run %q signal %q %q, then continue normally.", cliPath, "opaque-token", stateRoot)
+	if !strings.Contains(text, expected) {
 		t.Fatalf("neutral instruction is absent: %s", text)
 	}
 	for _, revealing := range []string{"evaluate", "evaluation", "answer sheet", "expected call", "score", " mark "} {

@@ -31,17 +31,18 @@ description: Two-loop skill evaluation and semantic refinement workflow. Use whe
 3. Ask whether body refinements should be applied automatically or proposed for review before each update.
 4. Read `references/semantic-refinement.md` and apply its constraints to automatic edits and human-facing proposals alike.
 5. Design varied representative cases that exercise generalized behavior. Record ground truth as conditions and result characteristics rather than prescribing one exact answer where multiple answers can satisfy the contract.
-6. Create the smallest meaningful connected fixtures in the campaign location. For conversational behavior, conduct the interaction through an independent agent one turn at a time and retain a verbatim transcript or equivalent native record.
-7. Confirm that the harness can execute and observe the selected surface. When it cannot, provide the prepared inputs and an actionable external execution route, then wait for reliable evidence.
-8. Execute every case in isolation and audit the outputs against the goal, expected result, ground truth, and completion criteria. Treat a failure as material when it violates the target's goal, preserved boundary, or required completion criterion. Pass the body only when every required case and criterion passes without a retained material failure.
-9. Translate retained failures into one coherent update at the meaning that owns them. Apply it automatically or present the same governed update for approval according to the selected mode.
-10. Remove evaluation-owned outputs and transient changes from the preceding cycle while preserving the target refinement, campaign record, and evidence.
-11. Re-run the relevant framework from clean fixtures. Count each unsuccessful cycle against the current target only.
-12. After five unsuccessful body cycles, stop the entire campaign before continuing this target or another. Report the retained failures and ask how many additional cycles the user authorizes.
+6. Inventory every file under the target's `references/` directory. Before general body cases, qualify each reference independently with `references/reference-file-evaluation.md`. A target with references cannot pass while any current reference lacks passing evidence.
+7. Create the smallest meaningful connected fixtures in the campaign location. For conversational behavior, conduct the interaction through an independent agent one turn at a time and retain a verbatim transcript or equivalent native record.
+8. Confirm that the harness can execute and observe the selected surface. When it cannot, provide the prepared inputs and an actionable external execution route, then wait for reliable evidence.
+9. Execute every case in isolation and audit the outputs against the goal, expected result, ground truth, and completion criteria. Treat a failure as material when it violates the target's goal, preserved boundary, or required completion criterion. Pass the body only when every reference qualification, required case, and criterion passes without a retained material failure.
+10. Translate retained failures into one coherent update at the meaning that owns them. Apply it automatically or present the same governed update for approval according to the selected mode.
+11. Remove evaluation-owned outputs and transient changes from the preceding cycle while preserving the target refinement, campaign record, and evidence.
+12. Re-run the relevant framework from clean fixtures. Count each unsuccessful cycle against the current target only.
+13. After five unsuccessful body cycles, stop the entire campaign before continuing this target or another. Report the retained failures and ask how many additional cycles the user authorizes.
 
 ## Conclude the Target
 
-- Record the four-trial description evidence and the behavior audit evidence when both loops pass.
+- Record the four-trial description evidence, per-reference qualification evidence when applicable, and the behavior audit evidence when both loops pass.
 - Record the exact gate, retained evidence, cycle count, and user-controlled stopping state when either loop cannot pass.
 - Reset the body-failure counter only after the current target passes, then begin the next target from a new campaign location.
 - Preserve claims at the evidence level actually established; configuration support is not measured invocation reliability.
@@ -53,4 +54,5 @@ Use the relevant reference document when needed from this skill.
 - `references/target-outcome-interpretation.md`: Target-contract interpretation rules for deriving observable success without changing a skill's meaning. Use when establishing what a skill is intended to do.
 - `references/campaign-record.md`: Evaluation campaign structure, evidence records, counters, and cleanup ownership. Use when creating, resuming, or concluding any target campaign.
 - `references/harness-evaluation-controls.md`: Harness invocation, independent-agent, evidence, and packaging capability matrix. Use when gating or configuring description and conversational evaluation.
+- `references/reference-file-evaluation.md`: Unleading reference traversal, evidence, failure diagnosis, and post-refinement confirmation protocol. Use when the target packages files under `references/`.
 - `references/semantic-refinement.md`: Generalized semantic update constraints for skill descriptions and bodies. Use when diagnosing failures or formulating automatic and human-reviewed refinements.

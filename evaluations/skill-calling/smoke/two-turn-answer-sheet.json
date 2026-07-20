@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "scenario_id": "two-turn-skill-calling-smoke",
+  "expected": [
+    {
+      "turn_id": "turn-1",
+      "skill": "dictate-plan"
+    },
+    {
+      "turn_id": "turn-1",
+      "skill": "document-update-discipline"
+    },
+    {
+      "turn_id": "turn-2",
+      "skill": "document-update-discipline"
+    },
+    {
+      "turn_id": "turn-2",
+      "skill": "prompt-writing"
+    }
+  ]
+}

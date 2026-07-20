@@ -1,0 +1,5 @@
+interface:
+  display_name: Accessibility First Pass
+  short_description: Review web accessibility risks with bounded evidence
+policy:
+  allow_implicit_invocation: true

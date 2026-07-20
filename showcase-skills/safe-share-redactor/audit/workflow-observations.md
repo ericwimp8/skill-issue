@@ -1,0 +1,3 @@
+# Workflow Observation
+
+The initial `python3 -m py_compile` check accepted the script while a module-level regular expression still failed during actual import. Bytecode compilation verifies syntax but does not execute initialization, and the structural skill validator does not execute bundled scripts. This workflow therefore needs an explicit script import or `--help` smoke check whenever generated skill behavior depends on module-level initialization. The task-specific validation caught and corrected the defect before the passing behavior cycle; canonical workflow skills were left unchanged for later review.

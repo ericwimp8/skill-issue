@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "scenario_id": "custom-smoke-two-turn",
+  "turns": [
+    {
+      "turn_id": "turn-1",
+      "prompt": "Use $smoke-skill to create custom-note.md in the workspace with one sentence describing a static page publishing check."
+    },
+    {
+      "turn_id": "turn-2",
+      "prompt": "Continue using $smoke-skill and append one sentence to custom-note.md describing a free-hosting research question."
+    }
+  ]
+}

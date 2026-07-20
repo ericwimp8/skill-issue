@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Service dashboard</title>
+    <style>
+      main { width: 1120px; margin: auto; }
+      .good { color: green; }
+      .bad { color: red; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Service health</h1>
+      <p><span class="good">Payments</span> <span class="bad">Messaging</span></p>
+      <svg width="800" height="300"><path d="M0 250 L200 180 L400 220 L600 80 L800 100" /></svg>
+      <table>
+        <tr><th>Service</th><th>Latency</th></tr>
+        <tr><td>Payments</td><td>240 ms</td></tr>
+      </table>
+    </main>
+  </body>
+</html>

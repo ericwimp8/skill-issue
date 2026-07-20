@@ -1,0 +1,7 @@
+2026-07-20T08:00:00Z service=sample status=connected
+api_key="<REDACTED:SECRET>"
+Authorization: Bearer <REDACTED:AUTHORIZATION>
+contact=<REDACTED:EMAIL>
+peer=<REDACTED:IP_ADDRESS>
+cache=<REDACTED:USER_CACHE>/sample-cache
+message=retry scheduled

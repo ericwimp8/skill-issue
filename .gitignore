@@ -3,3 +3,8 @@ dist/
 .DS_Store
 *.local
 coverage/
+# Generated Skill Issue CLI evaluation artifacts
+/output/
+.skill-issue/
+.codex/config.toml
+/.repository-privacy.md

@@ -1,0 +1,3 @@
+interface:
+  display_name: 'Bug Reproduction Kit'
+  short_description: 'Build evidence-backed bug reproduction packages'

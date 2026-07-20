@@ -41,4 +41,4 @@ For `skill-intake`, preserve the canonical explicit-only description and apply `
 
 - Product support boundary: `../../../plans/skill-issue-project-completion/01-reconcile-the-definitive-product-support-and-evidence-contract.md`.
 - Direct-install architecture: `../../../plans/skill-issue-project-completion/02-research-and-define-direct-harness-installation-architecture.md`.
-- Detailed source evidence: `../../../plans/deep-research/harness-direct-installation-architecture/harness-direct-installation-architecture-deep-research.md` and its `assignments/` directory.
+- Detailed source evidence: `../../../research/deep-research/harness-direct-installation-architecture/harness-direct-installation-architecture-deep-research.md` and its `assignments/` directory.

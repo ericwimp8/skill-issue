@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "scenario_id": "custom-smoke-two-turn",
+  "expected": [
+    {
+      "turn_id": "turn-1",
+      "skill": "smoke-skill"
+    },
+    {
+      "turn_id": "turn-2",
+      "skill": "smoke-skill"
+    }
+  ]
+}

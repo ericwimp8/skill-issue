@@ -1,0 +1,7 @@
+2026-07-20T08:00:00Z service=sample status=connected
+api_key="sk-SYNTHETICKEY1234567890"
+Authorization: Bearer syntheticBearerToken123456
+contact=ericwimp8@example.com
+peer=192.0.2.44
+cache=/Users/ericwimp8/tmp/sample-cache
+message=retry scheduled

@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Safe Share Redactor'
+  short_description: 'Sanitize supplied text for safer sharing'
+
+policy:
+  allow_implicit_invocation: false

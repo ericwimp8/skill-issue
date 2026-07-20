@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "scenario_id": "two-turn-skill-calling-smoke",
+  "turns": [
+    {
+      "turn_id": "turn-1",
+      "prompt": "Use $dictate-plan and $document-update-discipline to create a small living A-to-B plan for publishing a one-page community garden event website. Write the plan to smoke-plan.md in the workspace. The plan must start from an approved event idea and end at a publicly accessible website, remain planning-only, and contain a short dependency-ordered task list."
+    },
+    {
+      "turn_id": "turn-2",
+      "prompt": "Use $document-update-discipline to update smoke-plan.md coherently. Add a Research Handoff section for researching free static hosting. Then use $prompt-writing to write one concise, copy-pasteable research-agent prompt in that section. Preserve the rest of the plan's meaning."
+    }
+  ]
+}

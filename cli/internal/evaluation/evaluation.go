@@ -29,16 +29,61 @@ type AnswerSheet struct {
 }
 
 type RunRequest struct {
-	Workspace      string
-	OutputRoot     string
-	Harness        harness.ID
-	Model          string
-	EvaluationID   string
-	ScenarioPath   string
-	AnswerSheet    string
-	Executable     string
-	CLIPath        string
-	ProductVersion string
+	Workspace         string
+	OutputRoot        string
+	Harness           harness.ID
+	Model             string
+	ModelOverride     bool
+	Reasoning         string
+	ReasoningOverride bool
+	EvaluationID      string
+	SkillsPath        string
+	ScenarioPath      string
+	AnswerSheet       string
+	Executable        string
+	CLIPath           string
+	IncludeEvents     bool
+	IncludeTranscript bool
+	TurnLimit         int
+	AvailableTurns    int
+	EffectiveTurns    int
+}
+
+func ResolveRequest(request RunRequest) (RunRequest, error) {
+	defaults, err := harness.EvaluationDefaultsFor(request.Harness)
+	if err != nil {
+		return RunRequest{}, err
+	}
+	if request.Harness == harness.Cursor && request.ReasoningOverride {
+		return RunRequest{}, errors.New("cursor does not support an independent --reasoning override; omit --reasoning to use model-native reasoning")
+	}
+	if request.Model == "" {
+		request.Model = defaults.Model
+	}
+	if request.Reasoning == "" {
+		request.Reasoning = defaults.Reasoning
+	}
+	return request, nil
+}
+
+func PrepareRequest(request RunRequest) (RunRequest, error) {
+	request, err := ResolveRequest(request)
+	if err != nil {
+		return RunRequest{}, err
+	}
+	if request.TurnLimit < 0 {
+		return RunRequest{}, errors.New("--turns must be a positive integer")
+	}
+	inputs, err := loadEvaluationInputs(request)
+	if err != nil {
+		return RunRequest{}, err
+	}
+	request.AvailableTurns = len(inputs.scenario.Turns)
+	request.EffectiveTurns = request.AvailableTurns
+	if request.TurnLimit > 0 && request.TurnLimit < request.AvailableTurns {
+		request.EffectiveTurns = request.TurnLimit
+	}
+	return request, nil
 }
 
 type BuiltInEvaluation struct {
@@ -48,11 +93,19 @@ type BuiltInEvaluation struct {
 	AnswerSheet   AnswerSheet     `json:"answer_sheet"`
 }
 
+type loadedInputs struct {
+	scenario replay.Scenario
+	answer   AnswerSheet
+	skills   []payload.Skill
+}
+
 type Result struct {
 	SchemaVersion  int         `json:"schema_version"`
 	RunID          string      `json:"run_id"`
 	Harness        string      `json:"harness"`
 	Model          string      `json:"model"`
+	Reasoning      string      `json:"reasoning"`
+	EvaluationID   string      `json:"evaluation_id"`
 	ScenarioID     string      `json:"scenario_id"`
 	Scope          string      `json:"scope"`
 	StartedAt      time.Time   `json:"started_at"`
@@ -62,7 +115,7 @@ type Result struct {
 	Missing        []SkillCall `json:"missing"`
 	Additional     []SkillCall `json:"additional"`
 	Unattributed   []SkillCall `json:"unattributed"`
-	TranscriptPath string      `json:"transcript_path"`
+	TranscriptPath string      `json:"transcript_path,omitempty"`
 }
 
 type WebsitePoint struct {
@@ -93,15 +146,23 @@ func New(stateRoot string) Service {
 	return Service{
 		stateRoot:      stateRoot,
 		runs:           runstate.NewStore(stateRoot),
-		installer:      installer.New(stateRoot),
+		installer:      installer.New(),
 		adapterFactory: replay.NewAdapter,
 	}
 }
 
 func (service Service) Run(ctx context.Context, request RunRequest) (result Result, err error) {
+	request, err = PrepareRequest(request)
+	if err != nil {
+		return Result{}, err
+	}
 	workspace, err := filepath.Abs(request.Workspace)
 	if err != nil {
 		return Result{}, fmt.Errorf("resolve evaluation workspace: %w", err)
+	}
+	workspace, err = filepath.EvalSymlinks(workspace)
+	if err != nil {
+		return Result{}, fmt.Errorf("canonicalize evaluation workspace: %w", err)
 	}
 	if info, statErr := os.Stat(workspace); statErr != nil || !info.IsDir() {
 		return Result{}, errors.New("evaluation workspace must be an existing directory")
@@ -111,15 +172,17 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 	if err != nil {
 		return Result{}, err
 	}
-	scenario, answer, err := loadInputs(request)
+	inputs, err := loadEvaluationInputs(request)
 	if err != nil {
 		return Result{}, err
 	}
+	inputs = limitEvaluationInputs(inputs, request.EffectiveTurns)
+	scenario, answer := inputs.scenario, inputs.answer
 	cliPath, err := executablePath(request.CLIPath)
 	if err != nil {
 		return Result{}, err
 	}
-	tokens, err := skillTokens(answer)
+	tokens, err := skillTokens(inputs.skills)
 	if err != nil {
 		return Result{}, err
 	}
@@ -127,17 +190,19 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 	if err != nil {
 		return Result{}, err
 	}
-	outputDirectory := filepath.Join(outputRoot, runID)
+	startedAt := time.Now().UTC()
+	outputDirectory := filepath.Join(outputRoot, fmt.Sprintf("%s-%s-%s", request.Harness, startedAt.Format("20060102T150405Z"), runID[:8]))
 	if err := os.Mkdir(outputDirectory, 0o700); err != nil {
 		return Result{}, fmt.Errorf("create evaluation output directory: %w", err)
 	}
-	startedAt := time.Now().UTC()
 	run := runstate.Run{
 		SchemaVersion: 1,
 		ID:            runID,
 		Workspace:     workspace,
 		Harness:       string(request.Harness),
 		Model:         request.Model,
+		Reasoning:     request.Reasoning,
+		EvaluationID:  evaluationIdentity(request, scenario),
 		Scenario:      scenario.ID,
 		Scope:         string(harness.ScopeProject),
 		Status:        "preparing",
@@ -146,54 +211,81 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 	if err := service.runs.Create(run); err != nil {
 		return Result{}, err
 	}
+	run, err = service.runs.Load(runID)
+	if err != nil {
+		return Result{}, err
+	}
 	defer func() {
 		if err != nil {
 			_ = service.runs.DeletePrivateMappings(runID)
+			_ = service.runs.DeleteRun(runID)
 			err = fmt.Errorf("evaluation run %s: %w", runID, err)
 		}
 	}()
-	backup, _, err := service.installer.PrepareEvaluation(installer.Request{
-		Harness:        request.Harness,
-		Scope:          harness.ScopeProject,
-		Workspace:      workspace,
-		ProductVersion: request.ProductVersion,
-		RunID:          runID,
-		CLIPath:        cliPath,
-		Tokens:         tokens,
-	}, service.runs.RunDir(runID))
+	runtime, err := service.prepareRuntime(request.Harness, request.Reasoning, runID, workspace, request.Executable, cliPath)
+	if err != nil {
+		return Result{}, err
+	}
+	defer os.RemoveAll(privateRuntimeRunRoot(runID))
+	if err := replay.CheckAuthentication(ctx, replay.HarnessID(request.Harness), request.Executable, runtime.environment, request.Harness == harness.Cursor || request.Harness == harness.Pi); err != nil {
+		return Result{}, fmt.Errorf("evaluation encountered a tooling error: %w", err)
+	}
+	installationState, _, err := service.installer.PrepareEvaluation(installer.Request{
+		Harness:         request.Harness,
+		Scope:           harness.ScopeProject,
+		Workspace:       workspace,
+		EvaluationRoot:  runtime.evaluationSkillRoot,
+		CLIPath:         cliPath,
+		SignalStateRoot: service.stateRoot,
+		Tokens:          tokens,
+		Skills:          inputs.skills,
+	})
 	if err != nil {
 		return Result{}, err
 	}
 	cleaned := false
 	defer func() {
 		if !cleaned {
-			cleanupErr := service.cleanupWithBackup(runID, backup)
+			cleanupErr := service.cleanupWithInstallation(runID, installationState)
 			if err == nil && cleanupErr != nil {
 				err = cleanupErr
 			}
 		}
 	}()
-	backupPath := filepath.Join(service.runs.RunDir(runID), "installation-backup.json")
-	backupData, err := installer.EncodeBackup(backup)
+	installationStatePath := filepath.Join(service.runs.RunDir(runID), "installation-state.json")
+	installationStateData, err := installer.EncodeEvaluationInstallation(installationState)
 	if err != nil {
 		return Result{}, err
 	}
-	if err := os.WriteFile(backupPath, append(backupData, '\n'), 0o600); err != nil {
-		return Result{}, fmt.Errorf("write evaluation restoration state: %w", err)
+	if err := os.WriteFile(installationStatePath, append(installationStateData, '\n'), 0o600); err != nil {
+		return Result{}, fmt.Errorf("write evaluation installation state: %w", err)
 	}
-	run.PriorReceipt = backupPath
+	runtime.environment = append(runtime.environment, "PWD="+runtime.workingDirectory)
+	run.InstallationState = installationStatePath
 	run.Status = "running"
 	if err := service.runs.Save(run); err != nil {
 		return Result{}, err
 	}
 	adapter, err := service.adapterFactory(replay.HarnessID(request.Harness), replay.Options{
-		Executable: request.Executable,
-		Directory:  workspace,
-		Model:      request.Model,
+		Executable:            request.Executable,
+		Directory:             runtime.workingDirectory,
+		Environment:           runtime.environment,
+		CleanEnvironment:      request.Harness == harness.Cursor || request.Harness == harness.Pi,
+		Model:                 request.Model,
+		ModelOverride:         request.ModelOverride,
+		Reasoning:             request.Reasoning,
+		ReasoningOverride:     request.ReasoningOverride,
+		CodexConfiguration:    runtime.codexConfiguration,
+		CursorPluginDir:       runtime.cursorPluginDir,
+		ClaudeSettings:        runtime.claudeSettings,
+		ClaudeSkillsRoot:      runtime.claudeSkillsRoot,
+		ClaudeWorkspacePrompt: runtime.claudeWorkspacePrompt,
+		PiSkillsRoot:          runtime.piSkillsRoot,
+		SkillIssueExecutable:  cliPath,
 	})
 	if err != nil {
 		service.setStatus(runID, "tooling-failed")
-		return Result{}, err
+		return Result{}, fmt.Errorf("evaluation encountered a tooling error: %w", err)
 	}
 	runner := replay.Runner{
 		Adapter: adapter,
@@ -206,28 +298,52 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 					return err
 				}
 			}
+			if request.Harness == harness.Codex && boundary.Capture != nil {
+				if err := service.recordCodexSignals(runID, boundary.TurnID, *boundary.Capture, tokens, cliPath); err != nil {
+					return err
+				}
+			}
 			return service.runs.SetActiveTurn(runID, "")
 		},
 	}
 	replayResult, err := runner.Run(ctx, scenario)
 	if err != nil {
 		service.setStatus(runID, "tooling-failed")
-		return Result{}, err
+		return Result{}, fmt.Errorf("evaluation encountered a tooling error: %w", err)
+	}
+	if request.IncludeTranscript {
+		sanitizer, err := newTranscriptSanitizer(transcriptSanitizerConfig{
+			Workspace:   workspace,
+			OutputRoot:  outputRoot,
+			StateRoot:   service.stateRoot,
+			RuntimeRoot: privateRuntimeRunRoot(runID),
+			CLIPath:     cliPath,
+		})
+		if err != nil {
+			return Result{}, err
+		}
+		if err := sanitizer.sanitize(&replayResult); err != nil {
+			return Result{}, err
+		}
 	}
 	events, err := service.runs.Events(runID)
 	if err != nil {
 		return Result{}, err
 	}
-	result = deriveResult(runID, request, scenario.ID, startedAt, answer.Expected, events)
-	eventsPath := filepath.Join(outputDirectory, "events.jsonl")
-	if err := writeEventsJSONL(eventsPath, events); err != nil {
-		return Result{}, err
+	result = deriveResult(runID, request, evaluationIdentity(request, scenario), scenario.ID, startedAt, answer.Expected, events)
+	if request.IncludeEvents {
+		eventsPath := filepath.Join(outputDirectory, "events.jsonl")
+		if err := writeEventsJSONL(eventsPath, events); err != nil {
+			return Result{}, err
+		}
 	}
-	transcriptPath := filepath.Join(outputDirectory, "transcript.json")
-	if err := writeJSON(transcriptPath, replayResult); err != nil {
-		return Result{}, err
+	if request.IncludeTranscript {
+		transcriptPath := filepath.Join(outputDirectory, "transcript.json")
+		if err := writeJSON(transcriptPath, replayResult); err != nil {
+			return Result{}, err
+		}
+		result.TranscriptPath = filepath.Base(transcriptPath)
 	}
-	result.TranscriptPath = filepath.Base(transcriptPath)
 	evidencePath := filepath.Join(outputDirectory, "result.json")
 	if err := writeJSON(evidencePath, result); err != nil {
 		return Result{}, err
@@ -241,16 +357,55 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 		return Result{}, err
 	}
 	run.EvidencePath = evidencePath
-	run.TranscriptPath = transcriptPath
+	if request.IncludeTranscript {
+		run.TranscriptPath = filepath.Join(outputDirectory, result.TranscriptPath)
+	}
 	run.Status = "complete"
 	if err := service.runs.Save(run); err != nil {
 		return Result{}, err
 	}
-	if err := service.cleanupWithBackup(runID, backup); err != nil {
+	if err := service.cleanupWithInstallation(runID, installationState); err != nil {
 		return Result{}, err
 	}
 	cleaned = true
 	return result, nil
+}
+
+func (service Service) recordCodexSignals(runID, turnID string, capture replay.Capture, tokens map[string]string, cliPath string) error {
+	existing, err := service.runs.Events(runID)
+	if err != nil {
+		return err
+	}
+	observed := map[string]bool{}
+	for _, event := range existing {
+		if event.TurnID == turnID {
+			observed[event.Skill] = true
+		}
+	}
+	recorded := map[string]bool{}
+	for _, event := range capture.Events {
+		var value struct {
+			Type string `json:"type"`
+			Item struct {
+				Type    string `json:"type"`
+				Command string `json:"command"`
+			} `json:"item"`
+		}
+		if json.Unmarshal(event, &value) != nil || value.Item.Type != "command_execution" {
+			continue
+		}
+		for token := range tokens {
+			skill := tokens[token]
+			if recorded[token] || observed[skill] || !strings.Contains(value.Item.Command, cliPath) || !strings.Contains(value.Item.Command, " signal ") || !strings.Contains(value.Item.Command, token) || !strings.Contains(value.Item.Command, service.stateRoot) {
+				continue
+			}
+			if err := service.runs.Mark(token); err != nil {
+				return err
+			}
+			recorded[token] = true
+		}
+	}
+	return nil
 }
 
 func (service Service) Cleanup(runID string) error {
@@ -258,30 +413,39 @@ func (service Service) Cleanup(runID string) error {
 	if err != nil {
 		return err
 	}
-	if run.PriorReceipt == "" {
+	if run.InstallationState == "" {
 		return service.finishCleanup(run)
 	}
-	data, err := os.ReadFile(run.PriorReceipt)
+	data, err := os.ReadFile(run.InstallationState)
 	if err != nil {
-		return fmt.Errorf("read evaluation restoration state: %w", err)
+		return fmt.Errorf("read evaluation installation state: %w", err)
 	}
-	backup, err := installer.DecodeBackup(data)
+	installationState, err := installer.DecodeEvaluationInstallation(data)
 	if err != nil {
-		return fmt.Errorf("decode evaluation restoration state: %w", err)
+		return fmt.Errorf("decode evaluation installation state: %w", err)
 	}
-	return service.cleanupWithBackup(runID, backup)
+	return service.cleanupWithInstallation(runID, installationState)
 }
 
-func (service Service) cleanupWithBackup(runID string, backup installer.EvaluationBackup) error {
+func (service Service) cleanupWithInstallation(runID string, installationState installer.EvaluationInstallation) error {
 	run, err := service.runs.Load(runID)
 	if err != nil {
 		return err
 	}
-	if run.PriorReceipt != "" {
-		if err := service.installer.CleanupEvaluation(backup, runID); err != nil {
-			return err
-		}
-		run.PriorReceipt = ""
+	harnessID, err := harness.ParseID(run.Harness)
+	if err != nil {
+		return err
+	}
+	if err := service.installer.CleanupEvaluation(installer.Request{
+		Harness:        harnessID,
+		Scope:          harness.ScopeProject,
+		Workspace:      run.Workspace,
+		EvaluationRoot: installationState.Root,
+	}, installationState); err != nil {
+		return err
+	}
+	if run.InstallationState != "" {
+		run.InstallationState = ""
 		if err := service.runs.Save(run); err != nil {
 			return err
 		}
@@ -290,6 +454,9 @@ func (service Service) cleanupWithBackup(runID string, backup installer.Evaluati
 }
 
 func (service Service) finishCleanup(run runstate.Run) error {
+	if err := os.RemoveAll(privateRuntimeRunRoot(run.ID)); err != nil {
+		return fmt.Errorf("remove private harness runtime: %w", err)
+	}
 	if err := service.runs.DeletePrivateMappings(run.ID); err != nil {
 		return err
 	}
@@ -303,7 +470,10 @@ func (service Service) finishCleanup(run runstate.Run) error {
 	} else if run.Status != "cleaned" {
 		run.Status = "cleaned"
 	}
-	return service.runs.Save(run)
+	if err := service.runs.Save(run); err != nil {
+		return err
+	}
+	return service.runs.DeleteRun(run.ID)
 }
 
 func (service Service) Mark(token string) error {
@@ -335,48 +505,86 @@ func readScenario(path string) (replay.Scenario, error) {
 }
 
 func loadInputs(request RunRequest) (replay.Scenario, AnswerSheet, error) {
+	inputs, err := loadEvaluationInputs(request)
+	if err != nil {
+		return replay.Scenario{}, AnswerSheet{}, err
+	}
+	return inputs.scenario, inputs.answer, nil
+}
+
+func loadEvaluationInputs(request RunRequest) (loadedInputs, error) {
 	if request.EvaluationID != "" {
-		if request.ScenarioPath != "" || request.AnswerSheet != "" {
-			return replay.Scenario{}, AnswerSheet{}, errors.New("built-in evaluation cannot be combined with custom input files")
+		if request.SkillsPath != "" || request.ScenarioPath != "" || request.AnswerSheet != "" {
+			return loadedInputs{}, errors.New("built-in evaluation cannot be combined with custom skill or input files")
 		}
 		data, err := payload.BuiltInEvaluation(request.EvaluationID)
 		if err != nil {
-			return replay.Scenario{}, AnswerSheet{}, err
+			return loadedInputs{}, err
 		}
 		var builtIn BuiltInEvaluation
 		if err := json.Unmarshal(data, &builtIn); err != nil {
-			return replay.Scenario{}, AnswerSheet{}, fmt.Errorf("decode built-in evaluation: %w", err)
+			return loadedInputs{}, fmt.Errorf("decode built-in evaluation: %w", err)
 		}
 		if builtIn.SchemaVersion != 1 || builtIn.EvaluationID != request.EvaluationID {
-			return replay.Scenario{}, AnswerSheet{}, errors.New("built-in evaluation identity is invalid")
+			return loadedInputs{}, errors.New("built-in evaluation identity is invalid")
 		}
 		if err := builtIn.Scenario.Validate(); err != nil {
-			return replay.Scenario{}, AnswerSheet{}, err
+			return loadedInputs{}, err
 		}
 		if err := validateAnswerSheet(builtIn.AnswerSheet, builtIn.Scenario); err != nil {
-			return replay.Scenario{}, AnswerSheet{}, err
+			return loadedInputs{}, err
 		}
-		return builtIn.Scenario, builtIn.AnswerSheet, nil
+		skills, err := payload.EvaluationSkills()
+		if err != nil {
+			return loadedInputs{}, err
+		}
+		return loadedInputs{scenario: builtIn.Scenario, answer: builtIn.AnswerSheet, skills: skills}, nil
 	}
-	if request.ScenarioPath == "" || request.AnswerSheet == "" {
-		return replay.Scenario{}, AnswerSheet{}, errors.New("custom evaluation requires scenario and answer-sheet files")
+	if request.SkillsPath == "" || request.ScenarioPath == "" || request.AnswerSheet == "" {
+		return loadedInputs{}, errors.New("custom evaluation requires skills, scenario, and answer-sheet inputs")
 	}
 	inside, err := pathInsideWorkspace(request.Workspace, request.AnswerSheet)
 	if err != nil {
-		return replay.Scenario{}, AnswerSheet{}, err
+		return loadedInputs{}, err
 	}
 	if inside {
-		return replay.Scenario{}, AnswerSheet{}, errors.New("custom answer sheet must remain outside the evaluated workspace")
+		return loadedInputs{}, errors.New("custom answer sheet must remain outside the evaluated workspace")
 	}
 	scenario, err := readScenario(request.ScenarioPath)
 	if err != nil {
-		return replay.Scenario{}, AnswerSheet{}, err
+		return loadedInputs{}, err
 	}
-	answer, err := readAnswerSheet(request.AnswerSheet, scenario)
+	answer, err := readAnswerSheet(request.AnswerSheet)
 	if err != nil {
-		return replay.Scenario{}, AnswerSheet{}, err
+		return loadedInputs{}, err
 	}
-	return scenario, answer, nil
+	skills, err := payload.LoadSkills(request.SkillsPath)
+	if err != nil {
+		return loadedInputs{}, err
+	}
+	if err := validateAnswerSheetForSkills(answer, scenario, skills); err != nil {
+		return loadedInputs{}, err
+	}
+	return loadedInputs{scenario: scenario, answer: answer, skills: skills}, nil
+}
+
+func limitEvaluationInputs(inputs loadedInputs, turns int) loadedInputs {
+	if turns <= 0 || turns >= len(inputs.scenario.Turns) {
+		return inputs
+	}
+	inputs.scenario.Turns = inputs.scenario.Turns[:turns]
+	includedTurns := make(map[string]bool, turns)
+	for _, turn := range inputs.scenario.Turns {
+		includedTurns[turn.ID] = true
+	}
+	expected := make([]SkillCall, 0, len(inputs.answer.Expected))
+	for _, call := range inputs.answer.Expected {
+		if includedTurns[call.TurnID] {
+			expected = append(expected, call)
+		}
+	}
+	inputs.answer.Expected = expected
+	return inputs
 }
 
 func pathInsideWorkspace(workspace, candidate string) (bool, error) {
@@ -441,7 +649,7 @@ func pathWithin(root, candidate string) (bool, error) {
 	return relative == "." || (relative != ".." && !strings.HasPrefix(relative, ".."+string(filepath.Separator))), nil
 }
 
-func readAnswerSheet(path string, scenario replay.Scenario) (AnswerSheet, error) {
+func readAnswerSheet(path string) (AnswerSheet, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return AnswerSheet{}, fmt.Errorf("read answer sheet: %w", err)
@@ -450,13 +658,18 @@ func readAnswerSheet(path string, scenario replay.Scenario) (AnswerSheet, error)
 	if err := json.Unmarshal(data, &answer); err != nil {
 		return AnswerSheet{}, fmt.Errorf("decode answer sheet: %w", err)
 	}
-	if err := validateAnswerSheet(answer, scenario); err != nil {
-		return AnswerSheet{}, err
-	}
 	return answer, nil
 }
 
 func validateAnswerSheet(answer AnswerSheet, scenario replay.Scenario) error {
+	skills, err := payload.EvaluationSkills()
+	if err != nil {
+		return err
+	}
+	return validateAnswerSheetForSkills(answer, scenario, skills)
+}
+
+func validateAnswerSheetForSkills(answer AnswerSheet, scenario replay.Scenario, skills []payload.Skill) error {
 	if answer.SchemaVersion != 1 || answer.ScenarioID != scenario.ID || len(answer.Expected) == 0 {
 		return errors.New("answer sheet does not match the scenario")
 	}
@@ -465,10 +678,6 @@ func validateAnswerSheet(answer AnswerSheet, scenario replay.Scenario) error {
 		turns[turn.ID] = true
 	}
 	available := map[string]bool{}
-	skills, err := payload.EvaluationSkills()
-	if err != nil {
-		return err
-	}
 	for _, skill := range skills {
 		available[skill.Name] = true
 	}
@@ -480,11 +689,7 @@ func validateAnswerSheet(answer AnswerSheet, scenario replay.Scenario) error {
 	return nil
 }
 
-func skillTokens(answer AnswerSheet) (map[string]string, error) {
-	skills, err := payload.EvaluationSkills()
-	if err != nil {
-		return nil, err
-	}
+func skillTokens(skills []payload.Skill) (map[string]string, error) {
 	tokens := make(map[string]string, len(skills))
 	for _, skill := range skills {
 		token, err := runstate.NewToken()
@@ -496,7 +701,7 @@ func skillTokens(answer AnswerSheet) (map[string]string, error) {
 	return tokens, nil
 }
 
-func deriveResult(runID string, request RunRequest, scenarioID string, startedAt time.Time, expected []SkillCall, events []runstate.Event) Result {
+func deriveResult(runID string, request RunRequest, evaluationID, scenarioID string, startedAt time.Time, expected []SkillCall, events []runstate.Event) Result {
 	expectedSet := map[string]bool{}
 	for _, item := range expected {
 		expectedSet[item.TurnID+"\x00"+item.Skill] = true
@@ -529,6 +734,8 @@ func deriveResult(runID string, request RunRequest, scenarioID string, startedAt
 		RunID:         runID,
 		Harness:       string(request.Harness),
 		Model:         request.Model,
+		Reasoning:     request.Reasoning,
+		EvaluationID:  evaluationID,
 		ScenarioID:    scenarioID,
 		Scope:         string(harness.ScopeProject),
 		StartedAt:     startedAt,
@@ -539,6 +746,13 @@ func deriveResult(runID string, request RunRequest, scenarioID string, startedAt
 		Additional:    additional,
 		Unattributed:  unattributed,
 	}
+}
+
+func evaluationIdentity(request RunRequest, scenario replay.Scenario) string {
+	if request.EvaluationID != "" {
+		return request.EvaluationID
+	}
+	return scenario.ID
 }
 
 func deriveWebsiteResult(result Result, scenario replay.Scenario) WebsiteResult {

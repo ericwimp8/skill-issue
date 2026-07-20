@@ -6,7 +6,7 @@
 
 ## Direct Evidence Retained
 
-- The fresh agent for this trial was `/root/evaluator_desc_confirm_2`, started without inherited task context. Its native pre-response tool trace read `skills/skill-evaluation-and-refinement/SKILL.md` and all four evaluator references before forming this decision. That trace is direct evidence that the evaluator loaded; the prose in this file is not used as invocation proof.
+- The fresh agent for this trial was `<fresh-agent-4>`, started without inherited task context. Its native pre-response tool trace read `skills/skill-evaluation-and-refinement/SKILL.md` and all four evaluator references before forming this decision. That trace is direct evidence that the evaluator loaded; the prose in this file is not used as invocation proof.
 - `evaluations/skill-system-production-refinement/environment-qualification.md` qualifies Codex Desktop fresh sub-agents backed by Codex CLI `0.145.0-alpha.18`, model `gpt-5.6-sol` with high reasoning, for campaign-local proactive-selection trials when an exact native skill-load event or pre-output read is retained.
 - `skills/skill-generation/agents/openai.yaml` advertises Skill Generation to Codex, and the target is not marked explicit-only.
 - `evaluations/skill-system-production-refinement/progress.md` records the current campaign at Phase 4, with `skill-evaluation-and-refinement` as the current target and completion of the evaluator's confirmation description trials as the next action. Skill Generation evaluation remains scheduled for Phase 7.
@@ -45,7 +45,7 @@ Start only after `status.md` records description state `passed` with four retain
 - a complete evaluation handoff with no shadow generation plan;
 - recorded working-mode and user-stop behavior.
 
-Retain each unmodified prompt, fresh-agent identity, fixture specification, explicit load trace, generated output or transcript, ground-truth comparison, criterion result, and cleanup ownership. A behavior failure must remain a behavior result even when automatic selection passed.
+Retain each prompt with runtime locations represented by stable placeholders, plus fresh-agent identity, fixture specification, explicit load trace, generated output or transcript, ground-truth comparison, criterion result, and cleanup ownership. A behavior failure must remain a behavior result even when automatic selection passed.
 
 ## Blocking Gate
 

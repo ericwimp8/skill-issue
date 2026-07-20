@@ -1,0 +1,2 @@
+2026-07-17T11:02:04Z correlation_id=prof-19 route=/profile/save status=200 duration_ms=184
+2026-07-17T11:02:04Z correlation_id=prof-19 event=response_sent bytes=42

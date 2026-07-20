@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/ericwimp8/skill-issue/cli/internal/harness"
@@ -147,14 +148,22 @@ func TestToolingCompleteRunWritesWebsiteArtifact(t *testing.T) {
 	directory := t.TempDir()
 	workspace := filepath.Join(directory, "workspace")
 	inputs := filepath.Join(directory, "inputs")
-	state := filepath.Join(directory, "state")
 	output := filepath.Join(directory, "output")
+	state := filepath.Join(output, ".skill-issue")
+	codexSource := filepath.Join(directory, "codex-source")
 	if err := os.Mkdir(workspace, 0o700); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.Mkdir(inputs, 0o700); err != nil {
 		t.Fatal(err)
 	}
+	if err := os.Mkdir(codexSource, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(codexSource, "auth.json"), []byte("private-auth"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("CODEX_HOME", codexSource)
 	scenarioPath := filepath.Join(inputs, "scenario.json")
 	answerPath := filepath.Join(inputs, "answer.json")
 	writeJSONFixture(t, scenarioPath, map[string]any{
@@ -178,7 +187,36 @@ func TestToolingCompleteRunWritesWebsiteArtifact(t *testing.T) {
 		t.Fatal(err)
 	}
 	service := New(state)
-	service.adapterFactory = func(id replay.HarnessID, _ replay.Options) (replay.Adapter, error) {
+	var runtimeRoot string
+	service.adapterFactory = func(id replay.HarnessID, options replay.Options) (replay.Adapter, error) {
+		for _, entry := range options.Environment {
+			if strings.HasPrefix(entry, "CODEX_HOME=") {
+				runtimeRoot = strings.TrimPrefix(entry, "CODEX_HOME=")
+			}
+		}
+		if runtimeRoot == "" {
+			t.Fatal("Codex runtime home was not supplied to the adapter")
+		}
+		config, err := os.ReadFile(filepath.Join(runtimeRoot, "config.toml"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, expected := range []string{`model_reasoning_effort = "medium"`, `approval_policy = "never"`, `sandbox_mode = "workspace-write"`} {
+			if !strings.Contains(string(config), expected) {
+				t.Fatalf("private Codex config is missing %q", expected)
+			}
+		}
+		rules, err := os.ReadFile(filepath.Join(runtimeRoot, "rules", "skill-issue.rules"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !strings.Contains(string(rules), strconvQuote(cliPath)+`, "signal"`) || strings.Contains(string(rules), "answer sheet") {
+			t.Fatalf("unexpected private signal rule: %s", rules)
+		}
+		credentials, err := os.ReadFile(filepath.Join(runtimeRoot, "auth.json"))
+		if err != nil || string(credentials) != "private-auth" {
+			t.Fatalf("private credentials were not copied safely: %q %v", credentials, err)
+		}
 		return staticAdapter{id: id}, nil
 	}
 	result, err := service.Run(context.Background(), RunRequest{
@@ -210,6 +248,12 @@ func TestToolingCompleteRunWritesWebsiteArtifact(t *testing.T) {
 	}
 	if website.RunID != result.RunID || website.TotalTurns != 1 || len(website.Points) != 1 {
 		t.Fatalf("unexpected website file: %#v", website)
+	}
+	if _, err := os.Stat(filepath.Join(output, ".skill-issue", "runs", result.RunID, "run.json")); err != nil {
+		t.Fatalf("private run state is not under output root: %v", err)
+	}
+	if _, err := os.Stat(runtimeRoot); !os.IsNotExist(err) {
+		t.Fatalf("private Codex runtime was not removed: %v", err)
 	}
 }
 
@@ -246,4 +290,9 @@ func writeJSONFixture(t *testing.T, path string, value any) {
 	if err := os.WriteFile(path, data, 0o600); err != nil {
 		t.Fatal(err)
 	}
+}
+
+func strconvQuote(value string) string {
+	data, _ := json.Marshal(value)
+	return string(data)
 }

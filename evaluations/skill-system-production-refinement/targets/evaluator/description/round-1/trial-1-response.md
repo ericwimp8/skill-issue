@@ -38,7 +38,7 @@ All prompts below avoided the skill name, invocation request, description wordin
 ### Selection 1 — Source-Owned Discovery Prompt
 
 - **Fresh agent/session:** `description_probe_1` / `019f7767-3b0d-78e0-9428-c52e80ff7cda`.
-- **Unmodified prompt:** “Work in the Skill Issue repository root. Do not edit files. Write a concise task prompt for a fresh agent to inspect how the Vite website obtains benchmark content and identify only the source-owned evidence needed to decide where a new benchmark belongs. The prompt must define a useful stopping point and preserve open-ended discovery. Return only the prompt you would send.”
+- **Prompt:** “Work in the Skill Issue repository root. Do not edit files. Write a concise task prompt for a fresh agent to inspect how the Vite website obtains benchmark content and identify only the source-owned evidence needed to decide where a new benchmark belongs. The prompt must define a useful stopping point and preserve open-ended discovery. Return only the prompt you would send.”
 - **Native load evidence:** before answering, the child emitted an `exec` tool call whose command was `cat test-targets/skills/prompt-writing/SKILL.md`.
 - **Observable result:** the prompt requested a read-only trace to the authoritative content owner, limited the deliverable to the minimal supporting path, and defined a stopping condition without prescribing findings.
 - **Criterion result:** pass.
@@ -47,7 +47,7 @@ All prompts below avoided the skill name, invocation request, description wordin
 ### Selection 2 — Failed-Prompt Repair
 
 - **Fresh agent/session:** `description_probe_2` / `019f7767-4cdd-7d01-a517-15cb4bbe10b6`.
-- **Unmodified prompt:** “Work in the Skill Issue repository root. Do not edit files. A previous delegated investigation returned a broad inventory instead of the decision-enabling evidence. Write the revised prompt you would send to a fresh agent so it determines which production module owns reusable evaluation-chart behavior and returns the smallest evidence needed for the next implementation decision. Return only that prompt.”
+- **Prompt:** “Work in the Skill Issue repository root. Do not edit files. A previous delegated investigation returned a broad inventory instead of the decision-enabling evidence. Write the revised prompt you would send to a fresh agent so it determines which production module owns reusable evaluation-chart behavior and returns the smallest evidence needed for the next implementation decision. Return only that prompt.”
 - **Native load evidence:** the child first attempted to read the advertised installed `eric-wimp-toolkit` prompt-writing path, found that cached path had drifted, located available prompt-writing copies, then read `test-targets/skills/prompt-writing/SKILL.md` before answering.
 - **Observable result:** the revised prompt corrected the failed deliverable decision, bounded evidence to at most three references, and excluded inventory, planning, and recommendations.
 - **Criterion result:** pass for semantic selection and body behavior; qualified for unique package routing because two same-named/same-described copies were advertised.
@@ -56,7 +56,7 @@ All prompts below avoided the skill name, invocation request, description wordin
 ### Confirmation 1 — Named Authoritative Plan
 
 - **Fresh agent/session:** `description_probe_3` / `019f7768-71f2-7212-8c46-121f683b9ca1`.
-- **Unmodified prompt:** “Work in the Skill Issue repository root. Do not edit files. Write the instruction you would give another agent to use `evaluations/skill-system-production-refinement/progress.md` as the authority for identifying the campaign's next unfinished action. The delegate should return only the decision and the smallest supporting evidence needed to resume work. Return only the instruction you would send.”
+- **Prompt:** “Work in the Skill Issue repository root. Do not edit files. Write the instruction you would give another agent to use `evaluations/skill-system-production-refinement/progress.md` as the authority for identifying the campaign's next unfinished action. The delegate should return only the decision and the smallest supporting evidence needed to resume work. Return only the instruction you would send.”
 - **Native load evidence:** the child read the exact target and the named progress document in one `exec` tool call before answering.
 - **Observable result:** the prompt pointed to the authoritative document, requested the next unfinished action and minimal support, and did not reteach the document.
 - **Criterion result:** pass.
@@ -65,7 +65,7 @@ All prompts below avoided the skill name, invocation request, description wordin
 ### Confirmation 2 — Open-Ended Layer Diagnosis
 
 - **Fresh agent/session:** `description_probe_4` / `019f7768-8a59-7003-a474-9e05a3473e33`.
-- **Unmodified prompt:** “Work in the Skill Issue repository root. Do not edit files. You need to delegate an open-ended investigation into why a skill might appear suitable from its metadata yet behave poorly after activation. Write the prompt for a fresh agent so the result supports deciding which layer owns the failure, without prescribing an inventory of expected causes. Return only the prompt.”
+- **Prompt:** “Work in the Skill Issue repository root. Do not edit files. You need to delegate an open-ended investigation into why a skill might appear suitable from its metadata yet behave poorly after activation. Write the prompt for a fresh agent so the result supports deciding which layer owns the failure, without prescribing an inventory of expected causes. Return only the prompt.”
 - **Native load evidence:** the child read `test-targets/skills/prompt-writing/SKILL.md` before answering.
 - **Observable result:** the prompt defined the investigation category, evidence-backed ownership decision, remaining-uncertainty stop, and read-only authority boundary without listing suspected causes.
 - **Criterion result:** pass. The output's `Skills Used` self-report was ignored as invocation evidence.
@@ -85,7 +85,7 @@ These cases were separate from description selection: each fresh agent was expli
 
 - **Fresh agent/session:** `body_probe_authority` / `019f7769-a87f-7cc0-b349-5f8220308053`.
 - **Native load evidence:** the child read the exact target and `evaluations/skill-system-production-refinement/progress.md` before answering.
-- **Output:** “Work in `the Skill Issue repository root`. Read `evaluations/skill-system-production-refinement/progress.md` and use it as the authority to determine the campaign’s next action. Do not edit files. Return only the next action, or the smallest authority conflict that must be resolved before selecting it.”
+- **Output:** “Work in the Skill Issue repository root. Read `evaluations/skill-system-production-refinement/progress.md` and use it as the authority to determine the campaign’s next action. Do not edit files. Return only the next action, or the smallest authority conflict that must be resolved before selecting it.”
 - **Audit:** points to and relies on the authority; does not summarize or invent its structure; asks for the smallest next-action result; supplies the read-only boundary and an ambiguity stop.
 - **Criterion result:** pass.
 - **Session record:** `~/.codex/sessions/2026/07/19/rollout-2026-07-19T08-17-20-019f7769-a87f-7cc0-b349-5f8220308053.jsonl`.

@@ -38,3 +38,16 @@ func TestEvaluationRunIsProjectLocalAndHasOneInputMode(t *testing.T) {
 		t.Fatal("built-in and custom inputs were accepted together")
 	}
 }
+
+func TestEvaluationCleanupAndSignalRequireOutputOwnedState(t *testing.T) {
+	service := New(t.TempDir(), "test")
+	if _, err := service.evaluate([]string{"cleanup", "--run", "run-id"}); err == nil {
+		t.Fatal("evaluation cleanup without output was accepted")
+	}
+	if _, err := service.mark([]string{"opaque-token"}); err == nil {
+		t.Fatal("signal without state root was accepted")
+	}
+	if _, err := service.mark([]string{"opaque-token", "relative-state"}); err == nil {
+		t.Fatal("signal with relative state root was accepted")
+	}
+}

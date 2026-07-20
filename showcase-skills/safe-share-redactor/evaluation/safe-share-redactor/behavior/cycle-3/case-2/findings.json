@@ -1,0 +1,17 @@
+{
+  "findings": [],
+  "limitations": [
+    "Contextual or unsupported sensitive material may remain unchanged.",
+    "Automated redaction does not guarantee complete privacy or secrecy."
+  ],
+  "sanitized_output": "sanitized.txt",
+  "schema_version": 1,
+  "source_sha256_after": "0b6860c37f92af298da48c3264125a43bd3b51f38dbd147b64bfbad3c8484290",
+  "source_sha256_before": "0b6860c37f92af298da48c3264125a43bd3b51f38dbd147b64bfbad3c8484290",
+  "summary": {
+    "ambiguous_risk_count": 0,
+    "changed": false,
+    "deterministic_count": 0,
+    "review_required": false
+  }
+}

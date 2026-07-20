@@ -3,6 +3,7 @@ package replay
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,10 +14,21 @@ import (
 )
 
 type Options struct {
-	Executable  string
-	Directory   string
-	Environment []string
-	Model       string
+	Executable            string
+	Directory             string
+	Environment           []string
+	CleanEnvironment      bool
+	Model                 string
+	ModelOverride         bool
+	Reasoning             string
+	ReasoningOverride     bool
+	CodexConfiguration    []string
+	CursorPluginDir       string
+	ClaudeSettings        string
+	ClaudeSkillsRoot      string
+	ClaudeWorkspacePrompt string
+	PiSkillsRoot          string
+	SkillIssueExecutable  string
 }
 
 type commandSpec struct {
@@ -26,12 +38,23 @@ type commandSpec struct {
 }
 
 type processAdapter struct {
-	harnessID HarnessID
-	path      string
-	directory string
-	environ   []string
-	spec      commandSpec
-	model     string
+	harnessID             HarnessID
+	path                  string
+	directory             string
+	environ               []string
+	spec                  commandSpec
+	model                 string
+	modelOverride         bool
+	reasoning             string
+	config                []string
+	cleanEnvironment      bool
+	cursorPluginDir       string
+	claudeSettings        string
+	claudeSkillsRoot      string
+	claudeWorkspacePrompt string
+	piSkillsRoot          string
+	skillIssueExecutable  string
+	cleanup               func() error
 }
 
 func NewAdapter(harnessID HarnessID, options Options) (Adapter, error) {
@@ -43,16 +66,61 @@ func NewAdapter(harnessID HarnessID, options Options) (Adapter, error) {
 		return nil, fmt.Errorf("unsupported harness %q", harnessID)
 	}
 	path, err := resolveExecutable(spec.executable, options.Executable)
+	if harnessID == HarnessCursor && options.Executable == "" {
+		path, err = resolveCursorExecutable()
+	}
 	if err != nil {
 		return nil, fmt.Errorf("%s executable: %w", harnessID, err)
 	}
-	return &processAdapter{harnessID: harnessID, path: path, directory: options.Directory, environ: options.Environment, spec: spec, model: options.Model}, nil
+	adapter := &processAdapter{
+		harnessID:             harnessID,
+		path:                  path,
+		directory:             options.Directory,
+		environ:               options.Environment,
+		spec:                  spec,
+		model:                 options.Model,
+		modelOverride:         options.ModelOverride,
+		reasoning:             options.Reasoning,
+		config:                options.CodexConfiguration,
+		cleanEnvironment:      options.CleanEnvironment,
+		cursorPluginDir:       options.CursorPluginDir,
+		claudeSettings:        options.ClaudeSettings,
+		claudeSkillsRoot:      options.ClaudeSkillsRoot,
+		claudeWorkspacePrompt: options.ClaudeWorkspacePrompt,
+		piSkillsRoot:          options.PiSkillsRoot,
+		skillIssueExecutable:  options.SkillIssueExecutable,
+	}
+	if harnessID == HarnessClaude {
+		adapter.cleanup = func() error {
+			command := exec.CommandContext(context.Background(), adapter.path, "project", "purge", "--yes", adapter.directory)
+			configureOwnedProcess(command)
+			command.Env = environment(adapter.environ, adapter.cleanEnvironment)
+			var output bytes.Buffer
+			command.Stdout = &output
+			command.Stderr = &output
+			err := command.Run()
+			stopOwnedProcessGroup(command)
+			if err != nil {
+				return fmt.Errorf("Claude Code project purge failed: %w: %s", err, strings.TrimSpace(output.String()))
+			}
+			return nil
+		}
+	}
+	return adapter, nil
 }
 
 func (adapter *processAdapter) HarnessID() HarnessID { return adapter.harnessID }
 
 func (adapter *processAdapter) Start(context.Context) (Session, error) {
-	return &processSession{adapter: adapter}, nil
+	session := &processSession{adapter: adapter}
+	if adapter.harnessID == HarnessClaude {
+		id, err := generatedSessionID()
+		if err != nil {
+			return nil, err
+		}
+		session.sessionID = id
+	}
+	return session, nil
 }
 
 type processSession struct {
@@ -62,6 +130,7 @@ type processSession struct {
 	stdout    bytes.Buffer
 	stderr    bytes.Buffer
 	closed    bool
+	started   bool
 }
 
 func (session *processSession) SendPrompt(ctx context.Context, prompt string) error {
@@ -72,23 +141,48 @@ func (session *processSession) SendPrompt(ctx context.Context, prompt string) er
 		return errors.New("previous prompt is still running")
 	}
 	args := session.adapter.spec.initial(prompt)
-	if session.sessionID != "" {
+	if session.adapter.harnessID == HarnessCursor {
+		args = cursorArgs(session.adapter, session.sessionID, prompt)
+	} else if session.adapter.harnessID == HarnessClaude {
+		if session.started {
+			args = claudeArgs(session.adapter, session.sessionID, prompt, true)
+		} else {
+			args = claudeArgs(session.adapter, session.sessionID, prompt, false)
+		}
+	} else if session.sessionID != "" {
 		args = session.adapter.spec.resume(session.sessionID, prompt)
 	}
-	if session.adapter.model != "" {
+	if session.adapter.model != "" && session.adapter.harnessID != HarnessCodex && session.adapter.harnessID != HarnessCursor && session.adapter.harnessID != HarnessClaude {
 		args = append(args, "--model", session.adapter.model)
+	}
+	if session.adapter.harnessID == HarnessCodex {
+		prefix := []string{
+			"--cd", session.adapter.directory,
+			"--ask-for-approval", "on-request",
+			"--sandbox", "workspace-write",
+			"--disable", "plugins",
+		}
+		if session.adapter.model != "" {
+			prefix = append(prefix, "--model", session.adapter.model)
+		}
+		for _, value := range session.adapter.config {
+			prefix = append(prefix, "--config", value)
+		}
+		args = append(prefix, args...)
 	}
 	session.stdout.Reset()
 	session.stderr.Reset()
 	command := exec.CommandContext(ctx, session.adapter.path, args...)
+	configureOwnedProcess(command)
 	command.Dir = session.adapter.directory
-	command.Env = mergedEnvironment(session.adapter.environ)
+	command.Env = environment(session.adapter.environ, session.adapter.cleanEnvironment)
 	command.Stdout = &session.stdout
 	command.Stderr = &session.stderr
 	if err := command.Start(); err != nil {
 		return fmt.Errorf("start executable: %w", err)
 	}
 	session.pending = command
+	session.started = true
 	return nil
 }
 
@@ -98,15 +192,21 @@ func (session *processSession) Wait(context.Context) (Capture, error) {
 	}
 	command := session.pending
 	session.pending = nil
-	if err := command.Wait(); err != nil {
+	err := command.Wait()
+	stopOwnedProcessGroup(command)
+	if err != nil {
 		return Capture{}, fmt.Errorf("harness exited unsuccessfully: %w: %s", err, strings.TrimSpace(session.stderr.String()))
 	}
 	events, err := parseEvents(session.stdout.Bytes())
 	if err != nil {
 		if session.adapter.harnessID != HarnessCopilot {
-			return Capture{}, err
+			return Capture{}, fmt.Errorf("%s harness produced invalid structured output: %w: %s", session.adapter.harnessID, err, strings.TrimSpace(session.stderr.String()))
 		}
 		events = []json.RawMessage{json.RawMessage(`{"type":"result"}`)}
+	}
+	requireSessionStart := session.sessionID == ""
+	if err := validateHarnessOutput(session.adapter.harnessID, events, session.stderr.String(), requireSessionStart); err != nil {
+		return Capture{}, err
 	}
 	if session.sessionID == "" {
 		session.sessionID = findSessionID(events)
@@ -114,10 +214,62 @@ func (session *processSession) Wait(context.Context) (Capture, error) {
 			session.sessionID = findCopilotSessionID(session.stdout.String() + "\n" + session.stderr.String())
 		}
 		if session.sessionID == "" {
-			return Capture{}, fmt.Errorf("%w: missing session ID", ErrProtocol)
+			return Capture{}, fmt.Errorf("%w: missing session ID: %s", ErrProtocol, strings.TrimSpace(session.stderr.String()))
 		}
 	}
+	if err := validateSessionID(session.adapter.harnessID, session.sessionID, events); err != nil {
+		return Capture{}, err
+	}
 	return Capture{SessionID: session.sessionID, Transcript: session.stdout.String(), Stderr: session.stderr.String(), Events: events}, nil
+}
+
+func validateHarnessOutput(harnessID HarnessID, events []json.RawMessage, stderr string, requireSessionStart bool) error {
+	types := map[string]bool{}
+	for _, event := range events {
+		var value struct {
+			Type    string `json:"type"`
+			Subtype string `json:"subtype"`
+			Error   any    `json:"error"`
+			IsError bool   `json:"is_error"`
+		}
+		if json.Unmarshal(event, &value) != nil {
+			return fmt.Errorf("%w: invalid %s event: %s", ErrProtocol, harnessID, strings.TrimSpace(string(event)))
+		}
+		types[value.Type+"\x00"+value.Subtype] = true
+		types[value.Type+"\x00"] = true
+		if value.Type == "turn.failed" || value.Type == "error" || value.Subtype == "error" || (value.Type == "result" && value.IsError) {
+			return fmt.Errorf("%s harness reported an error: %s", harnessID, strings.TrimSpace(string(event)))
+		}
+	}
+	switch harnessID {
+	case HarnessCodex:
+		if requireSessionStart && !types["thread.started\x00"] {
+			return fmt.Errorf("%w: Codex output missing thread.started: %s", ErrProtocol, strings.TrimSpace(stderr))
+		}
+		if !types["turn.completed\x00"] {
+			return fmt.Errorf("%w: Codex output missing turn.completed: %s", ErrProtocol, strings.TrimSpace(stderr))
+		}
+	case HarnessCursor:
+		if !types["system\x00init"] || !types["result\x00success"] {
+			return fmt.Errorf("%w: Cursor output missing successful system/init and result events: %s", ErrProtocol, strings.TrimSpace(stderr))
+		}
+	case HarnessClaude:
+		if !types["system\x00init"] || !types["result\x00"] {
+			return fmt.Errorf("%w: Claude Code output missing successful system/init and result events: %s", ErrProtocol, strings.TrimSpace(stderr))
+		}
+	}
+	return nil
+}
+
+func validateSessionID(harnessID HarnessID, sessionID string, events []json.RawMessage) error {
+	if sessionID == "" {
+		return fmt.Errorf("%w: missing %s session ID", ErrProtocol, harnessID)
+	}
+	found := findSessionID(events)
+	if found != "" && found != sessionID {
+		return fmt.Errorf("%w: %s session ID changed from %s to %s", ErrProtocol, harnessID, sessionID, found)
+	}
+	return nil
 }
 
 func findCopilotSessionID(output string) string {
@@ -130,10 +282,91 @@ func findCopilotSessionID(output string) string {
 
 func (session *processSession) Close() error {
 	session.closed = true
-	if session.pending == nil || session.pending.Process == nil {
+	var closeErr error
+	if session.pending != nil && session.pending.Process != nil {
+		stopOwnedProcessGroup(session.pending)
+		_ = session.pending.Wait()
+		session.pending = nil
+	}
+	if session.adapter.cleanup != nil {
+		cleanupErr := session.adapter.cleanup()
+		if closeErr == nil {
+			closeErr = cleanupErr
+		}
+	}
+	return closeErr
+}
+
+func cursorArgs(adapter *processAdapter, sessionID, prompt string) []string {
+	args := []string{"--disable-auto-update", "--disable-project-configs", "--workspace", adapter.directory, "--plugin-dir", adapter.cursorPluginDir}
+	if adapter.modelOverride || adapter.model != "auto" {
+		args = append(args, "--model", adapter.model)
+	}
+	args = append(args, "--trust", "--sandbox", "enabled", "--auto-review")
+	if sessionID != "" {
+		args = append(args, "--resume", sessionID)
+	}
+	return append(args, "-p", "--output-format", "stream-json", prompt)
+}
+
+func claudeArgs(adapter *processAdapter, sessionID, prompt string, resume bool) []string {
+	allowedTools := "Read,Write,Edit,Glob,Grep,Bash(" + adapter.skillIssueExecutable + " signal *)"
+	args := []string{"-p", "--setting-sources", "project", "--settings", adapter.claudeSettings, "--strict-mcp-config", "--no-chrome", "--add-dir", adapter.claudeSkillsRoot, "--tools", "Read,Write,Edit,Glob,Grep,Bash", "--allowedTools", allowedTools, "--permission-mode", "dontAsk", "--append-system-prompt", adapter.claudeWorkspacePrompt, "--model", adapter.model, "--effort", adapter.reasoning}
+	if resume {
+		args = append(args, "--resume", sessionID)
+	} else if sessionID != "" {
+		args = append(args, "--session-id", sessionID)
+	}
+	return append(args, "--output-format", "stream-json", "--verbose", prompt)
+}
+
+func generatedSessionID() (string, error) {
+	data := make([]byte, 16)
+	if _, err := rand.Read(data); err != nil {
+		return "", fmt.Errorf("generate harness session ID: %w", err)
+	}
+	return fmt.Sprintf("%x-%x-%x-%x-%x", data[0:4], data[4:6], data[6:8], data[8:10], data[10:]), nil
+}
+
+func resolveCursorExecutable() (string, error) {
+	for _, name := range []string{"agent", "cursor-agent"} {
+		if path, err := resolveExecutable(name, ""); err == nil {
+			return path, nil
+		}
+	}
+	return "", errors.New("Cursor executable: neither agent nor cursor-agent was found")
+}
+
+func CheckAuthentication(ctx context.Context, harnessID HarnessID, override string, env []string, clean bool) error {
+	if harnessID != HarnessCodex && harnessID != HarnessCursor {
 		return nil
 	}
-	return session.pending.Process.Kill()
+	var path string
+	var err error
+	if harnessID == HarnessCursor && override == "" {
+		path, err = resolveCursorExecutable()
+	} else {
+		name := "codex"
+		if harnessID == HarnessCursor {
+			name = "cursor-agent"
+		}
+		path, err = resolveExecutable(name, override)
+	}
+	if err != nil {
+		return fmt.Errorf("%s authentication executable: %w", harnessID, err)
+	}
+	command := exec.CommandContext(ctx, path, "login", "status")
+	if harnessID == HarnessCursor {
+		command = exec.CommandContext(ctx, path, "status")
+	}
+	command.Env = environment(env, clean)
+	var output bytes.Buffer
+	command.Stdout = &output
+	command.Stderr = &output
+	if err := command.Run(); err != nil {
+		return fmt.Errorf("%s authentication status failed: %w: %s", harnessID, err, strings.TrimSpace(output.String()))
+	}
+	return nil
 }
 
 func resolveExecutable(defaultName, override string) (string, error) {
@@ -159,7 +392,31 @@ func mergedEnvironment(extra []string) []string {
 	if extra == nil {
 		return os.Environ()
 	}
-	return append(append([]string{}, os.Environ()...), extra...)
+	overrides := make(map[string]string, len(extra))
+	for _, entry := range extra {
+		key, _, found := strings.Cut(entry, "=")
+		if found {
+			overrides[key] = entry
+		}
+	}
+	environment := make([]string, 0, len(os.Environ())+len(extra))
+	for _, entry := range os.Environ() {
+		key, _, found := strings.Cut(entry, "=")
+		if found {
+			if _, replaced := overrides[key]; replaced {
+				continue
+			}
+		}
+		environment = append(environment, entry)
+	}
+	return append(environment, extra...)
+}
+
+func environment(extra []string, clean bool) []string {
+	if !clean {
+		return mergedEnvironment(extra)
+	}
+	return append([]string(nil), extra...)
 }
 
 func parseEvents(output []byte) ([]json.RawMessage, error) {
@@ -261,9 +518,11 @@ func resumeArgs(resumeFlag, promptFlag string, suffix ...string) func(string, st
 	}
 }
 
-func codexInitial(prompt string) []string { return []string{"exec", "--json", prompt} }
+func codexInitial(prompt string) []string {
+	return []string{"exec", "--ignore-user-config", "--ignore-rules", "--json", prompt}
+}
 func codexResume(sessionID, prompt string) []string {
-	return []string{"exec", "--json", "resume", sessionID, prompt}
+	return []string{"exec", "resume", "--ignore-user-config", "--ignore-rules", "--json", sessionID, prompt}
 }
 func runArgs(prompt string) []string { return []string{"run", "--format", "json", prompt} }
 func runResumeArgs(sessionID, prompt string) []string {

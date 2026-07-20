@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "evaluation_id": "smoke-two-turn",
+  "scenario": {
+    "schema_version": 1,
+    "scenario_id": "smoke-two-turn",
+    "turns": [
+      {
+        "turn_id": "turn-1",
+        "prompt": "Use $prompt-writing to create smoke-note.md in the workspace. Write a two-item plan for checking that a tiny static page can be published. Keep the response concise."
+      },
+      {
+        "turn_id": "turn-2",
+        "prompt": "Continue using $prompt-writing and update smoke-note.md with one short research-agent prompt for checking free static hosting. Preserve the existing two-item plan."
+      }
+    ]
+  },
+  "answer_sheet": {
+    "schema_version": 1,
+    "scenario_id": "smoke-two-turn",
+    "expected": [
+      {
+        "turn_id": "turn-1",
+        "skill": "prompt-writing"
+      },
+      {
+        "turn_id": "turn-2",
+        "skill": "prompt-writing"
+      }
+    ]
+  }
+}

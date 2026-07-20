@@ -1,4 +1,4 @@
-import { EvaluationChart } from './components/EvaluationChart';
+import { EvaluationExplorer } from './components/EvaluationExplorer';
 import { MetricCard } from './components/MetricCard';
 import { ThemeToggle } from './components/ThemeToggle';
 import { siteData } from './data/siteData';
@@ -76,19 +76,15 @@ export function App() {
           <header className="section-heading">
             <div>
               <p className="eyebrow">Evaluation preview</p>
-              <h2 id="results-title">Skill usage over context.</h2>
+              <h2 id="results-title">Compare every expected call.</h2>
             </div>
             <p>
-              A matched view of successful calls and missed opportunities as the
-              available context is consumed.
+              Explore four views of the same CLI-shaped evidence. Filter by
+              scenario, harness, model, or individual comparison cell.
             </p>
           </header>
 
-          <div className="chart-grid">
-            {siteData.evaluations.map((graph) => (
-              <EvaluationChart key={graph.id} graph={graph} />
-            ))}
-          </div>
+          <EvaluationExplorer />
         </section>
 
         <section

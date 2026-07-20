@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/fs"
+	"os"
 	"path"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
@@ -54,6 +56,47 @@ func Skills() ([]Skill, error) {
 
 func EvaluationSkills() ([]Skill, error) {
 	return readSkills(true)
+}
+
+func LoadSkills(root string) ([]Skill, error) {
+	if strings.TrimSpace(root) == "" {
+		return nil, fmt.Errorf("custom skill directory is required")
+	}
+	abs, err := filepath.Abs(root)
+	if err != nil {
+		return nil, fmt.Errorf("resolve custom skill directory: %w", err)
+	}
+	info, err := os.Stat(abs)
+	if err != nil {
+		return nil, fmt.Errorf("inspect custom skill directory: %w", err)
+	}
+	if !info.IsDir() {
+		return nil, fmt.Errorf("custom skill path must be a directory")
+	}
+	entries, err := os.ReadDir(abs)
+	if err != nil {
+		return nil, fmt.Errorf("read custom skill directory: %w", err)
+	}
+	if len(entries) == 0 {
+		return nil, fmt.Errorf("custom skill directory must contain at least one skill directory")
+	}
+
+	skills := make([]Skill, 0, len(entries))
+	for _, entry := range entries {
+		if entry.Type()&os.ModeSymlink != 0 {
+			return nil, fmt.Errorf("custom skill directory contains unsupported symlink %q", entry.Name())
+		}
+		if !entry.IsDir() {
+			return nil, fmt.Errorf("custom skill directory entry %q is not a skill directory", entry.Name())
+		}
+		files, err := readExternalSkill(abs, entry.Name())
+		if err != nil {
+			return nil, err
+		}
+		skills = append(skills, Skill{Name: entry.Name(), Files: files})
+	}
+	sort.Slice(skills, func(i, j int) bool { return skills[i].Name < skills[j].Name })
+	return skills, nil
 }
 
 func BuiltInEvaluation(id string) ([]byte, error) {
@@ -140,6 +183,46 @@ func readSkill(root, name string) (map[string][]byte, error) {
 	entrypoint, ok := files["SKILL.md"]
 	if !ok {
 		return nil, fmt.Errorf("canonical skill %q has no SKILL.md", name)
+	}
+	if err := validateFrontmatter(name, entrypoint); err != nil {
+		return nil, err
+	}
+	if err := validateReferenceClosure(name, entrypoint, files); err != nil {
+		return nil, err
+	}
+	return files, nil
+}
+
+func readExternalSkill(root, name string) (map[string][]byte, error) {
+	base := filepath.Join(root, name)
+	files := map[string][]byte{}
+	err := filepath.WalkDir(base, func(filePath string, entry fs.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+		if entry.Type()&os.ModeSymlink != 0 {
+			return fmt.Errorf("custom skill %q contains unsupported symlink %q", name, filePath)
+		}
+		if entry.IsDir() {
+			return nil
+		}
+		data, err := os.ReadFile(filePath)
+		if err != nil {
+			return err
+		}
+		relative, err := filepath.Rel(base, filePath)
+		if err != nil {
+			return err
+		}
+		files[filepath.ToSlash(relative)] = data
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("read custom skill %q: %w", name, err)
+	}
+	entrypoint, ok := files["SKILL.md"]
+	if !ok {
+		return nil, fmt.Errorf("custom skill %q has no SKILL.md", name)
 	}
 	if err := validateFrontmatter(name, entrypoint); err != nil {
 		return nil, err

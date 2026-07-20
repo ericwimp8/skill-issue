@@ -6,7 +6,7 @@ This is the current product reference for description-evaluation gates and indep
 
 Update this reference whenever either owning contract changes. Historical plugin-packaging and JetBrains-era reports remain research evidence and do not define the current matrix.
 
-Current sub-agent support, launch behavior, and skill-request behavior are recorded in `plans/research/harness-subagent-launch/harness-subagent-launch-reference.md`.
+Current sub-agent support, launch behavior, and skill-request behavior are recorded in `research/harness-subagent-launch/harness-subagent-launch-reference.md`.
 
 ## Evidence Standard
 
@@ -57,6 +57,6 @@ Record exact model identifiers and reasoning settings in the environment result 
 
 - Product support and matrix: `../../../plans/skill-issue-project-completion/01-reconcile-the-definitive-product-support-and-evidence-contract.md`.
 - Direct-install paths, activation, verification, trust, and caveats: `../../../plans/skill-issue-project-completion/02-research-and-define-direct-harness-installation-architecture.md`.
-- Source-backed harness details: `../../../plans/deep-research/harness-direct-installation-architecture/harness-direct-installation-architecture-deep-research.md` and its `assignments/` directory.
-- Sub-agent launch behavior: `../../../plans/research/harness-subagent-launch/harness-subagent-launch-reference.md` and its `assignments/` directory.
+- Source-backed harness details: `../../../research/deep-research/harness-direct-installation-architecture/harness-direct-installation-architecture-deep-research.md` and its `assignments/` directory.
+- Sub-agent launch behavior: `../../../research/harness-subagent-launch/harness-subagent-launch-reference.md` and its `assignments/` directory.
 - Environment-specific measured reliability belongs in the evaluation campaign record, not this reference.

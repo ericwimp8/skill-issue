@@ -38,4 +38,4 @@ Grok Build remains caveated until live inspection proves the installed candidate
 
 - Product support boundary: `../../../plans/skill-issue-project-completion/01-reconcile-the-definitive-product-support-and-evidence-contract.md`.
 - Direct-install paths and caveats: `../../../plans/skill-issue-project-completion/02-research-and-define-direct-harness-installation-architecture.md`.
-- Source-backed harness details: `../../../plans/deep-research/harness-direct-installation-architecture/harness-direct-installation-architecture-deep-research.md` and its `assignments/` directory.
+- Source-backed harness details: `../../../research/deep-research/harness-direct-installation-architecture/harness-direct-installation-architecture-deep-research.md` and its `assignments/` directory.

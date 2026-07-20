@@ -1,6 +1,8 @@
 # Skill Issue
 
-Skill Issue is a project for making agent skills easier to create, evaluate, and trust.
+> It’s not always a skill problem, but it’s always a Skill Issue.
+
+Skill Issue makes agent skills easier to create, evaluate, and trust. It was built with skills to build, evaluate, and fix skills.
 
 The name is a play on the familiar claim that a problem is a “skill issue.” In this case, the skills are the reusable instructions and workflows used by coding agents.
 
@@ -28,13 +30,35 @@ The model and harness are initially treated as a single practical environment. T
 
 Users evaluate their environment first. If it performs reliably, they can build and refine skills with confidence. If it does not, they can reconsider the environment instead of endlessly rewriting a skill that was never the underlying problem.
 
-## Evaluation measurement
+## Testing methodology
 
 The initial skill-calling evaluation uses three scripted scenarios with the same number of fixed user turns. Every harness-and-model configuration receives the same turns in the same order. Agent responses are retained as evidence but do not change the next scripted turn.
 
 Results are measured by turn rather than by context-token count. Tokenization, context limits, compaction, and exposed telemetry differ across models and harnesses, while a turn represents the same point in the user's workflow for every configuration. This makes observations such as a skill first loading on turn 10 or failing to load by turn 20 directly comparable across identical conversations.
 
 The MVP scenarios contain 30 turns each and deliberately include substantial real-world planning work. Context-based analysis may be added later when comparable telemetry is available across the supported environments.
+
+### Comparison strategy
+
+The planned campaign compares models across multiple harnesses and multiple models within the same harness wherever those combinations are supported. Repeating a model across harnesses may reveal harness-level patterns, such as one environment consistently discovering skills more or less reliably. Repeating several models within a harness may reveal model-level patterns that persist across environments. Flagship model-and-harness pairings provide useful anchors, while overlapping combinations make it easier to distinguish model behavior from harness behavior.
+
+The minimum comparison matrix spans OpenAI Codex, Claude Code, Cursor, Pi, and OpenCode. Each supported configuration uses the same scenarios, prompts, skill payload, reasoning target or closest available equivalent, and scoring rules. Exact model identifiers, harness versions, operating systems, and effective reasoning settings are recorded with the result.
+
+### Evaluation isolation
+
+Evaluations aim to isolate the supplied skills from ambient skills, plugins, instructions, configuration, and unrelated project customization. The runner evaluates each harness's primary agent directly. It uses fixed verbatim prompts, private answer sheets and turn state, cryptographically random opaque marker tokens, temporary generated skill copies, and external event storage. Later prompts never adapt to model responses, and temporary instrumentation is removed after the run while the selected evidence is retained.
+
+Each completed run writes a detailed `result.json` and compact chart-ready `website.json`. Raw event output and the complete conversation transcript are explicit optional diagnostics and default to off; enabling a transcript produces a warning that any personal or confidential information in the evaluation conversation will be written unchanged.
+
+Where complete automated isolation is unavailable, the evaluator records the environment they prepared and the remaining uncertainty. These controls reduce evaluation clues and customization pollution, but an agent inspecting its environment may still infer that instrumentation exists.
+
+### Interpretation and limitations
+
+The initial campaign is a transparent minimum viable evaluation. A completed, correctly instrumented run remains valid even when no expected skills are called; missed calls are results rather than tooling failures. Tooling, permission, session, or instrumentation failures are fixed and rerun instead of being reported as model behavior.
+
+One completed scenario suite per configuration cannot establish statistical reliability or universal model behavior. Results may also be affected by residual configuration, organization policy, harness and model version changes, provider aliases, operating-system differences, and incomplete isolation. Published results therefore describe observed calls and misses without assigning universal winners, pass labels, or guarantees.
+
+Running the full comparison matrix requires access to models and harnesses that may not be available in one environment. The evaluation system is designed so contributors can run the same governed scenarios in additional supported configurations and return comparable evidence. Unsupported or unrun combinations are omitted rather than presented as evaluated outcomes.
 
 ## Skill creation
 
@@ -66,25 +90,19 @@ The MVP uses a self-contained Go CLI distributed as prebuilt macOS, Windows, and
 - measures skill discovery and invocation behavior; and
 - produces a useful local report explaining the results.
 
-The CLI owns deterministic installation, verification, repair, update, removal, evaluation execution, and reporting boundaries. The installed agent skills own generation, diagnosis, and refinement behavior.
+The CLI owns deterministic installation, removal, evaluation execution, and reporting boundaries. Re-running installation replaces the disposable embedded payload. The installed agent skills own generation, diagnosis, and refinement behavior.
 
-The current implementation embeds the canonical primary and supporting skills, installs them into researched native project or user roots, records external ownership receipts, and provides blind primary-agent replay with private turn attribution, graph-ready evidence, restoration, and cleanup. Harness adapters still require real-environment qualification before release claims are made.
-
-### Evaluation mitigation
-
-The runner evaluates each harness's primary agent directly. It uses fixed verbatim prompts, private answer sheets and turn state, cryptographically random opaque marker tokens, temporary generated skill copies, and external event storage. The runner never adapts later prompts from model responses and removes temporary instrumentation after the run while retaining evidence.
-
-These measures minimize evaluation clues. They cannot guarantee that an agent inspecting its environment will never infer that instrumentation exists.
+The current implementation embeds the canonical primary and supporting skills, replaces only their known directories in researched native project or user roots, and provides blind primary-agent replay with private turn attribution, graph-ready evidence, direct canonical rematerialization, and cleanup. Harness adapters still require real-environment qualification before release claims are made.
 
 ### CLI development
 
 ```sh
 go vet ./cli/...
-go run ./cli/cmd/skill-issue diagnose
+go run ./cli/cmd/skill-issue help
 ./cli/scripts/build-cross-platform.sh
 ```
 
-The automated CLI test suite is intentionally deferred while the implementation is changing rapidly. Final regression, adapter, lifecycle, and platform tests will be written against the stabilized product during qualification rather than maintained against transitional interfaces.
+Focused tests currently cover the embedded evaluation units, evaluation input and output contracts, neutral instrumentation, project-only evaluation placement, and native project skill roots. Final installation, lifecycle, adapter, replay, recovery, and native-platform coverage remains for qualification after the remaining CLI interfaces stabilize.
 
 The build script produces standalone Darwin, Windows, and Linux binaries for `amd64` and `arm64`. Cross-compilation does not replace native runtime testing on each released platform.
 
@@ -96,7 +114,7 @@ The MVP deliberately starts with the part users can run in the environments they
 
 ## Status
 
-Skill Issue is in active development. The standalone CLI, canonical embedded payload, direct installation lifecycle, blind evaluation runner, and website mock-up are implemented. Real-harness and native-platform qualification, campaign evidence, and public release remain in progress.
+Skill Issue is in active development. The standalone CLI, canonical embedded payload, direct disposable materialization, blind evaluation runner, website mock-up, and six-target cross-build foundation are implemented. Harness detection and preview, concrete adapter preflight, real-harness and native-platform qualification, campaign evidence, release automation, and public release remain in progress.
 
 The current six-block completion sequence is maintained in `plans/skill-issue-project-completion/skill-issue-project-completion-a-to-b-plan.md`. Its completed-work inventory, research source map, CLI mismatch record, and old-task reconciliation live in `plans/skill-issue-project-completion/reorganization-dependency-audit.md`. Document authority, supersession, consumer links, and required update routing live in `plans/skill-issue-project-completion/document-authority-and-update-map.md`.
 
@@ -124,8 +142,8 @@ The production preview is available at `http://127.0.0.1:4173/skill-issue/`. Set
 
 ### Update website content
 
-All editable website copy, release metadata, summary metrics, methodology text, and evaluation graph values live in `src/data/siteData.ts`.
+Edit curated website copy, release metadata, summary metrics, and methodology text in `src/data/siteData.ts`.
 
-To add another graph, append one evaluation definition with a unique `id`, harness and model labels, description, sample size, and context checkpoint values. The results grid renders new definitions automatically through the shared `EvaluationChart` component.
+Website evaluation artifact types, display labels, adaptation, and temporary illustrative results live in `src/data/evaluationData.ts`. `src/components/EvaluationExplorer.tsx` owns selection and filtering, while the components under `src/components/charts/` own the individual chart presentations. Published result data must come from the accepted evaluation artifacts and campaign evidence rather than hand-authored chart values.
 
 Replace the release URL in the same data file when the first CLI artifact is published through GitHub Releases. Keep binaries in Releases rather than the Pages build.

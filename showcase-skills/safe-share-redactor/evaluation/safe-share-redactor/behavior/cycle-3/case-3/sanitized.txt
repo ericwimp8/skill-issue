@@ -1,0 +1,3 @@
+Customer name: Eric Wimp
+Purpose: synthetic limitation fixture
+Status: ready for contextual review

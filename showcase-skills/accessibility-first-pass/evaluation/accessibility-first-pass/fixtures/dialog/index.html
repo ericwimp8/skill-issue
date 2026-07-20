@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Account settings</title>
+    <style>
+      :focus { outline: none; }
+      .dialog[hidden] { display: none; }
+      .dialog { position: fixed; inset: 20% 25%; background: white; border: 1px solid #777; padding: 1rem; }
+    </style>
+  </head>
+  <body>
+    <button id="open">Delete account</button>
+    <div class="dialog" role="dialog" hidden>
+      <h2>Confirm deletion</h2>
+      <p>This action cannot be undone.</p>
+      <button id="confirm">Delete</button>
+      <button id="cancel">Cancel</button>
+    </div>
+    <script>
+      const dialog = document.querySelector('.dialog');
+      document.querySelector('#open').addEventListener('click', () => { dialog.hidden = false; });
+      document.querySelector('#cancel').addEventListener('click', () => { dialog.hidden = true; });
+    </script>
+  </body>
+</html>

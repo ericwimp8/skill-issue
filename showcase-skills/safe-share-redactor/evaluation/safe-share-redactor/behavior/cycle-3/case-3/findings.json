@@ -1,0 +1,28 @@
+{
+  "findings": [
+    {
+      "action": "review-source-and-sanitized-line",
+      "kind": "ambiguous-context",
+      "line": 1,
+      "markers": [
+        "customer",
+        "name"
+      ],
+      "rule_id": "context-marker"
+    }
+  ],
+  "limitations": [
+    "Contextual or unsupported sensitive material may remain unchanged.",
+    "Automated redaction does not guarantee complete privacy or secrecy."
+  ],
+  "sanitized_output": "sanitized.txt",
+  "schema_version": 1,
+  "source_sha256_after": "ff56e7423e5e5e74324c84c44f6c2e7292601d754759917fc1bf979f115e13c6",
+  "source_sha256_before": "ff56e7423e5e5e74324c84c44f6c2e7292601d754759917fc1bf979f115e13c6",
+  "summary": {
+    "ambiguous_risk_count": 1,
+    "changed": false,
+    "deterministic_count": 0,
+    "review_required": true
+  }
+}

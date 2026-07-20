@@ -1,0 +1,2 @@
+2026-07-18T03:14:15Z request_id=req-742 route=/checkout/submit status=started
+2026-07-18T03:14:45Z request_id=req-742 upstream=payments timeout_ms=30000 result=deadline_exceeded

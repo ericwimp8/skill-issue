@@ -51,6 +51,10 @@ type RunRequest struct {
 	EffectiveTurns     int
 	Progress           func(TurnProgress)
 	ConfirmPreexisting func(differing []string) (bool, error)
+	// inputs caches the parsed scenario, answer sheet, and skills from
+	// PrepareRequest so the run executes exactly what the user confirmed,
+	// even if the files change on disk in between.
+	inputs *loadedInputs
 }
 
 type TurnProgress struct {
@@ -90,11 +94,14 @@ func PrepareRequest(request RunRequest) (RunRequest, error) {
 	if request.TurnLimit < 0 {
 		return RunRequest{}, errors.New("--turns must be a positive integer")
 	}
-	inputs, err := loadEvaluationInputs(request)
-	if err != nil {
-		return RunRequest{}, err
+	if request.inputs == nil {
+		inputs, err := loadEvaluationInputs(request)
+		if err != nil {
+			return RunRequest{}, err
+		}
+		request.inputs = &inputs
 	}
-	request.AvailableTurns = len(inputs.scenario.Turns)
+	request.AvailableTurns = len(request.inputs.scenario.Turns)
 	request.EffectiveTurns = request.AvailableTurns
 	if request.TurnLimit > 0 && request.TurnLimit < request.AvailableTurns {
 		request.EffectiveTurns = request.TurnLimit
@@ -192,11 +199,9 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 	if err != nil {
 		return Result{}, err
 	}
-	inputs, err := loadEvaluationInputs(request)
-	if err != nil {
-		return Result{}, err
-	}
-	inputs = limitEvaluationInputs(inputs, request.EffectiveTurns)
+	// PrepareRequest cached the parsed inputs; the run must use exactly what
+	// the user reviewed rather than re-reading files from disk.
+	inputs := limitEvaluationInputs(*request.inputs, request.EffectiveTurns)
 	scenario, answer := inputs.scenario, inputs.answer
 	cliPath, err := executablePath(request.CLIPath)
 	if err != nil {

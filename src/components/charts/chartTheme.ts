@@ -1,4 +1,7 @@
-import { availableCells, type EvaluationResult } from '../../data/evaluationData';
+import {
+  availableCells,
+  type EvaluationResult,
+} from '../../data/evaluationData';
 
 export const tooltipStyle = {
   background: 'var(--color-surface-elevated)',

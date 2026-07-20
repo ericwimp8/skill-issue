@@ -15,11 +15,7 @@ import {
   scenarioOptions,
   type EvaluationResult,
 } from '../../data/evaluationData';
-import {
-  chartColorForCell,
-  resultCalled,
-  resultTotal,
-} from './chartTheme';
+import { chartColorForCell, resultCalled, resultTotal } from './chartTheme';
 
 type OutcomeBarsChartProps = {
   onToggleScenario: (scenarioId: string) => void;
@@ -155,13 +151,14 @@ export function OutcomeBarsChart({
         </details>
       </header>
       <p className="chart-description-wide">
-        Every expected call in the selected scenarios contributes to one
-        success or failure rate. Bars rank the selected setups from strongest
-        to weakest.
+        Every expected call in the selected scenarios contributes to one success
+        or failure rate. Bars rank the selected setups from strongest to
+        weakest.
       </p>
       <div className="raster-legend" aria-label="Success ranking legend">
         <span>
-          <i className="legend-block legend-block-model" /> Model color = success
+          <i className="legend-block legend-block-model" /> Model color =
+          success
         </span>
         <span>
           <i className="legend-block legend-block-missed" /> Failure

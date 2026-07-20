@@ -233,12 +233,20 @@ func validateReferenceClosure(name string, files map[string][]byte) error {
 			continue
 		}
 		inFence := false
+		var fenceMarker byte
+		var fenceLength int
 		for _, line := range strings.Split(string(data), "\n") {
-			if strings.HasPrefix(strings.TrimSpace(line), "```") {
-				inFence = !inFence
+			trimmed := strings.TrimSpace(line)
+			if inFence {
+				// Only a fence of the same character at least as long as the
+				// opener closes the block.
+				if fenceClosing(trimmed, fenceMarker, fenceLength) {
+					inFence = false
+				}
 				continue
 			}
-			if inFence {
+			if marker, length, ok := fenceOpening(trimmed); ok {
+				inFence, fenceMarker, fenceLength = true, marker, length
 				continue
 			}
 			for _, match := range localReference.FindAllStringSubmatch(line, -1) {
@@ -256,6 +264,37 @@ func validateReferenceClosure(name string, files map[string][]byte) error {
 		}
 	}
 	return nil
+}
+
+// fenceOpening reports whether a line opens a Markdown code fence: at least
+// three backticks or tildes, where a backtick fence's info string may not
+// contain further backticks (per CommonMark).
+func fenceOpening(line string) (byte, int, bool) {
+	if line == "" || (line[0] != '`' && line[0] != '~') {
+		return 0, 0, false
+	}
+	marker := line[0]
+	length := fenceRunLength(line, marker)
+	if length < 3 {
+		return 0, 0, false
+	}
+	if marker == '`' && strings.ContainsRune(line[length:], '`') {
+		return 0, 0, false
+	}
+	return marker, length, true
+}
+
+func fenceClosing(line string, marker byte, minimum int) bool {
+	length := fenceRunLength(line, marker)
+	return length >= minimum && strings.TrimSpace(line[length:]) == ""
+}
+
+func fenceRunLength(line string, marker byte) int {
+	length := 0
+	for length < len(line) && line[length] == marker {
+		length++
+	}
+	return length
 }
 
 func validateFrontmatter(name string, data []byte) error {

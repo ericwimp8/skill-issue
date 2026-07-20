@@ -172,3 +172,20 @@ func TestPrepareKiloRuntimeOwnsConfigurationAndSkillPermissions(t *testing.T) {
 		}
 	}
 }
+
+func TestControlledEnvironmentForwardsOnlyAllowlistedCredentials(t *testing.T) {
+	t.Setenv("OPENAI_API_KEY", "forwarded")
+	t.Setenv("MY_PRIVATE_TOKEN", "secret")
+	t.Setenv("AWS_VAULT_BACKEND", "secret")
+	environment := controlledEnvironment("/home", "/tmpdir", "/usr/bin/pi", true)
+	joined := strings.Join(environment, "\n")
+	if !strings.Contains(joined, "OPENAI_API_KEY=forwarded") {
+		t.Fatalf("allowlisted credential was not forwarded: %v", environment)
+	}
+	if strings.Contains(joined, "MY_PRIVATE_TOKEN") {
+		t.Fatalf("arbitrary *_TOKEN variable was forwarded: %v", environment)
+	}
+	if strings.Contains(joined, "AWS_VAULT_BACKEND") {
+		t.Fatalf("non-allowlisted AWS_-prefixed variable was forwarded: %v", environment)
+	}
+}

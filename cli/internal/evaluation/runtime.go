@@ -537,7 +537,7 @@ func controlledEnvironment(home, temporary, executable string, includeCredential
 	}
 	for _, entry := range os.Environ() {
 		key, _, found := strings.Cut(entry, "=")
-		if !found || !credentialEnvironmentKey(key) {
+		if !found || !slices.Contains(forwardedCredentialKeys, key) {
 			continue
 		}
 		environment = append(environment, entry)
@@ -545,16 +545,30 @@ func controlledEnvironment(home, temporary, executable string, includeCredential
 	return environment
 }
 
-func credentialEnvironmentKey(key string) bool {
-	if strings.HasSuffix(key, "_API_KEY") || strings.HasSuffix(key, "_TOKEN") {
-		return true
-	}
-	for _, prefix := range []string{"AWS_", "AZURE_", "CLOUDFLARE_", "OPENAI_", "GOOGLE_", "GEMINI_", "XAI_"} {
-		if strings.HasPrefix(key, prefix) {
-			return true
-		}
-	}
-	return false
+// forwardedCredentialKeys is the explicit allowlist of environment variables
+// forwarded into a credential-including harness runtime (currently only Pi).
+// It names the credentials of each supported provider family instead of
+// pattern-matching, so unrelated secrets in the caller's environment are
+// never exposed to the harness. Extend it when a provider needs another key.
+var forwardedCredentialKeys = []string{
+	"ANTHROPIC_API_KEY",
+	"OPENAI_API_KEY",
+	"GEMINI_API_KEY",
+	"GOOGLE_API_KEY",
+	"GOOGLE_APPLICATION_CREDENTIALS",
+	"XAI_API_KEY",
+	"OPENROUTER_API_KEY",
+	"AZURE_OPENAI_API_KEY",
+	"AZURE_OPENAI_ENDPOINT",
+	"CLOUDFLARE_API_TOKEN",
+	"CLOUDFLARE_ACCOUNT_ID",
+	"AWS_ACCESS_KEY_ID",
+	"AWS_SECRET_ACCESS_KEY",
+	"AWS_SESSION_TOKEN",
+	"AWS_REGION",
+	"AWS_DEFAULT_REGION",
+	"AWS_PROFILE",
+	"AWS_BEARER_TOKEN_BEDROCK",
 }
 
 func privateRuntimeRunRoot(runID string) string {

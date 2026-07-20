@@ -24,8 +24,8 @@ export function EvaluationExplorer() {
   const scenarioResults = evaluationResults.filter(
     (result) => result.scenario_id === scenarioId,
   );
-  const visibleResults = scenarioResults.filter(
-    (result) => selectedCellIds.includes(result.cellId),
+  const visibleResults = scenarioResults.filter((result) =>
+    selectedCellIds.includes(result.cellId),
   );
   const rankingResults = evaluationResults.filter(
     (result) =>

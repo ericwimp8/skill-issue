@@ -80,3 +80,21 @@ func TestBuiltInEvaluationsAreComplete(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateReferenceClosureTracksFenceMarkers(t *testing.T) {
+	entrypoint := "---\nname: demo\ndescription: d\n---\n" +
+		"see `references/present.md`\n\n" +
+		"~~~\n`references/absent.md`\n~~~\n\n" +
+		"````\n`references/absent.md`\n```\n`references/absent.md`\n````\n"
+	files := map[string][]byte{
+		"SKILL.md":              []byte(entrypoint),
+		"references/present.md": []byte("content"),
+	}
+	if err := validateReferenceClosure("demo", files); err != nil {
+		t.Fatalf("fenced references were validated: %v", err)
+	}
+	broken := "---\nname: demo\ndescription: d\n---\nsee `references/absent.md`\n"
+	if err := validateReferenceClosure("demo", map[string][]byte{"SKILL.md": []byte(broken)}); err == nil {
+		t.Fatal("absent unfenced reference was accepted")
+	}
+}

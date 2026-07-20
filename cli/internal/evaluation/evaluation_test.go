@@ -277,3 +277,49 @@ func writeSkillFixture(t *testing.T, root, name string) {
 		t.Fatal(err)
 	}
 }
+
+func TestPrepareRequestCachesInputsForTheRun(t *testing.T) {
+	directory := t.TempDir()
+	workspace := filepath.Join(directory, "workspace")
+	if err := os.Mkdir(workspace, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	scenarioPath := filepath.Join(directory, "scenario.json")
+	answerPath := filepath.Join(directory, "answer.json")
+	skillsPath := filepath.Join(directory, "skills")
+	writeSkillFixture(t, skillsPath, "prompt-writing")
+	writeJSONFixture(t, scenarioPath, map[string]any{
+		"schema_version": 1,
+		"scenario_id":    "custom",
+		"turns":          []map[string]string{{"turn_id": "turn-1", "prompt": "Write a concise prompt."}},
+	})
+	writeJSONFixture(t, answerPath, map[string]any{
+		"schema_version": 1,
+		"scenario_id":    "custom",
+		"expected":       []map[string]string{{"turn_id": "turn-1", "skill": "prompt-writing"}},
+	})
+
+	prepared, err := PrepareRequest(RunRequest{Harness: harness.Codex, Workspace: workspace, SkillsPath: skillsPath, ScenarioPath: scenarioPath, AnswerSheet: answerPath})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if prepared.inputs == nil || prepared.AvailableTurns != 1 {
+		t.Fatalf("prepared request did not cache inputs: %#v", prepared)
+	}
+
+	// Once the user has reviewed the prepared request, changing or deleting
+	// the input files must not affect what runs.
+	if err := os.Remove(scenarioPath); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Remove(answerPath); err != nil {
+		t.Fatal(err)
+	}
+	again, err := PrepareRequest(prepared)
+	if err != nil {
+		t.Fatalf("prepared request re-read deleted inputs: %v", err)
+	}
+	if again.inputs != prepared.inputs || again.AvailableTurns != 1 {
+		t.Fatalf("re-prepared request lost its cached inputs: %#v", again)
+	}
+}

@@ -20,20 +20,28 @@ type CumulativeCallsChartProps = {
   results: EvaluationResult[];
 };
 
+function callOutcomes(result: EvaluationResult) {
+  return [...result.points]
+    .sort((left, right) => left.turn - right.turn)
+    .flatMap((point) => [
+      ...Array.from({ length: point.called }, () => 1),
+      ...Array.from({ length: point.missed }, () => 0),
+    ]);
+}
+
 export function CumulativeCallsChart({ results }: CumulativeCallsChartProps) {
   const expectedCallCount = Math.max(
     0,
-    ...results.map((result) => result.points.length),
+    ...results.map((result) => callOutcomes(result).length),
   );
   const data = Array.from({ length: expectedCallCount }, (_, index) => {
     const expectedCall = index + 1;
     const row: Record<string, number> = { expectedCall };
 
     results.forEach((result) => {
-      row[result.cellId] = [...result.points]
-        .sort((left, right) => left.turn - right.turn)
+      row[result.cellId] = callOutcomes(result)
         .slice(0, expectedCall)
-        .reduce((total, point) => total + point.called, 0);
+        .reduce((total, called) => total + called, 0);
     });
 
     return row;
@@ -90,9 +98,7 @@ export function CumulativeCallsChart({ results }: CumulativeCallsChartProps) {
             <Tooltip
               contentStyle={tooltipStyle}
               isAnimationActive={false}
-              labelFormatter={(expectedCall) =>
-                `Expected call ${expectedCall}`
-              }
+              labelFormatter={(expectedCall) => `Expected call ${expectedCall}`}
               wrapperStyle={{ transition: 'none' }}
             />
             {results.map((result) => {

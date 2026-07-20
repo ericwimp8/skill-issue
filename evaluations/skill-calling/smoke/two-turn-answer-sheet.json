@@ -4,10 +4,6 @@
   "expected": [
     {
       "turn_id": "turn-1",
-      "skill": "dictate-plan"
-    },
-    {
-      "turn_id": "turn-1",
       "skill": "document-update-discipline"
     },
     {

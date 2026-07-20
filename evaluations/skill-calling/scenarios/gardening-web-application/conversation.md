@@ -4,9 +4,7 @@ Send these turns exactly as written and in order. Wait for the agent to finish e
 
 ## Turn 1
 
-Manually invoke Dictate Plan with this request:
-
-> I want to plan a production-ready gardening web application called GardenFlow. It should help home gardeners decide what to plant, organize their growing spaces, follow care schedules, and keep useful records across multiple growing seasons. We are planning the complete product from the current idea through a public launch, but we are not implementing it during this conversation. Start and maintain the living A-to-B plan for this work.
+> I want to create and maintain a living A-to-B plan for a production-ready gardening web application called GardenFlow. It should help home gardeners decide what to plant, organize their growing spaces, follow care schedules, and keep useful records across multiple growing seasons. We are planning the complete product from the current idea through a public launch, but we are not implementing it during this conversation. Start the plan for this work.
 
 ## Turn 2
 

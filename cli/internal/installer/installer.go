@@ -101,7 +101,7 @@ func (Service) PrepareEvaluation(request Request) (EvaluationInstallation, Insta
 		target := filepath.Join(root, skill.Name)
 		if _, statErr := os.Stat(target); statErr == nil {
 			if !ordinaryNames[skill.Name] {
-				return EvaluationInstallation{}, Installation{}, fmt.Errorf("evaluation-only skill collision at %s", target)
+				return EvaluationInstallation{}, Installation{}, fmt.Errorf("temporary evaluation skill collision at %s", target)
 			}
 			state.Preexisting = append(state.Preexisting, skill.Name)
 		} else if !errors.Is(statErr, os.ErrNotExist) {
@@ -196,14 +196,14 @@ func selectedEvaluationSkills(request Request) ([]payload.Skill, error) {
 	if len(request.Skills) > 0 {
 		return request.Skills, nil
 	}
-	return payload.EvaluationSkills()
+	return payload.Skills()
 }
 
 func evaluationSkillsForState(state EvaluationInstallation) ([]string, error) {
 	if len(state.Skills) > 0 {
 		return state.Skills, nil
 	}
-	skills, err := payload.EvaluationSkills()
+	skills, err := payload.Skills()
 	if err != nil {
 		return nil, err
 	}

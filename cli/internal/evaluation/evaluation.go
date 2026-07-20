@@ -534,7 +534,7 @@ func loadEvaluationInputs(request RunRequest) (loadedInputs, error) {
 		if err := validateAnswerSheet(builtIn.AnswerSheet, builtIn.Scenario); err != nil {
 			return loadedInputs{}, err
 		}
-		skills, err := payload.EvaluationSkills()
+		skills, err := payload.Skills()
 		if err != nil {
 			return loadedInputs{}, err
 		}
@@ -662,7 +662,7 @@ func readAnswerSheet(path string) (AnswerSheet, error) {
 }
 
 func validateAnswerSheet(answer AnswerSheet, scenario replay.Scenario) error {
-	skills, err := payload.EvaluationSkills()
+	skills, err := payload.Skills()
 	if err != nil {
 		return err
 	}

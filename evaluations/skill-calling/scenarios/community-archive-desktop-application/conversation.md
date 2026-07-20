@@ -4,9 +4,7 @@ This document is the human-readable governance view of the fixed conversation em
 
 ## Turn 1
 
-> Manually invoke Dictate Plan with this request:
->
-> I want to plan a production-ready cross-platform desktop application called ArchiveDesk for small museums, historical societies, and community archives. It should help teams ingest, describe, preserve, search, and export local digital collections while remaining useful without a continuous internet connection. We are planning the complete product from the current idea through a public release, but we are not implementing it during this conversation. Start and maintain the living A-to-B plan for this work.
+> I want to create and maintain a living A-to-B plan for a production-ready cross-platform desktop application called ArchiveDesk for small museums, historical societies, and community archives. It should help teams ingest, describe, preserve, search, and export local digital collections while remaining useful without a continuous internet connection. We are planning the complete product from the current idea through a public release, but we are not implementing it during this conversation. Start the plan for this work.
 
 ## Turn 2
 

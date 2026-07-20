@@ -69,7 +69,7 @@ func TestBuiltInIdentifierLoadsScenarioAndAnswerTogether(t *testing.T) {
 			if scenario.ID != identifier || answer.ScenarioID != scenario.ID {
 				t.Fatalf("built-in parts do not match: %#v %#v", scenario, answer)
 			}
-			if len(scenario.Turns) != 30 || len(answer.Expected) != 5 {
+			if len(scenario.Turns) != 30 || len(answer.Expected) != 4 {
 				t.Fatalf("unexpected built-in shape: %d turns, %d expected calls", len(scenario.Turns), len(answer.Expected))
 			}
 		})
@@ -93,14 +93,14 @@ func TestWebsiteResultPreservesOrderAndDoesNotInflateRepeatedCalls(t *testing.T)
 		Harness:    "codex",
 		Model:      "model",
 		Expected: []SkillCall{
-			{TurnID: "opening", Skill: "dictate-plan"},
+			{TurnID: "opening", Skill: "plan-maintenance"},
 			{TurnID: "opening", Skill: "document-update-discipline"},
-			{TurnID: "opening", Skill: "dictate-plan"},
+			{TurnID: "opening", Skill: "plan-maintenance"},
 			{TurnID: "review-step", Skill: "prompt-writing"},
 		},
 		Observed: []SkillCall{
-			{TurnID: "opening", Skill: "dictate-plan"},
-			{TurnID: "opening", Skill: "dictate-plan"},
+			{TurnID: "opening", Skill: "plan-maintenance"},
+			{TurnID: "opening", Skill: "plan-maintenance"},
 			{TurnID: "opening", Skill: "document-update-discipline"},
 			{TurnID: "finish", Skill: "prompt-writing"},
 		},

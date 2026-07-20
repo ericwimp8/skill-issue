@@ -65,8 +65,8 @@ export function CumulativeCallsChart({ results }: CumulativeCallsChartProps) {
               axisLine={false}
             />
             <YAxis
-              domain={[0, 5]}
-              ticks={[0, 1, 2, 3, 4, 5]}
+              domain={[0, 4]}
+              ticks={[0, 1, 2, 3, 4]}
               allowDecimals={false}
               stroke="var(--color-chart-label)"
               tickLine={false}

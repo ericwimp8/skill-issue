@@ -30,7 +30,7 @@
 - `cli/internal/replay/pi.go:20-93, 125-213, 282-353` — Pi RPC launch, preflight, per-turn capture, session shutdown, model parsing, supplied-skill validation, and state validation.
 - `cli/internal/runstate/runstate.go:15-48, 58-107` — private run/event schemas, random identities, token mappings, and `run.json` persistence.
 - `cli/internal/runstate/runstate.go:110-246, 249-337` — turn/session mutation, signal-event append, event loading, cleanup, locks, paths, and atomic private-state writes.
-- `cli/internal/payload/assets/manifest.json:1-32` — embedded component inventory and evaluation-only marker.
+- `cli/internal/payload/assets/manifest.json` — embedded canonical component inventory.
 - `evaluations/skill-calling/built-ins/*.json` — embedded schema-version-1 evaluation units containing scenario and answer sheet.
 - `evaluations/skill-calling/event.schema.json:1-52` — committed event schema used for drift comparison with the production emitter.
 - `cli/README.md:136-183` — documented public artifact contract, inspected as documentation rather than behavioral authority.
@@ -56,7 +56,7 @@ The lifecycle layer accepts `--events` and `--transcript` as the only boolean op
 
 ### Finding 3: Built-in and custom inputs converge before any harness starts
 
-Built-in mode reads `<evaluation-id>.json` from the executable's embedded `evaluations/skill-calling/built-ins` tree. Each embedded unit must have schema version 1, a matching `evaluation_id`, a valid scenario, and a valid paired answer sheet; its selected skill set is the complete embedded evaluation set, which includes ordinary and evaluation-only components. Custom mode requires a directory whose direct children are skill directories, rejects symlinks and non-directory root entries, validates each `SKILL.md` frontmatter name and referenced local-file closure, loads a schema-version-1 scenario with nonempty unique turn IDs, and validates a schema-version-1 answer sheet against the scenario and supplied skill names. Only the custom answer-sheet path is required to remain outside the evaluated workspace.
+Built-in mode reads `<evaluation-id>.json` from the executable's embedded `evaluations/skill-calling/built-ins` tree. Each embedded unit must have schema version 1, a matching `evaluation_id`, a valid scenario, and a valid paired answer sheet; its selected skill set is the complete canonical Skill Issue payload. Custom mode requires a directory whose direct children are skill directories, rejects symlinks and non-directory root entries, validates each `SKILL.md` frontmatter name and referenced local-file closure, loads a schema-version-1 scenario with nonempty unique turn IDs, and validates a schema-version-1 answer sheet against the scenario and supplied skill names. Only the custom answer-sheet path is required to remain outside the evaluated workspace.
 
 **Evidence:** `bundle.go:5-6`; `cli/internal/payload/payload.go:40, 61-110, 113-193, 196-275`; `cli/internal/evaluation/evaluation.go:66-77, 472-526, 528-544, 590-628`; `cli/internal/replay/replay.go:27-59`.
 

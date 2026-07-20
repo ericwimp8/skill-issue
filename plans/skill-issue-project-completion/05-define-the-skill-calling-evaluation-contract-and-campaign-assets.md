@@ -5,7 +5,7 @@
 - The completed product, support, and evidence contract defines a minimum matrix of thirteen medium-setting model evaluations across OpenAI Codex, Claude Code, Cursor, Pi, and OpenCode.
 - The evaluation measures whether the active harness-and-model combination calls the supplied skills at the expected points in a realistic conversation. It does not grade the quality of the loaded skill's body in this campaign.
 - The evaluation uses three substantial scripted scenarios rather than copied conversations whose later turns depend on unpredictable model responses.
-- The supporting-skills bundle plan owns the four canonical discipline skills. `evaluation-skills/` owns the explicit-only Dictate Plan source used only by evaluation installations. The CLI generates instrumented copies from those current canonical files.
+- The primary and supporting skill collections own the complete canonical Skill Issue payload. The CLI generates instrumented evaluation copies from those current canonical files.
 - The minimum viable campaign accepts a bespoke, human-controlled setup. Evaluators will be instructed to use a default harness environment containing only the supplied Skill Issue skills, required supporting skills, and evaluation instrumentation.
 
 ## B: Desired Position
@@ -18,7 +18,7 @@ The project has a transparent and repeatable skill-calling evaluation in which t
 
 - Create three different real-world planning scenarios with exactly 30 fixed user turns each.
 - Make many turns substantial enough to require meaningful planning work rather than short acknowledgements or trivial edits.
-- Begin each scenario by manually invoking Dictate Plan through the target harness's supported manual-invocation method.
+- Begin each scenario by asking the primary agent to create and maintain a living A-to-B plan without naming or manually invoking a planning skill.
 - Send every scripted turn in order after the preceding response completes. Do not change, skip, or add turns in response to the model's output.
 - Give each scenario an inspectable conversation document, runner instructions, and answer sheet, then embed the complete scenario and answer sheet together as one governed runtime unit.
 - Record the first turn on which each benchmark skill is semantically required before observing campaign results.
@@ -26,7 +26,7 @@ The project has a transparent and repeatable skill-calling evaluation in which t
 
 ### 2. Define and validate the generated evaluation-install contract
 
-- Consume the accepted canonical primary, supporting, and evaluation-only skill sources.
+- Consume the accepted canonical primary and supporting skill sources.
 - Define the exact neutral signal instruction the CLI injects at the beginning of the executable workflow and require it to record the invocation before continuing the unchanged canonical body.
 - Define how the generated installation receives the run, turn, harness, model, and evidence context needed to attribute each marker event.
 - Preserve the canonical frontmatter, description, selection conditions, and substantive body while making generated evaluation copies clearly CLI-owned and disposable.
@@ -79,7 +79,7 @@ The project has a transparent and repeatable skill-calling evaluation in which t
 - Evaluation installation is project-only for every harness. Built-in selection accepts no external input files, while custom skill-directory, scenario, and answer-sheet inputs use the same runner and comparison behavior.
 - Every evaluation requires an explicit output root outside the evaluated workspace; completed evidence and CLI-owned private run state are both written beneath that root.
 - Codex evaluations use the user's normal Codex home for authentication and retained session history while every evaluation behavior setting is supplied as a process-local override. The CLI does not edit persistent Codex configuration. Equivalent native runtime preparation remains a qualification requirement for each additional harness.
-- The CLI generates evaluator copies from the current canonical normal and evaluation-only skills at install time, injects only the governed marker instruction, and creates no independently maintained instrumented sources.
+- The CLI generates evaluator copies from the current canonical skills at install time, injects only the governed marker instruction, and creates no independently maintained instrumented sources.
 - Every completed scenario suite emits the portable detailed JSON result and compact turn-based website artifact, with every website point derivable from the detailed result. Raw events and the complete transcript remain optional diagnostics.
 
 ### Qualification and campaign — owned by Work Block 3
@@ -125,4 +125,4 @@ The project has a transparent and repeatable skill-calling evaluation in which t
 
 ## Completed Scenarios
 
-The gardening web-application, community archive desktop-application, and neighborhood emergency-preparedness scenarios each contain 30 fixed substantial turns and required first activations inside their embedded governed units. Each scenario retains Markdown conversation, instructions, and expected-call governance views. Together they exercise software planning across web and desktop delivery plus a non-software community program. Dictate Plan is installed from the current canonical payload rather than a maintained instrumented variant.
+The gardening web-application, community archive desktop-application, and neighborhood emergency-preparedness scenarios each contain 30 fixed substantial turns and four required first activations inside their embedded governed units. Each scenario retains Markdown conversation, instructions, and expected-call governance views. Together they exercise software planning across web and desktop delivery plus a non-software community program while measuring only canonical Skill Issue skills.

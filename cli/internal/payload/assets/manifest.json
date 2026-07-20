@@ -23,10 +23,6 @@
     },
     {
       "id": "system-change-ownership"
-    },
-    {
-      "id": "dictate-plan",
-      "evaluation_only": true
     }
   ]
 }

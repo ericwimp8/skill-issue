@@ -72,8 +72,8 @@ const cellDefinitions = [
     harness: 'codex',
     model: 'codex-sol',
     outcomes: [
-      [2, 1, 1, 1],
-      [2, 1, 0, 1],
+      [1, 1, 1, 1],
+      [1, 1, 0, 1],
       [1, 1, 1, 1],
     ],
   },
@@ -81,9 +81,9 @@ const cellDefinitions = [
     harness: 'claude-code',
     model: 'claude-opus-4-8',
     outcomes: [
-      [2, 1, 1, 0],
+      [1, 1, 1, 0],
       [1, 1, 1, 1],
-      [2, 0, 1, 1],
+      [1, 0, 1, 1],
     ],
   },
   {
@@ -91,7 +91,7 @@ const cellDefinitions = [
     model: 'claude-fable',
     outcomes: [
       [1, 1, 1, 1],
-      [2, 0, 1, 0],
+      [1, 0, 1, 0],
       [1, 1, 0, 1],
     ],
   },
@@ -99,9 +99,9 @@ const cellDefinitions = [
     harness: 'cursor',
     model: 'codex-sol',
     outcomes: [
-      [2, 1, 0, 1],
+      [1, 1, 0, 1],
       [1, 1, 1, 0],
-      [2, 1, 1, 1],
+      [1, 1, 1, 1],
     ],
   },
   {
@@ -109,8 +109,8 @@ const cellDefinitions = [
     model: 'claude-opus-4-8',
     outcomes: [
       [1, 1, 1, 1],
-      [2, 1, 1, 0],
-      [2, 1, 0, 1],
+      [1, 1, 1, 0],
+      [1, 1, 0, 1],
     ],
   },
   {
@@ -119,7 +119,7 @@ const cellDefinitions = [
     outcomes: [
       [1, 1, 0, 1],
       [1, 0, 1, 1],
-      [2, 1, 0, 0],
+      [1, 1, 0, 0],
     ],
   },
   {
@@ -135,8 +135,8 @@ const cellDefinitions = [
     harness: 'pi',
     model: 'codex-sol',
     outcomes: [
-      [2, 1, 1, 0],
-      [2, 1, 1, 1],
+      [1, 1, 1, 0],
+      [1, 1, 1, 1],
       [1, 1, 1, 0],
     ],
   },
@@ -145,7 +145,7 @@ const cellDefinitions = [
     model: 'claude-opus-4-8',
     outcomes: [
       [1, 1, 1, 0],
-      [2, 1, 0, 1],
+      [1, 1, 0, 1],
       [1, 0, 1, 1],
     ],
   },
@@ -155,13 +155,13 @@ const cellDefinitions = [
     outcomes: [
       [1, 1, 0, 0],
       [1, 0, 1, 0],
-      [2, 0, 0, 1],
+      [1, 0, 0, 1],
     ],
   },
 ] as const satisfies readonly CellDefinition[];
 
 const scoredTurns = [1, 11, 25, 30] as const;
-const expectedByTurn = [2, 1, 1, 1] as const;
+const expectedByTurn = [1, 1, 1, 1] as const;
 
 function cellId(harness: string, model: string) {
   return `${harness}::${model}`;

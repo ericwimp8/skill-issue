@@ -4,6 +4,7 @@
 
 - `skill-evaluation-and-refinement`, `skill-intake`, and `skill-generation` exist and pass structural validation but have not been used.
 - Three local Eric Wimp Toolkit copies provide varied test targets: `document-update-discipline`, `prompt-writing`, and `dictate-plan`.
+- The completed campaign evidence preserves its Dictate Plan trials and content hash; the copied live target was retired after the campaign because Dictate Plan is not part of the Skill Issue product payload.
 - The current harness is Codex with independent sub-agents available.
 - Other agents are changing unrelated repository areas; this campaign owns only `evaluations/skill-system-production-refinement/` and necessary semantic updates under `skills/`, `packaging/`, and the local target copies.
 

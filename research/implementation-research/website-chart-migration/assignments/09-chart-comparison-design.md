@@ -16,9 +16,9 @@
 - `cli/internal/evaluation/evaluation.go:79-113,642-737` — detailed/compact result types and concrete called/missed point derivation.
 - `cli/internal/replay/replay.go:27-59,112-159` — ordered scenario-turn identity and replay boundaries.
 - `evaluations/skill-calling/scenarios/gardening-web-application/expected-calls.md:5-30` — governed required first activations, later applicable turns, and descriptive missing/additional treatment.
-- `evaluations/skill-calling/built-ins/gardening-web-application.json:121-156` — concrete 30-turn scenario and five expected turn/skill pairs.
-- `evaluations/skill-calling/built-ins/community-archive-desktop-application.json:130-156` — second governed five-opportunity answer sheet.
-- `evaluations/skill-calling/built-ins/neighborhood-emergency-preparedness-program.json:130-156` — third governed five-opportunity answer sheet.
+- `evaluations/skill-calling/built-ins/gardening-web-application.json` — concrete 30-turn scenario and four expected turn/skill pairs.
+- `evaluations/skill-calling/built-ins/community-archive-desktop-application.json` — second governed four-opportunity answer sheet.
+- `evaluations/skill-calling/built-ins/neighborhood-emergency-preparedness-program.json` — third governed four-opportunity answer sheet.
 - `src/data/siteData.ts:1-80` — current mock card identities, labels, sample sizes, and percentage-based values.
 - `src/components/EvaluationChart.tsx:17-105` — current card header, accessibility summary, line-chart configuration, tooltip, and local legend.
 - `src/styles.css:360-479,515-605` — current results grid, card dimensions, footer/legend treatment, and 800/680-pixel responsive states.
@@ -78,17 +78,17 @@ Every card should use a numeric horizontal domain from `1` through `total_turns`
 
 ### Finding 7 — Share A Data-Derived Integer Y Scale Across Visible Cells
 
-The Y axis should start at zero and use a shared integer domain derived from the selected scenario or qualified suite, not from each cell's observed performance. The stable upper bound should be the maximum per-turn expected opportunity count, calculated as `called + missed` across the selected comparison dataset, with integer ticks. Cell filtering or hiding one semantic series should not change that domain. For each current governed atomic scenario this yields `0..2`; a valid three-scenario same-turn suite aggregation would yield `0..6` only if Work Block 3 explicitly defines that aggregation.
+The Y axis should start at zero and use a shared integer domain derived from the selected scenario or qualified suite, not from each cell's observed performance. The stable upper bound should be the maximum per-turn expected opportunity count, calculated as `called + missed` across the selected comparison dataset, with integer ticks. Cell filtering or hiding one semantic series should not change that domain. For each current governed atomic scenario this yields `0..1`; a valid three-scenario same-turn suite aggregation would yield `0..3` only if Work Block 3 explicitly defines that aggregation.
 
-**Evidence:** Per point, `missed` is expected unique skills minus called, so `called + missed` is the point's governed denominator (`cli/internal/evaluation/evaluation.go:696-727`). Current governed scenarios contain two expected skills at turn 1 and one at turns 11, 25, and 30 (`evaluations/skill-calling/scenarios/gardening-web-application/expected-calls.md:5-13`; `assignments/03-methodology-and-result-identity.md:56-63`). The current fixed `0..20` scale is mock-specific and can either clip or waste space for real data (`assignments/04-current-website-chart.md:50-56`).
+**Evidence:** Per point, `missed` is expected unique skills minus called, so `called + missed` is the point's governed denominator. Current governed scenarios contain one expected skill at turns 1, 11, 25, and 30. The research-time fixed `0..20` scale was mock-specific and could either clip or waste space for real data.
 
 **Implication:** A denominator-owned shared scale permits honest height comparison between cells and stays stable when filters change. Per-card autoscaling is rejected because identical heights could represent different counts; a percentage scale is lower fit because it would hide the one-versus-two opportunity denominator unless shown as an explicitly derived secondary view.
 
 ### Finding 8 — Multiple Expected Calls Remain One Turn Point With An Explicit Denominator
 
-When a turn has multiple expected skills, it should remain a single X position whose two values sum to the number of unique expected first activations at that turn. The tooltip and accessible summary should state the denominator explicitly, for example: “Turn 1 · 2 expected first activations · 1 called · 1 missed.” The card sample size remains the sum of `called + missed` over all points, not the point count and not the raw number of signal events.
+When a custom evaluation has multiple expected skills on one turn, it should remain a single X position whose two values sum to the number of unique expected first activations at that turn. The tooltip and accessible summary should state the denominator explicitly. The card sample size remains the sum of `called + missed` over all points, not the point count and not the raw number of signal events.
 
-**Evidence:** Expected calls are exact turn/skill pairs and are deduplicated by skill within a turn for the compact artifact (`assignments/02-replay-scoring-turn-attribution.md:63-81`). Turn 1 has two expected skills while the remaining governed checkpoints have one each, producing four points but `n = 5` (`assignments/03-methodology-and-result-identity.md:56-63`). Duplicate detailed observations do not inflate compact called counts or sample size (`assignments/02-replay-scoring-turn-attribution.md:73-81`).
+**Evidence:** Expected calls are exact turn/skill pairs and are deduplicated by skill within a turn for the compact artifact. The current governed fixtures produce four points and `n = 4`; the production schema continues to support multiple expected skills on a turn for custom evaluations. Duplicate detailed observations do not inflate compact called counts or sample size.
 
 **Implication:** Splitting a multi-skill turn into duplicate X positions, averaging it to one decision, or treating duplicate signals as additional calls would misstate the compact result. Explicit denominator text also prevents equal called/missed values from being hidden when the plotted marks overlap.
 
@@ -110,14 +110,14 @@ The same semantic default should survive on narrow screens: one card per row, lo
 
 ### Finding 11 — Representative Dataset: Two Illustrative Cells Across Two Illustrative Scenarios
 
-Use four clearly labeled atomic artifacts: two fictional harness/model cells evaluated against two fictional 30-turn scenarios. This is the smallest set that exercises global scenario selection, cross-cell facets, both called and missed series, zero values, equal values, sparse numeric spacing, and the two-opportunity first point. Every displayed card has a derived `n = 5`. The entire fixture should carry the visible label **“Illustrative layout data — not observed evaluation results.”** Identifiers should also be unmistakably illustrative rather than resembling production run IDs or real campaign assets.
+Use four clearly labeled atomic artifacts: two fictional harness/model cells evaluated against two fictional 30-turn scenarios. This is the smallest set that exercises global scenario selection, cross-cell facets, both called and missed series, zero values, equal values, and sparse numeric spacing. Every displayed card has a derived `n = 4`. The entire fixture should carry the visible label **“Illustrative layout data — not observed evaluation results.”** Identifiers should also be unmistakably illustrative rather than resembling production run IDs or real campaign assets.
 
 | Illustrative scenario     | Illustrative cell           | Turn 1 called/missed | Turn 11 called/missed | Turn 25 called/missed | Turn 30 called/missed | Derived n |
 | ------------------------- | --------------------------- | -------------------: | --------------------: | --------------------: | --------------------: | --------: |
-| `illustrative-scenario-a` | Harness Alpha / Model Alpha |                1 / 1 |                 1 / 0 |                 0 / 1 |                 1 / 0 |         5 |
-| `illustrative-scenario-a` | Harness Beta / Model Beta   |                2 / 0 |                 0 / 1 |                 1 / 0 |                 0 / 1 |         5 |
-| `illustrative-scenario-b` | Harness Alpha / Model Alpha |                0 / 2 |                 1 / 0 |                 1 / 0 |                 0 / 1 |         5 |
-| `illustrative-scenario-b` | Harness Beta / Model Beta   |                1 / 1 |                 1 / 0 |                 0 / 1 |                 1 / 0 |         5 |
+| `illustrative-scenario-a` | Harness Alpha / Model Alpha |                1 / 0 |                 1 / 0 |                 0 / 1 |                 1 / 0 |         4 |
+| `illustrative-scenario-a` | Harness Beta / Model Beta   |                1 / 0 |                 0 / 1 |                 1 / 0 |                 0 / 1 |         4 |
+| `illustrative-scenario-b` | Harness Alpha / Model Alpha |                0 / 1 |                 1 / 0 |                 1 / 0 |                 0 / 1 |         4 |
+| `illustrative-scenario-b` | Harness Beta / Model Beta   |                1 / 0 |                 1 / 0 |                 0 / 1 |                 1 / 0 |         4 |
 
 Each artifact should retain the `website.json`-style fields `schema_version`, an illustrative-only run identifier, `scenario_id`, `harness`, `model`, `total_turns: 30`, and four points with numeric `turn`, an illustrative `turn_id`, `called`, and `missed`. The mock must not add reasoning, suite qualification, environment claims, or campaign acceptance that the compact artifact does not own.
 

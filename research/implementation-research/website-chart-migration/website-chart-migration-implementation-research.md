@@ -63,7 +63,7 @@ The derivation walks the ordered scenario turns. For each turn containing at lea
 - `called`: number of unique expected skills observed on that exact turn;
 - `missed`: unique expected skills for that turn minus `called`.
 
-Turns without an expected call are omitted. Duplicate expected pairs or repeated signals do not inflate compact counts. `total_turns` remains the full scenario length, so the greatest emitted point can be less than the axis endpoint. For the current governed fixtures, points occur at turns `1`, `11`, `25`, and `30`; turn 1 has two expected first activations and the other points have one each, so one scenario has four plotted points and `n = 5`. See `cli/internal/evaluation/evaluation.go:98-113,696-738`, `cli/README.md:150-173`, and [Assignments 02](assignments/02-replay-scoring-turn-attribution.md) and [03](assignments/03-methodology-and-result-identity.md).
+Turns without an expected call are omitted. Duplicate expected pairs or repeated signals do not inflate compact counts. `total_turns` remains the full scenario length, so the greatest emitted point can be less than the axis endpoint. For the current governed fixtures, points occur at turns `1`, `11`, `25`, and `30`; each point has one expected first activation, so one scenario has four plotted points and `n = 4`. See `cli/internal/evaluation/evaluation.go:98-113,696-738`, `cli/README.md:150-173`, and [Assignments 02](assignments/02-replay-scoring-turn-attribution.md) and [03](assignments/03-methodology-and-result-identity.md).
 
 This file intentionally omits reasoning, evaluation identity, timestamps, environment, qualification, suite/campaign identity, skill names, additional/unattributed calls, diagnostics, and pass/fail labels. It is chart-shaped atomic evidence, not an accepted campaign record.
 
@@ -79,9 +79,9 @@ The current invocation-event emitter includes `reasoning` and `evaluation_id`, b
 
 ## Governed Methodology and Result Identity
 
-The planned campaign measures required **first skill activations** fixed before observation. For each of the three governed 30-turn scenarios, the answer sheet expects `dictate-plan` and `document-update-discipline` on turn 1, `prompt-writing` on turn 11, `skill-authoring-discipline` on turn 25, and `system-change-ownership` on turn 30. Later applicability does not create another expected opportunity; a later reload is additional rather than a repair of an earlier miss. “Called” and “missed” must therefore be qualified as expected first activations, rather than all skill decisions or all applicable turns. See `evaluations/skill-calling/scenarios/gardening-web-application/expected-calls.md:5-30` and [Assignments 02](assignments/02-replay-scoring-turn-attribution.md) and [03](assignments/03-methodology-and-result-identity.md).
+The planned campaign measures required **first skill activations** fixed before observation. For each of the three governed 30-turn scenarios, the answer sheet expects `document-update-discipline` on turn 1, `prompt-writing` on turn 11, `skill-authoring-discipline` on turn 25, and `system-change-ownership` on turn 30. Later applicability does not create another expected opportunity; a later reload is additional rather than a repair of an earlier miss. “Called” and “missed” must therefore be qualified as expected first activations, rather than all skill decisions or all applicable turns. See `evaluations/skill-calling/scenarios/gardening-web-application/expected-calls.md:5-30` and [Assignments 02](assignments/02-replay-scoring-turn-attribution.md) and [03](assignments/03-methodology-and-result-identity.md).
 
-The minimum campaign plans thirteen harness/model cells across five harness families at medium reasoning or the closest documented equivalent. Each cell is one tooling-complete suite of all three governed scenarios, with repeated trials and statistical thresholds deferred. Under the current fixtures that means 39 atomic scenario runs and 15 expected first activations per cell, but only one suite-level observation per cell. A valid zero-call suite remains descriptive model/harness evidence when replay and instrumentation completed; launch, permission, session, protocol, or marker failures are tooling failures that must be repaired and rerun rather than graphed as misses.
+The minimum campaign plans thirteen harness/model cells across five harness families at medium reasoning or the closest documented equivalent. Each cell is one tooling-complete suite of all three governed scenarios, with repeated trials and statistical thresholds deferred. Under the current fixtures that means 39 atomic scenario runs and 12 expected first activations per cell, but only one suite-level observation per cell. A valid zero-call suite remains descriptive model/harness evidence when replay and instrumentation completed; launch, permission, session, protocol, or marker failures are tooling failures that must be repaired and rerun rather than graphed as misses.
 
 Publication needs three identity layers:
 
@@ -133,7 +133,7 @@ These primitives are available in installed Recharts 3.9.2; no library change is
 
 Use exactly two semantic series: **Called** and **Missed**, qualified in the chart heading or legend as expected first activations. Keep the established light/dark call and miss colors. Cell identity belongs in facet headers, not the legend. The existing local two-item HTML legend is the best default because each card remains self-contained during long mobile scrolling; a single shared desktop legend is a conditional alternative when each card retains accessible series names.
 
-The tooltip should state the denominator explicitly, for example: “Turn 1 · 2 expected first activations · 1 called · 1 missed.” This prevents a two-opportunity point from being compared as though it had the same denominator as a one-opportunity point. `n` is the sum of all `called + missed`, not the number of points or raw signal events.
+The tooltip should state the denominator explicitly, for example: “Turn 1 · 1 expected first activation · 1 called · 0 missed.” This keeps the presentation correct if a future custom evaluation supplies more than one expected skill on a turn. `n` is the sum of all `called + missed`, not the number of points or raw signal events.
 
 Retain Recharts' interactive accessibility layer only with a deliberate surrounding contract. Replace the current hard-coded context sentence with an accurate static summary or adjacent table/text that covers scenario, sparse measured turns, denominators, called/missed values, and total turn domain. The current nested outer `role="img"` plus focusable Recharts `role="application"` has not been screen-reader validated and should not be assumed correct. Recharts 3.9.2 enables its accessibility layer and reduced-motion-aware animation defaults; see the [Recharts accessibility guidance](https://github.com/recharts/recharts/wiki/Recharts-and-accessibility) and [Assignment 07](assignments/07-recharts-numeric-axis-options.md).
 
@@ -160,16 +160,16 @@ Until Work Block 3 publishes accepted results, use four fictional atomic artifac
 
 > **Illustrative layout data — not observed evaluation results.**
 
-Use identifiers that cannot be confused with real run IDs, real harnesses, or campaign assets. Each card has `n = 5` and points at the current governed positions:
+Use identifiers that cannot be confused with real run IDs, real harnesses, or campaign assets. Each card has `n = 4` and points at the current governed positions:
 
 | Illustrative scenario     | Illustrative cell           | Turn 1 called/missed | Turn 11 called/missed | Turn 25 called/missed | Turn 30 called/missed | Derived n |
 | ------------------------- | --------------------------- | -------------------: | --------------------: | --------------------: | --------------------: | --------: |
-| `illustrative-scenario-a` | Harness Alpha / Model Alpha |                1 / 1 |                 1 / 0 |                 0 / 1 |                 1 / 0 |         5 |
-| `illustrative-scenario-a` | Harness Beta / Model Beta   |                2 / 0 |                 0 / 1 |                 1 / 0 |                 0 / 1 |         5 |
-| `illustrative-scenario-b` | Harness Alpha / Model Alpha |                0 / 2 |                 1 / 0 |                 1 / 0 |                 0 / 1 |         5 |
-| `illustrative-scenario-b` | Harness Beta / Model Beta   |                1 / 1 |                 1 / 0 |                 0 / 1 |                 1 / 0 |         5 |
+| `illustrative-scenario-a` | Harness Alpha / Model Alpha |                1 / 0 |                 1 / 0 |                 0 / 1 |                 1 / 0 |         4 |
+| `illustrative-scenario-a` | Harness Beta / Model Beta   |                1 / 0 |                 0 / 1 |                 1 / 0 |                 0 / 1 |         4 |
+| `illustrative-scenario-b` | Harness Alpha / Model Alpha |                0 / 1 |                 1 / 0 |                 1 / 0 |                 0 / 1 |         4 |
+| `illustrative-scenario-b` | Harness Beta / Model Beta   |                1 / 0 |                 1 / 0 |                 0 / 1 |                 1 / 0 |         4 |
 
-Each illustrative record should retain only the compact artifact-style fields: `schema_version`, an unmistakably illustrative run identifier, `scenario_id`, harness, model, `total_turns: 30`, and points with `turn`, illustrative `turn_id`, `called`, and `missed`. It should not invent reasoning, environment qualification, suite identity, or campaign acceptance. This fixture exercises scenario selection, cross-cell facets, sparse numeric spacing, zero values, equal values, both series, and the two-opportunity first turn without suggesting likely real outcomes. See [Assignment 09](assignments/09-chart-comparison-design.md).
+Each illustrative record should retain only the compact artifact-style fields: `schema_version`, an unmistakably illustrative run identifier, `scenario_id`, harness, model, `total_turns: 30`, and points with `turn`, illustrative `turn_id`, `called`, and `missed`. It should not invent reasoning, environment qualification, suite identity, or campaign acceptance. This fixture exercises scenario selection, cross-cell facets, sparse numeric spacing, zero values, equal values, and both series without suggesting likely real outcomes. See [Assignment 09](assignments/09-chart-comparison-design.md).
 
 ## Recommended Result Update Workflow
 

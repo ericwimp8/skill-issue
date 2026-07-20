@@ -4,9 +4,7 @@ This document is the human-readable governance view of the fixed conversation em
 
 ## Turn 1
 
-> Manually invoke Dictate Plan with this request:
->
-> I want to plan a community emergency-preparedness program called ReadyTogether for a mixed urban and regional council area. It should help households, volunteers, local organizations, and council teams prepare for heatwaves, storms, bushfires, extended power loss, and temporary isolation without depending on a new software product. We are planning the complete program from the current idea through a twelve-month pilot and wider public rollout, but we are not running it during this conversation. Start and maintain the living A-to-B plan for this work.
+> I want to create and maintain a living A-to-B plan for a community emergency-preparedness program called ReadyTogether for a mixed urban and regional council area. It should help households, volunteers, local organizations, and council teams prepare for heatwaves, storms, bushfires, extended power loss, and temporary isolation without depending on a new software product. We are planning the complete program from the current idea through a twelve-month pilot and wider public rollout, but we are not running it during this conversation. Start the plan for this work.
 
 ## Turn 2
 

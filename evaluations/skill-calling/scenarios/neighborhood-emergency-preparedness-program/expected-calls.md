@@ -6,7 +6,6 @@ This document is the human-readable governance view. The standalone CLI embeds t
 
 | Turn | Skill                        | Reason                                                                                         |
 | ---- | ---------------------------- | ---------------------------------------------------------------------------------------------- |
-| 1    | `dictate-plan`               | Dictate Plan is manually invoked to create and maintain the living A-to-B plan.                |
 | 1    | `document-update-discipline` | The first turn creates and writes the living planning document.                                |
 | 11   | `prompt-writing`             | The turn requests the first self-contained prompt for a research agent.                        |
 | 25   | `skill-authoring-discipline` | The turn requests immediate creation of a reusable agent skill.                                |

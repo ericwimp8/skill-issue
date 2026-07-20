@@ -4,7 +4,7 @@
   "turns": [
     {
       "turn_id": "turn-1",
-      "prompt": "Use $dictate-plan and $document-update-discipline to create a small living A-to-B plan for publishing a one-page community garden event website. Write the plan to smoke-plan.md in the workspace. The plan must start from an approved event idea and end at a publicly accessible website, remain planning-only, and contain a short dependency-ordered task list."
+      "prompt": "Use $document-update-discipline to create smoke-plan.md with a small living A-to-B plan for publishing a one-page community garden event website. The plan must start from an approved event idea and end at a publicly accessible website, remain planning-only, and contain a short dependency-ordered task list."
     },
     {
       "turn_id": "turn-2",

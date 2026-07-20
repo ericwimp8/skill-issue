@@ -19,8 +19,7 @@ import (
 var manifestData []byte
 
 type Component struct {
-	ID             string `json:"id"`
-	EvaluationOnly bool   `json:"evaluation_only,omitempty"`
+	ID string `json:"id"`
 }
 
 type Manifest struct {
@@ -51,11 +50,7 @@ func ReadManifest() (Manifest, error) {
 }
 
 func Skills() ([]Skill, error) {
-	return readSkills(false)
-}
-
-func EvaluationSkills() ([]Skill, error) {
-	return readSkills(true)
+	return readSkills()
 }
 
 func LoadSkills(root string) ([]Skill, error) {
@@ -110,7 +105,7 @@ func BuiltInEvaluation(id string) ([]byte, error) {
 	return append([]byte(nil), data...), nil
 }
 
-func readSkills(includeEvaluationOnly bool) ([]Skill, error) {
+func readSkills() ([]Skill, error) {
 	manifest, err := ReadManifest()
 	if err != nil {
 		return nil, err
@@ -122,7 +117,7 @@ func readSkills(includeEvaluationOnly bool) ([]Skill, error) {
 	}
 
 	var skills []Skill
-	for _, root := range []string{"skills", "supporting-skills", "evaluation-skills"} {
+	for _, root := range []string{"skills", "supporting-skills"} {
 		entries, err := fs.ReadDir(skillissue.CanonicalSkills, root)
 		if err != nil {
 			return nil, fmt.Errorf("read canonical %s: %w", root, err)
@@ -132,23 +127,15 @@ func readSkills(includeEvaluationOnly bool) ([]Skill, error) {
 				continue
 			}
 			name := entry.Name()
-			component, ok := components[name]
+			_, ok := components[name]
 			if !ok {
 				return nil, fmt.Errorf("canonical skill %q is absent from payload manifest", name)
-			}
-			if root == "evaluation-skills" && !component.EvaluationOnly {
-				return nil, fmt.Errorf("evaluation skill %q is not marked evaluation-only", name)
-			}
-			if root != "evaluation-skills" && component.EvaluationOnly {
-				return nil, fmt.Errorf("ordinary skill %q is marked evaluation-only", name)
 			}
 			files, err := readSkill(root, name)
 			if err != nil {
 				return nil, err
 			}
-			if includeEvaluationOnly || !component.EvaluationOnly {
-				skills = append(skills, Skill{Name: name, Files: files})
-			}
+			skills = append(skills, Skill{Name: name, Files: files})
 			delete(components, name)
 		}
 	}

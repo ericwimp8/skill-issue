@@ -20,10 +20,11 @@
 - Expected result: a concise, self-sufficient prompt that supplies missing task authority and context without reteaching the receiving agent or prescribing unnecessary method.
 - Boundary: the skill shapes prompts; it does not own the underlying task procedure already supplied by another authority.
 
-## Dictate Plan
+## Retired Dictate Plan Campaign Target
 
-- Local path: `test-targets/skills/dictate-plan/SKILL.md`
+- Historical local path: `test-targets/skills/dictate-plan/SKILL.md`
 - Canonical source: Eric Wimp Toolkit `dictate-plan`
+- Current state: the copied target was removed after the completed production-refinement campaign; retained campaign evidence records the evaluated content hash and results.
 - Goal: maintain a living, dependency-ordered A-to-B plan from successive conversational dictation.
 - Intended use: multi-message planning in which the user develops a broad task sequence conversationally.
 - Expected behavior: classify meaning into A, B, path, and C; integrate successive dictation semantically; preserve intent; surface planning-level gaps; keep implementation choices open; maintain the durable plan and expansion handoff.

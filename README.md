@@ -144,6 +144,8 @@ The production preview is available at `http://127.0.0.1:4173/skill-issue/`. Set
 
 Edit curated website copy, release metadata, summary metrics, and methodology text in `src/data/siteData.ts`.
 
+Generated skill examples are discovered at build time from `showcase-skills/*/skill/*/SKILL.md`. Add a complete generated-skill folder under `showcase-skills/` and the website will include its name, description, and skill instructions automatically. This keeps the gallery static for GitHub Pages while preserving each example with its generation and evaluation evidence.
+
 Website evaluation artifact types, display labels, adaptation, and temporary illustrative results live in `src/data/evaluationData.ts`. `src/components/EvaluationExplorer.tsx` owns selection and filtering, while the components under `src/components/charts/` own the individual chart presentations. Published result data must come from the accepted evaluation artifacts and campaign evidence rather than hand-authored chart values.
 
 Replace the release URL in the same data file when the first CLI artifact is published through GitHub Releases. Keep binaries in Releases rather than the Pages build.

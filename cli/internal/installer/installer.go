@@ -14,15 +14,16 @@ import (
 )
 
 type Request struct {
-	Harness         harness.ID
-	Scope           harness.Scope
-	Workspace       string
-	EvaluationRoot  string
-	Home            string
-	CLIPath         string
-	SignalStateRoot string
-	Tokens          map[string]string
-	Skills          []payload.Skill
+	Harness              harness.ID
+	Scope                harness.Scope
+	Workspace            string
+	EvaluationRoot       string
+	Home                 string
+	CLIPath              string
+	SignalStateRoot      string
+	Tokens               map[string]string
+	Skills               []payload.Skill
+	ApplyHarnessMetadata bool
 }
 
 type Installation struct {
@@ -47,11 +48,15 @@ func (Service) Install(request Request) (Installation, error) {
 	if err != nil {
 		return Installation{}, err
 	}
+	skills, err = applyHarnessMetadata(request.Harness, skills)
+	if err != nil {
+		return Installation{}, err
+	}
 	root, err := ensureSkillRoot(request)
 	if err != nil {
 		return Installation{}, err
 	}
-	return materializeSkills(root, skills)
+	return materializeSkills(root, request.Harness, skills)
 }
 
 func (Service) Uninstall(request Request) (Installation, error) {
@@ -82,6 +87,12 @@ func (Service) PrepareEvaluation(request Request) (EvaluationInstallation, Insta
 	if err != nil {
 		return EvaluationInstallation{}, Installation{}, err
 	}
+	if request.ApplyHarnessMetadata {
+		skills, err = applyHarnessMetadata(request.Harness, skills)
+		if err != nil {
+			return EvaluationInstallation{}, Installation{}, err
+		}
+	}
 	skills, err = instrument(skills, request.CLIPath, request.SignalStateRoot, request.Tokens)
 	if err != nil {
 		return EvaluationInstallation{}, Installation{}, err
@@ -109,7 +120,7 @@ func (Service) PrepareEvaluation(request Request) (EvaluationInstallation, Insta
 		}
 	}
 	sort.Strings(state.Preexisting)
-	installed, err := materializeSkills(root, skills)
+	installed, err := materializeSkills(root, request.Harness, skills)
 	if err != nil {
 		cleanupErr := Service{}.CleanupEvaluation(request, state)
 		return EvaluationInstallation{}, Installation{}, errors.Join(err, cleanupErr)
@@ -136,6 +147,10 @@ func (Service) CleanupEvaluation(request Request, state EvaluationInstallation) 
 	if err != nil {
 		return err
 	}
+	ordinarySkills, err = applyHarnessMetadata(request.Harness, ordinarySkills)
+	if err != nil {
+		return err
+	}
 	ordinaryByName := make(map[string]payload.Skill, len(ordinarySkills))
 	for _, skill := range ordinarySkills {
 		ordinaryByName[skill.Name] = skill
@@ -155,7 +170,7 @@ func (Service) CleanupEvaluation(request Request, state EvaluationInstallation) 
 	for _, name := range evaluationSkillNames {
 		target := filepath.Join(root, name)
 		if preexisting[name] {
-			if err := materialize(root, target, ordinaryByName[name]); err != nil {
+			if err := materialize(root, target, request.Harness, ordinaryByName[name]); err != nil {
 				return err
 			}
 			continue
@@ -244,16 +259,42 @@ func ensureSkillRoot(request Request) (string, error) {
 	return root, nil
 }
 
-func materializeSkills(root string, skills []payload.Skill) (Installation, error) {
+func materializeSkills(root string, harnessID harness.ID, skills []payload.Skill) (Installation, error) {
 	paths := make([]string, 0, len(skills))
 	for _, skill := range skills {
 		target := filepath.Join(root, skill.Name)
-		if err := materialize(root, target, skill); err != nil {
+		if err := materialize(root, target, harnessID, skill); err != nil {
 			return Installation{}, err
 		}
 		paths = append(paths, target)
 	}
+	if err := verifyMaterializedSkills(root, harnessID, skills); err != nil {
+		return Installation{}, err
+	}
 	return Installation{InstallRoot: root, Paths: paths}, nil
+}
+
+func verifyMaterializedSkills(root string, harnessID harness.ID, skills []payload.Skill) error {
+	for _, skill := range skills {
+		for relative := range skill.Files {
+			include, err := harness.IncludeSkillFile(harnessID, relative)
+			if err != nil {
+				return err
+			}
+			if !include {
+				continue
+			}
+			installedPath := filepath.Join(root, skill.Name, filepath.FromSlash(relative))
+			info, err := os.Stat(installedPath)
+			if err != nil {
+				return fmt.Errorf("verify installed skill file %s: %w", installedPath, err)
+			}
+			if !info.Mode().IsRegular() {
+				return fmt.Errorf("verify installed skill file %s: not a regular file", installedPath)
+			}
+		}
+	}
+	return nil
 }
 
 func skillNames(skills []payload.Skill) map[string]bool {
@@ -262,6 +303,59 @@ func skillNames(skills []payload.Skill) map[string]bool {
 		names[skill.Name] = true
 	}
 	return names
+}
+
+func applyHarnessMetadata(harnessID harness.ID, skills []payload.Skill) ([]payload.Skill, error) {
+	supported, err := harness.SupportsDisableModelInvocation(harnessID)
+	if err != nil {
+		return nil, err
+	}
+	if !supported {
+		return skills, nil
+	}
+
+	result := make([]payload.Skill, 0, len(skills))
+	for _, skill := range skills {
+		if skill.Name != "skill-intake" {
+			result = append(result, skill)
+			continue
+		}
+		files := make(map[string][]byte, len(skill.Files))
+		for relative, data := range skill.Files {
+			files[relative] = append([]byte(nil), data...)
+		}
+		entrypoint, err := addDisableModelInvocation(files["SKILL.md"])
+		if err != nil {
+			return nil, fmt.Errorf("apply %s metadata to %s: %w", harnessID, skill.Name, err)
+		}
+		files["SKILL.md"] = entrypoint
+		result = append(result, payload.Skill{Name: skill.Name, Files: files})
+	}
+	return result, nil
+}
+
+func addDisableModelInvocation(data []byte) ([]byte, error) {
+	text := string(data)
+	if !strings.HasPrefix(text, "---\n") {
+		return nil, errors.New("SKILL.md has no opening frontmatter delimiter")
+	}
+	end := strings.Index(text[4:], "\n---\n")
+	if end < 0 {
+		return nil, errors.New("SKILL.md has no closing frontmatter delimiter")
+	}
+	frontmatter := text[4 : 4+end]
+	for _, line := range strings.Split(frontmatter, "\n") {
+		line = strings.TrimSpace(line)
+		if !strings.HasPrefix(line, "disable-model-invocation:") {
+			continue
+		}
+		if strings.TrimSpace(strings.TrimPrefix(line, "disable-model-invocation:")) == "true" {
+			return append([]byte(nil), data...), nil
+		}
+		return nil, errors.New("SKILL.md has conflicting disable-model-invocation metadata")
+	}
+	insertAt := 4 + end
+	return []byte(text[:insertAt] + "\ndisable-model-invocation: true" + text[insertAt:]), nil
 }
 
 func instrument(skills []payload.Skill, cliPath, signalStateRoot string, tokens map[string]string) ([]payload.Skill, error) {
@@ -311,13 +405,20 @@ func inject(data []byte, cliPath, signalStateRoot, token string) ([]byte, error)
 	return []byte(text[:insertAt] + instruction + text[insertAt:]), nil
 }
 
-func materialize(root, target string, skill payload.Skill) error {
+func materialize(root, target string, harnessID harness.ID, skill payload.Skill) error {
 	staging, err := os.MkdirTemp(root, ".skill-issue-stage-*")
 	if err != nil {
 		return fmt.Errorf("create skill staging directory: %w", err)
 	}
 	defer os.RemoveAll(staging)
 	for relative, data := range skill.Files {
+		include, err := harness.IncludeSkillFile(harnessID, relative)
+		if err != nil {
+			return err
+		}
+		if !include {
+			continue
+		}
 		path := filepath.Join(staging, filepath.FromSlash(relative))
 		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 			return fmt.Errorf("create staged skill directory: %w", err)

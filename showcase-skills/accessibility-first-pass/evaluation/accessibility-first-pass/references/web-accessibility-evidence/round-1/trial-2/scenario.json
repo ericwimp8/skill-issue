@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "scenario_id": "accessibility-reference-2",
+  "turns": [
+    {
+      "turn_id": "classify-dialog",
+      "prompt": "Review index.html as source-only evidence for the preferences dialog. Produce a first-pass report that clearly separates established behavior, source-backed risks, and unknown runtime behavior, then specify the exact keyboard and assistive-technology follow-up required."
+    }
+  ]
+}

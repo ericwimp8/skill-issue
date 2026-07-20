@@ -2,22 +2,21 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Service dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Service overview</title>
     <style>
-      main { width: 1120px; margin: auto; }
-      .good { color: green; }
-      .bad { color: red; }
+      .status { width: 0.75rem; height: 0.75rem; border-radius: 50%; display: inline-block; }
+      .good { background: #24a148; }
+      .bad { background: #da1e28; }
     </style>
   </head>
   <body>
-    <main>
-      <h1>Service health</h1>
-      <p><span class="good">Payments</span> <span class="bad">Messaging</span></p>
-      <svg width="800" height="300"><path d="M0 250 L200 180 L400 220 L600 80 L800 100" /></svg>
-      <table>
-        <tr><th>Service</th><th>Latency</th></tr>
-        <tr><td>Payments</td><td>240 ms</td></tr>
-      </table>
-    </main>
+    <div class="page-title">Service overview</div>
+    <div class="table">
+      <div><span>Search</span> <span class="status good"></span></div>
+      <div><span>Payments</span> <span class="status bad"></span></div>
+    </div>
+    <button aria-label="View Search details">View Search details</button>
+    <button aria-label="View Payments details">View Payments details</button>
   </body>
 </html>

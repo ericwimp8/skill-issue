@@ -1,0 +1,8 @@
+Native evidence log
+
+Repository-relative paths are used throughout.
+
+READ SUCCESS COMPLETE | path=showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/SKILL.md | sha256=a7b9fc077912a1454e0b2e4d00ce800d5846f71dc243310020c3091d945b0eaa | lines=70 | bytes=5776
+READ SUCCESS COMPLETE | path=showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/references/web-accessibility-evidence.md | sha256=c52f41f96a138d9cf8d891146a4482dd367a93d82c8fb43da83ee600575c03da | lines=68 | bytes=4807
+READ SUCCESS COMPLETE | routed_by=showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/SKILL.md | path=showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/assets/accessibility-first-pass-report.md | sha256=9ccc238fa29f9ec076ddc17817faba03b2143b4eddafcadbcbceb69d72db4ac3 | lines=51 | bytes=1371
+READ SUCCESS COMPLETE | fixture=showcase-skills/accessibility-first-pass/evaluation/accessibility-first-pass/fixtures/form/index.html | sha256=ef8a81737d3abfb73ff2843c77f263da69e32c27e142b8838da11d19a67ef775 | lines=23 | bytes=731

@@ -1,11 +1,22 @@
-# Skill Generation Intake Handoff
+# Intake-to-Generation Handoff
 
-- **Source of truth:** `plans/accessibility-first-pass/accessibility-first-pass-a-to-b-plan.md`
-- **Confirmed context:** The request targets a reusable first-pass web accessibility review skill, portable Agent Skills content, and OpenAI Codex delivery. The repository provides the governing generation and evaluation workflows and a qualified Codex evaluation environment record.
-- **Outcome:** Generate a concise skill that combines available source inspection, rendered interaction review, project-compatible automation, authoritative guidance, manual checks, explicit evidence levels, actionable prioritization, human or assistive-technology follow-up, and material limitations.
-- **Runtime proof required:** Representative behavior must show evidence separation, responsible automation claims, useful constrained-environment behavior, actionable reporting, and explicit routing of unresolved human or assistive-technology checks.
-- **Preserved boundaries:** Do not claim accessibility, certification, completeness, or standards conformance; do not invent observed behavior; do not require a single scanner; do not modify existing production or showcase work.
-- **Generation viability:** Autonomous.
-- **Execution preference:** Autonomous continuation.
-- **Authority boundary:** Create and refine only `showcase-skills/accessibility-first-pass/`.
-- **Required stops:** Stop at an evaluator capability gate, unsafe/private input requirement, or an actual user-owned decision.
+## Source of Truth
+
+- Plan: `showcase-skills/accessibility-first-pass/plans/accessibility-first-pass/accessibility-first-pass-a-to-b-plan.md`
+- Initiating prompt: `showcase-skills/accessibility-first-pass/workflow-prompt.md`
+
+## Confirmed Contract
+
+- **Purpose:** produce a responsible, evidence-labeled first-pass accessibility review of a supplied web page, feature, or implementation.
+- **Outcome:** a prioritized, actionable report that connects affected users, evidence, inspection steps, remediation direction, human or assistive-technology follow-up, and limitations.
+- **Invocation boundary:** use for requested preliminary or first-pass web accessibility reviews and accessibility-oriented implementation inspection.
+- **Destination:** `showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/`.
+- **Supported surface:** portable Agent Skills content plus OpenAI Codex metadata.
+- **Unresolved implementation matters:** fixture selection, reference organization, and report formatting are generation-owned choices.
+- **User-owned stops:** none identified.
+- **Generation viability:** autonomous.
+- **Execution preference:** autonomous continuation.
+- **Authority boundary:** create and refine only this showcase workspace; do not change production workflows or unrelated repository content.
+- **Evaluation expectation:** continue into governed description, per-reference, and body evaluation when current environment prerequisites permit.
+
+The complete plan owns expected behavior, boundaries, exclusions, and observable completion criteria; this handoff does not replace it.

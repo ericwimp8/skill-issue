@@ -15,14 +15,13 @@ description: Two-loop skill evaluation and semantic refinement workflow. Use whe
 
 ## Evaluate the Description
 
-1. Read `references/harness-evaluation-controls.md` and identify the current harness surface.
-2. Verify that the target is implicitly invocable, independent trial agents are available, and native execution evidence can prove whether the skill loaded. Stop with the documented reason when any gate fails.
-3. Derive two distinct, representative prompts from the target's intended-use boundary. Make each task naturally require the skill without naming it, requesting its invocation, quoting its description, or revealing the expected selection.
-4. Prepare only the inputs those prompts require inside the campaign location.
-5. Give each prompt to a fresh independent agent and retain the native skill-load or tool trace. Treat the agent's prose claim as insufficient evidence.
-6. When both trials succeed, derive two different confirmation prompts and repeat with fresh agents. Four successes across the two stages pass the description.
-7. On any failure, diagnose the missing or misleading meaning in the description, update that meaning without adding fixture-specific wording or widening the intended boundary, clean transient artifacts, and restart the complete two-stage protocol.
-8. After five unsuccessful description rounds for the current target, pause the campaign, retain the evidence, and ask whether the user authorizes a specified number of further rounds.
+1. Verify that the target is implicitly invocable, independent trial agents are available, and native execution evidence can prove whether the skill loaded. Stop with the documented reason when any gate fails.
+2. Derive two distinct, representative prompts from the target's intended-use boundary. Make each task naturally require the skill without naming it, requesting its invocation, quoting its description, or revealing the expected selection.
+3. Prepare only the inputs those prompts require inside the campaign location.
+4. Give each prompt to a fresh independent agent and retain the native skill-load or tool trace. Treat the agent's prose claim as insufficient evidence.
+5. When both trials succeed, derive two different confirmation prompts and repeat with fresh agents. Four successes across the two stages pass the description.
+6. On any failure, diagnose the missing or misleading meaning in the description, update that meaning without adding fixture-specific wording or widening the intended boundary, clean transient artifacts, and restart the complete two-stage protocol.
+7. After five unsuccessful description rounds for the current target, pause the campaign, retain the evidence, and ask whether the user authorizes a specified number of further rounds.
 
 ## Evaluate the Body
 
@@ -53,6 +52,5 @@ Use the relevant reference document when needed from this skill.
 
 - `references/target-outcome-interpretation.md`: Target-contract interpretation rules for deriving observable success without changing a skill's meaning. Use when establishing what a skill is intended to do.
 - `references/campaign-record.md`: Evaluation campaign structure, evidence records, counters, and cleanup ownership. Use when creating, resuming, or concluding any target campaign.
-- `references/harness-evaluation-controls.md`: Harness invocation, independent-agent, evidence, and packaging capability matrix. Use when gating or configuring description and conversational evaluation.
 - `references/reference-file-evaluation.md`: Unleading reference traversal, evidence, failure diagnosis, and post-refinement confirmation protocol. Use when the target packages files under `references/`.
 - `references/semantic-refinement.md`: Generalized semantic update constraints for skill descriptions and bodies. Use when diagnosing failures or formulating automatic and human-reviewed refinements.

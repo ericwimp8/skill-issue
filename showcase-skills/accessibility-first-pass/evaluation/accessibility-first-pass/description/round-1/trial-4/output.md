@@ -1,101 +1,87 @@
-# Accessibility First Pass Report
+# Accessibility First-Pass Report
 
 ## Review Scope
 
-- **Target:** The product-update article and embedded media implemented by `showcase-skills/accessibility-first-pass/evaluation/accessibility-first-pass/fixtures/media/index.html`.
-- **Included journeys, states, routes, and viewports:** Initial article load; keyboard traversal of available controls; embedded-video load state; and the article's `Read more` destination. Rendered checks used Chrome at 1920 x 902 CSS pixels with device pixel ratio 2.
-- **Available source and rendered access:** Complete fixture HTML source and a locally served rendering on 20 July 2026. The fixture supplied no `update.mp4` or `details.html` file.
-- **Project tooling and commands used:** Source inspection with numbered lines; `python3 -m http.server 8844 --bind 127.0.0.1`; browser DOM/accessibility snapshot inspection; bounded DOM state reads; keyboard Tab traversal; and server response-log inspection. No automated accessibility scanner was provided or run within this fixture-only review.
-- **Guidance baseline:** No project conformance target was supplied. Current W3C WCAG 2.2 success criteria and WAI media/page-structure guidance are used only for narrow risk mappings, not as a conformance claim.
-- **Exclusions:** Media-content review, caption accuracy, audio-description need and quality, transcript equivalence, playback duration, motion/audio behavior, mobile/reflow/zoom, contrast, multiple browsers, screen readers and other assistive technologies, and disabled-user testing. These could not be evaluated because the media and detail page were absent or because the bounded environment did not provide the required content or testers.
+- **Target:** `showcase-skills/accessibility-first-pass/evaluation/accessibility-first-pass/fixtures/media/index.html`
+- **Journeys and states:** Initial load of the product-tour page; static document structure; configured heading animation; configured video playback.
+- **Source areas:** The supplied HTML and its inline CSS. The referenced `tour.mp4` was not supplied.
+- **Rendered environments:** None. This was a source-only review; no browser, viewport, keyboard, screen reader, or media playback session was exercised.
+- **Standards or guidance considered:** WCAG 2.2 Level A and AA criteria relevant to prerecorded media, automatic audio, and continuous motion.
+- **Out of scope:** Other routes, production integration, external styles or scripts, actual media content, captions embedded in the media, browser autoplay policy, responsive rendering, contrast measurement, assistive-technology interoperability, and disabled-user testing.
 
-## Evidence Summary
+## Methods and Evidence
 
-- **Observed:** The rendered page exposed a `main` landmark, an English page language, a `Product update` title and level-1 heading, a level-3 `What changed` heading, and one `Read more` link. The video did not appear in the rendered DOM/accessibility snapshot. Its runtime state was `paused: true`, `readyState: 0`, with no text tracks or fallback text. The local server returned 404 for `update.mp4`. Keyboard traversal moved from `Read more` to the document body and back to `Read more`, without reaching a video control. Navigating to `details.html` produced a 404 error page.
-- **Tool:** No rule-based accessibility scanner was run, so there are no violation, incomplete, or pass counts. Browser inspection established only the recorded DOM, runtime, and keyboard observations.
-- **Source-backed:** `index.html` declares `<video src="update.mp4" autoplay></video>` with no `controls`, `<track>`, transcript link, fallback text, or adjacent media description. The heading sequence is `h1` then `h3`. The only follow-up link uses the accessible name `Read more` and targets `details.html`.
-- **Inference:** If the intended video contains meaningful audio, visual information, or more than brief motion/audio, the current player configuration creates substantial caption, description, transcript, keyboard-control, and autoplay risks. The unavailable media prevents confirming which conditional WCAG requirements apply.
-- **Unverified:** Whether the intended video has speech, meaningful non-speech audio, essential visual information, integrated description, open captions, motion lasting more than five seconds, or automatically playing audio lasting more than three seconds. Actual assistive-technology announcements and user experience also remain unverified.
-
-## Prioritized Findings
-
-### High — Referenced update resources are absent
-
-- **Affected users and tasks:** Everyone trying to learn what changed; the impact is especially consequential for users who need a reliable alternate route after one format fails or who require predictable error recovery.
-- **Evidence level:** Observed and source-backed.
-- **Evidence:** `index.html` references `update.mp4` and `details.html`, but the supplied fixture contains only `index.html`. The server returned 404 for `update.mp4`; the video remained paused with `readyState: 0`; and the `Read more` route rendered `Error code: 404` and `File not found`.
-- **Reproduction or inspection steps:** Serve the fixture directory; open `/`; inspect the video state and server log; then follow or navigate to `/details.html`.
-- **User impact:** Both substantive ways to obtain the update fail. The page retains only the generic sentence “Learn about the new workflow,” so the promised update content is unavailable.
-- **Authoritative guidance:** No narrow WCAG failure is asserted for the publishing error alone. Restoring the referenced resources is a prerequisite for evaluating the time-based media requirements described by [W3C WAI's audio and video accessibility guidance](https://www.w3.org/WAI/media/av/).
-- **Remediation direction and owner:** At the article publishing/deployment owner, include the intended media and detail page at the referenced URLs or update the references to valid resources. Add publication checks that request every local content URL and fail on non-success responses. Provide a visible, useful fallback when media cannot load.
-- **Verification route:** From a clean production-equivalent build, request both referenced URLs, play the video, follow the link with keyboard and pointer input, and confirm meaningful content loads rather than a server error.
-- **Confidence and open questions:** High confidence that both supplied references are unavailable. The intended production packaging and whether either resource is injected elsewhere are unknown.
-
-### High — No accessible media alternatives are represented
-
-- **Affected users and tasks:** Deaf and hard-of-hearing people needing captions; blind and low-vision people needing important visual information described; DeafBlind people and people who process text more effectively needing a descriptive transcript; and people in environments where audio cannot be used.
-- **Evidence level:** Source-backed, with conditional inference because the media content is unavailable.
-- **Evidence:** The video has no `<track>` children, no nearby transcript or described-version link, and no fallback text. The runtime reported zero text tracks. The article's single generic sentence cannot be verified as an equivalent alternative to an unavailable video.
-- **Reproduction or inspection steps:** Inspect the `<video>` element and its adjacent content; query its runtime `textTracks.length`; then review the intended media itself once supplied.
-- **User impact:** If the video carries meaningful audio or visual information, affected users may receive an incomplete or empty product update.
-- **Authoritative guidance:** WCAG 2.2 [1.2.2 Captions (Prerecorded)](https://www.w3.org/WAI/WCAG22/Understanding/captions-prerecorded) applies when prerecorded synchronized media contains needed audio information. [WAI caption guidance](https://www.w3.org/WAI/media/av/captions/) explains that captions include relevant speech and non-speech audio. WCAG 2.2 [1.2.3 Audio Description or Media Alternative](https://www.w3.org/WAI/WCAG22/Understanding/audio-description-or-media-alternative-prerecorded.html) and [WAI description guidance](https://www.w3.org/WAI/media/av/description/) address important visual information; [WAI transcript guidance](https://www.w3.org/WAI/media/av/transcripts/) explains descriptive transcripts and their users.
-- **Remediation direction and owner:** At the media-content and article owner, first inventory the actual audio and visual information. Provide accurate synchronized captions for meaningful audio, and provide a descriptive transcript and/or audio description as required by the chosen target and the media. Link the transcript immediately beside the player and use a player that exposes each alternative.
-- **Verification route:** Have qualified reviewers compare captions, transcript, and description against the full media; verify timing, speaker identification, meaningful sounds, on-screen text, and essential visual actions; then test discovery and operation with relevant assistive technologies and disabled users.
-- **Confidence and open questions:** High confidence that no separate alternative is represented in this fixture; low confidence about the exact alternatives required until the media is available and reviewed.
-
-### High — Autoplay is requested without user playback controls
-
-- **Affected users and tasks:** Keyboard-only and switch users who need to control playback; screen-reader users whose speech may compete with audio; and people with cognitive, vestibular, attention, or sensory sensitivities who need to prevent or stop unexpected media.
-- **Evidence level:** Source-backed and observed, with conditional WCAG mappings.
-- **Evidence:** The element requests `autoplay` but omits `controls`. In the rendered state, Tab reached only `Read more`; no video control entered the focus order. Playback did not start because the media request failed, so actual autoplay behavior could not be observed.
-- **Reproduction or inspection steps:** Inspect the video attributes; load the article; repeatedly press Tab from initial focus; then repeat after restoring a valid media asset and test every playback action.
-- **User impact:** Once the media is restored, users may have no exposed way to start, pause, stop, replay, seek, adjust volume, or enable alternatives. Autoplayed sound can interfere with screen-reader output, and autoplayed motion can impair concentration or trigger discomfort.
-- **Authoritative guidance:** [WAI media-player guidance](https://www.w3.org/WAI/media/av/player/) calls for keyboard-operable, labelled, visibly focused controls. WCAG 2.2 [1.4.2 Audio Control](https://www.w3.org/WAI/WCAG22/Understanding/audio-control.html) applies if audio automatically plays for more than three seconds. WCAG 2.2 [2.2.2 Pause, Stop, Hide](https://www.w3.org/WAI/WCAG22/Understanding/pause-stop-hide) applies if qualifying movement starts automatically and lasts more than five seconds. Those duration/content conditions are unverified here.
-- **Remediation direction and owner:** At the player implementation owner, remove autoplay by default and add native `controls` or an established accessible media player. Ensure all functions and alternative-media controls are keyboard operable, named, focus-visible, and usable at zoom. Avoid custom controls unless they meet the same requirements.
-- **Verification route:** With the real media loaded, test initial behavior and every control using keyboard only, screen reader, speech input, high zoom, and reduced-motion preferences. Measure whether any automatic audio or motion crosses the WCAG timing thresholds.
-- **Confidence and open questions:** High confidence in the attributes and tested focus order; actual playback, duration, audio, motion, and player behavior remain unverified.
-
-### Medium — Heading hierarchy skips level 2
-
-- **Affected users and tasks:** Screen-reader users navigating by headings, and people with cognitive or visual disabilities who depend on a consistent document outline to understand section relationships.
-- **Evidence level:** Observed and source-backed.
-- **Evidence:** Both the source and rendered snapshot show `Product update` as level 1 followed immediately by `What changed` as level 3, with no intervening level-2 section.
-- **Reproduction or inspection steps:** Inspect the heading elements or list headings in the rendered accessibility snapshot.
-- **User impact:** The level jump implies an absent parent section and can make this short article's organization sound incomplete or confusing in heading navigation.
-- **Authoritative guidance:** [W3C WAI heading guidance](https://www.w3.org/WAI/tutorials/page-structure/headings/) says to nest headings by rank and avoid skipped ranks where possible. This supports the structure preserved by WCAG 2.2 [1.3.1 Info and Relationships](https://www.w3.org/WAI/WCAG22/Understanding/info-and-relationships.html); this report treats the mapping as structural guidance rather than a page-wide conformance determination.
-- **Remediation direction and owner:** At the article-content owner, change `What changed` to `h2` unless a genuine level-2 parent section is added before it.
-- **Verification route:** Reinspect the rendered heading outline and navigate headings with a screen reader to confirm the announced levels match the intended content hierarchy.
-- **Confidence and open questions:** High confidence. No evidence in the bounded article suggests a missing level-2 parent section is intentional.
-
-### Low — The follow-up link name is generic
-
-- **Affected users and tasks:** Screen-reader users navigating a links list and people with cognitive disabilities trying to predict a destination before activating it.
-- **Evidence level:** Observed and source-backed.
-- **Evidence:** The rendered accessible name is `Read more`. The preceding sentence supplies some programmatic context, but the name alone does not identify the new workflow or destination.
-- **Reproduction or inspection steps:** Inspect the link's accessible name in the rendered snapshot, then consider it in a links-only navigation view.
-- **User impact:** Users who encounter the link outside the surrounding sentence must spend more effort determining its purpose. The broken destination currently prevents confirming whether the nearby wording accurately describes the target.
-- **Authoritative guidance:** WCAG 2.2 [2.4.4 Link Purpose (In Context)](https://www.w3.org/WAI/WCAG22/Understanding/link-purpose-in-context.html) permits purpose to be established by link text together with programmatically determined context, while advising meaningful link text whenever possible. A definite criterion failure is not asserted here because the paragraph supplies context.
-- **Remediation direction and owner:** At the article-content owner, use a destination-specific name such as “Read more about the new workflow,” aligned with the restored destination's actual content.
-- **Verification route:** Confirm the accessible name communicates purpose both in context and in a screen-reader links list, then follow it to verify the destination matches.
-- **Confidence and open questions:** High confidence in the current name; whether it fails a declared standard remains open because no conformance target was supplied and contextual purpose may be sufficient.
-
-## Checks Requiring Human or Assistive-Technology Testing
-
-- **Media equivalence:** A qualified caption/description reviewer must inspect the restored video's complete audio and visual content, compare it with captions, transcript, and description, and confirm that all information needed to understand the update is equivalent. The media was unavailable in this review.
-- **Screen-reader journey:** Screen-reader users should locate the article, navigate its heading structure, discover the player and alternatives, operate all playback functions, reach the transcript, and follow the detail link. A DOM/accessibility snapshot cannot establish usable announcements or interaction.
-- **Keyboard, switch, and speech operation:** Test every player control, focus order, visible focus, names, hit targets, and error recovery with keyboard, switch, and speech input after selecting a real player. The current player had no exposed controls to test.
-- **Disabled-user evaluation:** Include Deaf and hard-of-hearing, blind and low-vision, DeafBlind, and cognitive/vestibular participants in representative product-update tasks. Technical inspection alone cannot establish whether the media presentation meets real user needs.
-- **Autoplay and sensory response:** With the intended media, verify default playback, audio and motion duration, pause/stop behavior, reduced-motion behavior, and comprehension without sound. The failed media request prevented these checks.
+| Method                                                                      | Target and state                            | Result or evidence path                                                            | Evidence class | Limitations                                                                            |
+| --------------------------------------------------------------------------- | ------------------------------------------- | ---------------------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------------------------- |
+| Manual source inspection                                                    | Complete supplied HTML and inline CSS       | `index.html` lines 1–19                                                            | Observed       | Establishes authored markup and styles, not runtime behavior                           |
+| Referenced-media inventory                                                  | Fixture directory                           | Only `index.html` is present; `tour.mp4` is unavailable                            | Observed       | Media duration, audio, visuals, embedded alternatives, and playback cannot be assessed |
+| Project tooling inspection                                                  | Repository package scripts and dependencies | No dedicated accessibility checker or browser automation dependency was identified | Observed       | Tool inventory is not an accessibility result                                          |
+| Automated accessibility scan                                                | Supplied page                               | Not run                                                                            | Unverified     | No project-native accessibility scanner was available                                  |
+| Rendered keyboard, zoom, motion-preference, and assistive-technology checks | Supplied page                               | Not run                                                                            | Unverified     | No rendered session was exercised                                                      |
 
 ## Material Limitations
 
-- The supplied implementation omitted both referenced resources, so the core media and detail content could not be evaluated.
-- Only the article's initial state, failed resource states, one desktop viewport, and basic keyboard Tab order were rendered.
-- No mobile viewport, zoom, text-spacing override, high-contrast mode, reduced-motion mode, alternate browser, or network-recovery state was tested.
-- No automated accessibility scanner was run; therefore this report provides no scanner coverage or counts.
-- No screen reader, magnifier, speech input, switch control, braille display, qualified media reviewer, or disabled participant was used.
-- Source and snapshots establish implementation facts and risks, not caption quality, computed assistive-technology behavior, user comprehension, or standards conformance.
+- The referenced `tour.mp4` is absent, so this assessment cannot determine whether the tour contains speech, meaningful audio, important visual-only information, embedded open captions, flashing content, or audio lasting more than three seconds.
+- Browser autoplay behavior varies by browser and user settings. The authored autoplay request is observable; successful autoplay, automatic sound, and resulting user impact are unverified.
+- No rendered inspection was performed. Focus behavior, native control exposure, visual contrast, zoom/reflow, text spacing, high-contrast behavior, and accessibility-tree output remain unverified.
+- Source inspection cannot establish usability with screen readers, voice input, switch access, magnification, or other assistive technologies, and no testing with disabled people occurred.
+- The findings are an initial risk assessment, not a complete WCAG audit.
 
-## Conclusion
+## Prioritized Findings
 
-This source-and-browser first pass establishes that both referenced update resources fail to load, the article represents no media alternatives, the player requests autoplay without controls, and the document hierarchy skips a heading level. First restore and production-verify the referenced resources; then inventory the real media, supply the necessary captions/transcript/description, and expose a non-autoplaying keyboard-operable player before assistive-technology and disabled-user verification. This first pass does not prove accessibility, completeness, certification, or standards conformance.
+### High — The primary tour has no user playback controls
+
+- **Evidence class:** Inferred from observed source.
+- **Affected users and task impact:** Keyboard, switch, speech-input, and limited-dexterity users may be unable to pause, replay, seek, or control the primary instructional content. People with cognitive, attention, or processing disabilities may be unable to stop or review a looping presentation at their own pace. The page explicitly directs users to watch the tour, so the affected task is central rather than incidental.
+- **Evidence:** `index.html` line 15 authors `<video autoplay loop src="tour.mp4"></video>` without the native `controls` attribute or an authored equivalent. Whether the missing media would actually start is unverified.
+- **Reproduction or inspection steps:** Inspect line 15; confirm `autoplay` and `loop` are present and `controls` is absent. In a browser with the production media, load the page, use keyboard-only input, and determine whether playback can be paused, restarted, sought, and volume-controlled.
+- **Authoritative guidance:** [WCAG 2.2 SC 2.2.2 Pause, Stop, Hide](https://www.w3.org/WAI/WCAG22/Understanding/pause-stop-hide.html) requires a pause, stop, or hide mechanism for applicable automatically starting movement that lasts more than five seconds. [WCAG 2.2 SC 1.4.2 Audio Control](https://www.w3.org/WAI/WCAG22/Understanding/audio-control) applies if audio plays automatically for more than three seconds.
+- **Priority rationale:** The tour is the page's stated instructional purpose, the loop is continuous if playback succeeds, and the authored element offers no direct control mechanism. Confidence in the source defect is high; runtime impact and the exact criterion applicability depend on the unavailable media and browser behavior.
+- **Remediation direction:** At the media element, expose accessible native playback controls and remove automatic playback and looping unless product evidence establishes an essential need. Prefer user-initiated playback. If automatic behavior remains, provide an immediately operable pause/stop mechanism and independent audio control as applicable.
+- **Human or assistive-technology follow-up:** With the production media, test current Chrome, Safari, and Firefox using keyboard-only input; then verify control names, roles, states, focus order, and announcements with VoiceOver and NVDA or another supported screen reader.
+- **Confidence and limitations:** High confidence that no HTML controls are authored. Playback, duration, audio, browser-provided fallback behavior, and exact user impact were not observed.
+
+### High — Continuous heading animation cannot be stopped
+
+- **Evidence class:** Observed.
+- **Affected users and task impact:** People with attention, cognitive, vestibular, or motion sensitivities may find the continuously scaling page heading distracting, fatiguing, or uncomfortable while trying to understand the tour. The animation affects the page's primary heading and continues alongside the other content.
+- **Evidence:** `index.html` lines 8–9 apply an infinite alternating scale animation every 0.7 seconds to `.hero`; line 14 applies that class to the `h1`. No stop mechanism or reduced-motion override is authored.
+- **Reproduction or inspection steps:** Inspect lines 8–9 and 14. In a browser, load the page and observe whether the heading continues moving beyond five seconds; then enable the operating system's reduced-motion preference and confirm whether the movement stops.
+- **Authoritative guidance:** [WCAG 2.2 SC 2.2.2 Pause, Stop, Hide](https://www.w3.org/WAI/WCAG22/Understanding/pause-stop-hide.html) covers automatically starting, non-essential moving content that continues beyond five seconds in parallel with other content.
+- **Priority rationale:** The movement is indefinite, rapid, prominent, and lacks a user control. It may interfere with the entire short page, and the source directly establishes the condition.
+- **Remediation direction:** Remove the non-essential infinite animation. If a meaningful motion effect is retained, make it brief enough to stop within five seconds or provide a persistent pause/stop mechanism; also suppress non-essential motion when `prefers-reduced-motion: reduce` is active.
+- **Human or assistive-technology follow-up:** Test the completed page with reduced motion enabled and with people who use motion-reduction settings; confirm that the heading remains stable without losing information.
+- **Confidence and limitations:** High confidence in the authored continuous animation. Perceived severity and vestibular response require human evaluation.
+
+## Passed Checks Within Tested Scope
+
+| Check                                                  | Exact state and method | Evidence                                    | Limitations                                                                |
+| ------------------------------------------------------ | ---------------------- | ------------------------------------------- | -------------------------------------------------------------------------- |
+| Document language is declared                          | Source inspection      | `index.html` line 2 declares `lang="en"`    | Correctness assumes the page and media are English                         |
+| Page has a descriptive title                           | Source inspection      | `index.html` line 6 contains `Product tour` | Browser announcement was not tested                                        |
+| Main content and top-level heading use native elements | Source inspection      | `main` at line 13 and one `h1` at line 14   | Accessibility-tree exposure and full-site landmark context were not tested |
+| Mobile viewport metadata is present                    | Source inspection      | `index.html` line 5                         | Reflow and zoom behavior were not tested                                   |
+
+## Follow-Up Checks and Unknowns
+
+| Check                                                   | Why unresolved                                                               | Required environment or method                                                                                                  | Expected behavior                                                                                                                       |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Prerecorded captions                                    | Media is absent; no `<track>` is authored, but open captions may be embedded | Review `tour.mp4` with audio and inspect the production player                                                                  | All meaningful speech and non-speech audio has accurate synchronized captions where WCAG 2.2 SC 1.2.2 applies                           |
+| Audio description or media alternative                  | Important visual-only information is unknown                                 | Review the tour's visuals and soundtrack with blind-user needs in mind                                                          | Important visual information is available through audio description or an applicable time-based media alternative under SC 1.2.3/1.2.5 |
+| Transcript and equivalent task information              | The paragraph only says to watch; media content is unknown                   | Compare every instructional step in the tour with adjacent text                                                                 | Users who cannot consume the video can obtain equivalent workflow information                                                           |
+| Automatic audio                                         | Media audio and actual autoplay behavior are unknown                         | Test production media across supported browsers and user settings                                                               | Audio does not start automatically for more than three seconds without independent pause/stop or volume control                         |
+| Flashing and motion characteristics                     | Media is absent                                                              | Inspect the complete video with an appropriate flash-analysis tool and human review                                             | Media stays within applicable flash thresholds and provides motion controls where required                                              |
+| Native video control accessibility                      | Controls are not currently authored                                          | After remediation, test keyboard, screen reader, touch, switch, and voice input                                                 | Every playback function is perceivable, operable, named, stateful, and reachable in a logical order                                     |
+| Contrast, zoom, reflow, text spacing, and high contrast | No rendered review occurred                                                  | Test supported browsers at 200% and 400% zoom, constrained viewport, custom text spacing, and forced-colors/high-contrast modes | Content remains readable, visible, and operable without loss or obstruction                                                             |
+
+## Prioritized Next Actions
+
+1. Remove autoplay and looping from the tour, and expose native playback controls before publication.
+2. Remove the infinite heading pulse or constrain it and honor reduced-motion preferences.
+3. Supply and review the production `tour.mp4`; add accurate captions plus audio description or an equivalent media alternative when the content requires them.
+4. Run rendered keyboard, zoom/reflow, contrast, reduced-motion, and accessibility-tree checks in supported browsers.
+5. Complete targeted screen-reader and disabled-user testing of the full product-tour journey before making accessibility or conformance claims.
+
+## Review Boundary
+
+This first-pass review identifies evidence and risks within the stated scope. It does not establish overall accessibility, certification, or standards conformance. Automated results and limited manual checks cannot replace comprehensive evaluation and testing with disabled people and relevant assistive technologies.

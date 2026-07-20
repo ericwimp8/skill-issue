@@ -2,7 +2,7 @@
 
 ## A: Starting Position
 
-- The parent plan identifies nine selected harness targets, but the earlier split between a three-harness complete-workflow tier and a five-harness skill-calling tier has now been superseded.
+- The parent plan identifies six selected harness targets, while the earlier split between a three-harness complete-workflow tier and a five-harness skill-calling tier has been superseded.
 - This foundation owns the boundary between package or installation support, complete workflow proof, skill-calling evaluation coverage, and public benchmark claims. It defines the evaluation commitment but does not execute the evaluations.
 - Existing project evidence identifies `gpt-5.6-sol` with high reasoning as the model used for the completed Codex evaluation campaign.
 - The minimum release now requires both complete end-to-end proof and skill-calling evaluation in OpenAI Codex, Claude Code, Cursor, Pi, and OpenCode across thirteen harness-and-model combinations.
@@ -19,7 +19,7 @@ The project has one definitive contract under which OpenAI Codex, Claude Code, C
 - Require complete CLI installation, complete Skill Issue workflow proof, cleanup or removal proof, and skill-calling evaluation for OpenAI Codex, Claude Code, Cursor, Pi, and OpenCode.
 - Define complete end-to-end proof in each minimum harness as CLI installation, installed-package discovery, natural-language skill creation, generated-skill evaluation and refinement, existing-skill refinement, and cleanup or removal.
 - Treat every harness in this five-harness tier as a minimum release requirement rather than giving Cursor or Pi a lower evidence tier.
-- Keep the other four selected harnesses and additional model or reasoning combinations as later expansion beyond the minimum viable release.
+- Keep Kilo Code and additional model or reasoning combinations as later expansion beyond the minimum viable release.
 
 ### 2. Lock the minimum evaluation matrix
 
@@ -71,7 +71,7 @@ The project has one definitive contract under which OpenAI Codex, Claude Code, C
 
 ## C: Observable Completion Criteria
 
-- One authoritative contract names the selected nine harnesses and the unified five-harness minimum qualification tier.
+- One authoritative contract names the six selected harnesses and the unified five-harness minimum qualification tier.
 - All five minimum harnesses have complete end-to-end proof and all thirteen minimum matrix cells have completed skill-calling evaluations before the minimum release is presented as complete.
 - Each minimum harness has evidence for CLI installation, package discovery, natural-language skill creation, generated-skill evaluation and refinement, existing-skill refinement, and cleanup or removal.
 - Each minimum matrix cell has one tooling-complete three-scenario suite; the initial release does not require repeated trials or a pass threshold.
@@ -83,7 +83,7 @@ The project has one definitive contract under which OpenAI Codex, Claude Code, C
 
 ### Upstream inputs
 
-- The parent project-completion plan supplies the selected-nine product boundary and broad downstream task order.
+- The parent project-completion plan supplies the six-harness product boundary and broad downstream task order.
 - Existing Codex evaluation evidence supplies the historical `gpt-5.6-sol` qualification context; it does not override this section's new medium-setting minimum matrix.
 
 ### Authoritative outputs
@@ -93,7 +93,7 @@ The project has one definitive contract under which OpenAI Codex, Claude Code, C
 
 ### Required downstream consumers
 
-- Work Block 1 consumes the selected nine, five-harness proof tier, thirteen-cell matrix, environment, valid-run meaning, and publication rules when completing portable skills and evaluation assets.
+- Work Block 1 consumes the six selected harnesses, five-harness proof tier, thirteen-cell matrix, environment, valid-run meaning, and publication rules when completing portable skills and evaluation assets.
 - Work Block 2 consumes the minimum release scope when completing the payload, CLI, and installation coverage.
 - Work Block 3 consumes the qualification, evaluator, and campaign requirements.
 - Work Blocks 4 and 5 consume the public-claim and descriptive-results boundary for release artifacts, website copy, video, and submission materials.

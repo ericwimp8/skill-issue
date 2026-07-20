@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "scenario_id": "accessibility-body-3",
+  "expected": [
+    {"turn_id": "clean-scan-boundary", "skill": "accessibility-first-pass"}
+  ]
+}

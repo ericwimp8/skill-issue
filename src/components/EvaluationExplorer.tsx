@@ -77,11 +77,6 @@ export function EvaluationExplorer() {
 
   return (
     <div className="evaluation-explorer">
-      <div className="results-notice">
-        <span>Illustrative layout data</span>
-        <p>These values demonstrate the report shape, not observed results.</p>
-      </div>
-
       <div className="explorer-controls" aria-label="Evaluation chart controls">
         <label className="filter-control">
           <span>Scenario</span>

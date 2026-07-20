@@ -1,12 +1,19 @@
 <!doctype html>
 <html lang="en">
-  <head><meta charset="utf-8" /><title>Product update</title></head>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Product tour</title>
+    <style>
+      .hero { animation: pulse 0.7s infinite alternate; }
+      @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.08); } }
+    </style>
+  </head>
   <body>
     <main>
-      <h1>Product update</h1>
-      <h3>What changed</h3>
-      <video src="update.mp4" autoplay></video>
-      <p>Learn about the new workflow. <a href="details.html">Read more</a></p>
+      <h1 class="hero">Product tour</h1>
+      <video autoplay loop src="tour.mp4"></video>
+      <p>Watch the tour to learn how the workflow operates.</p>
     </main>
   </body>
 </html>

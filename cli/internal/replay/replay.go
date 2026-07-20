@@ -11,12 +11,9 @@ import (
 type HarnessID string
 
 const (
-	HarnessCopilot  HarnessID = "copilot"
 	HarnessClaude   HarnessID = "claude-code"
 	HarnessCodex    HarnessID = "codex"
 	HarnessCursor   HarnessID = "cursor"
-	HarnessGemini   HarnessID = "gemini-cli"
-	HarnessGrok     HarnessID = "grok-build"
 	HarnessOpenCode HarnessID = "opencode"
 	HarnessKilo     HarnessID = "kilo-code"
 	HarnessPi       HarnessID = "pi"

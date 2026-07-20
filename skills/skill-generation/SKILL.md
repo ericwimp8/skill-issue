@@ -30,7 +30,6 @@ Before creating files, read `references/generation-disciplines.md` and load ever
 4. Keep the body behavior-changing and direct. Put platform variants, schemas, or substantial conditional detail in one-level indexed references.
 5. Preserve one semantic owner for each instruction. Reconcile related rules rather than accumulating exceptions.
 6. Add scripts only for deterministic or repeatedly reconstructed operations. Add assets only when the skill's outputs consume them.
-7. Read `references/harness-packaging.md` when the target surface affects discovery, metadata, packaging, or invocation. Add host metadata only for supported surfaces and state unsupported capability accurately.
 
 ## Validate the Written Result
 
@@ -60,4 +59,3 @@ Use the relevant reference document when needed from this skill.
 
 - `references/generation-disciplines.md`: Semantic ownership and authoring constraints for generated skills. Use before writing or revising skill documents, prompts, code, scripts, or system structure.
 - `references/generation-handoff.md`: Required intake inputs and evaluation outputs. Use when accepting a plan, checking completion, or transferring the generated skill.
-- `references/harness-packaging.md`: Supported harness skill paths, package surfaces, and metadata boundaries. Use when the generated skill targets a specific harness or needs cross-harness delivery.

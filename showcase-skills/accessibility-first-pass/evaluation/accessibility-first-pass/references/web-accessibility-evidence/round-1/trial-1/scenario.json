@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "scenario_id": "accessibility-reference-1",
+  "turns": [
+    {
+      "turn_id": "prioritize-dashboard",
+      "prompt": "Use index.html and scan-results.json to prepare a first-pass accessibility report for the service dashboard. Explain why each item has its assigned priority, distinguish what the scan proves from what it does not, and identify affected users and follow-up testing."
+    }
+  ]
+}

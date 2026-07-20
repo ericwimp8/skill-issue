@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"regexp"
 	"strings"
 )
 
@@ -199,10 +198,7 @@ func (session *processSession) Wait(context.Context) (Capture, error) {
 	}
 	events, err := parseEvents(session.stdout.Bytes())
 	if err != nil {
-		if session.adapter.harnessID != HarnessCopilot {
-			return Capture{}, fmt.Errorf("%s harness produced invalid structured output: %w: %s", session.adapter.harnessID, err, strings.TrimSpace(session.stderr.String()))
-		}
-		events = []json.RawMessage{json.RawMessage(`{"type":"result"}`)}
+		return Capture{}, fmt.Errorf("%s harness produced invalid structured output: %w: %s", session.adapter.harnessID, err, strings.TrimSpace(session.stderr.String()))
 	}
 	requireSessionStart := session.sessionID == ""
 	if err := validateHarnessOutput(session.adapter.harnessID, events, session.stderr.String(), requireSessionStart); err != nil {
@@ -210,9 +206,6 @@ func (session *processSession) Wait(context.Context) (Capture, error) {
 	}
 	if session.sessionID == "" {
 		session.sessionID = findSessionID(events)
-		if session.sessionID == "" && session.adapter.harnessID == HarnessCopilot {
-			session.sessionID = findCopilotSessionID(session.stdout.String() + "\n" + session.stderr.String())
-		}
 		if session.sessionID == "" {
 			return Capture{}, fmt.Errorf("%w: missing session ID: %s", ErrProtocol, strings.TrimSpace(session.stderr.String()))
 		}
@@ -270,14 +263,6 @@ func validateSessionID(harnessID HarnessID, sessionID string, events []json.RawM
 		return fmt.Errorf("%w: %s session ID changed from %s to %s", ErrProtocol, harnessID, sessionID, found)
 	}
 	return nil
-}
-
-func findCopilotSessionID(output string) string {
-	match := regexp.MustCompile(`--resume(?:=|\s+)([A-Za-z0-9-]+)`).FindStringSubmatch(output)
-	if len(match) == 2 {
-		return match[1]
-	}
-	return ""
 }
 
 func (session *processSession) Close() error {
@@ -497,12 +482,9 @@ func findStringField(value any, keys []string) string {
 
 func commandSpecs() map[HarnessID]commandSpec {
 	return map[HarnessID]commandSpec{
-		HarnessCopilot:  {executable: "copilot", initial: promptArgs("-p"), resume: resumeArgs("--resume", "-p")},
 		HarnessClaude:   {executable: "claude", initial: promptArgs("-p", "--output-format", "stream-json", "--verbose"), resume: resumeArgs("--resume", "-p", "--output-format", "stream-json", "--verbose")},
 		HarnessCodex:    {executable: "codex", initial: codexInitial, resume: codexResume},
 		HarnessCursor:   {executable: "cursor-agent", initial: promptArgs("-p", "--output-format", "stream-json"), resume: resumeArgs("--resume", "-p", "--output-format", "stream-json")},
-		HarnessGemini:   {executable: "gemini", initial: promptArgs("-p", "--output-format", "stream-json"), resume: resumeArgs("--resume", "-p", "--output-format", "stream-json")},
-		HarnessGrok:     {executable: "grok", initial: promptArgs("-p", "--output-format", "json"), resume: resumeArgs("--resume", "-p", "--output-format", "json")},
 		HarnessOpenCode: {executable: "opencode", initial: runArgs, resume: runResumeArgs},
 		HarnessKilo:     {executable: "kilo", initial: runArgs, resume: runResumeArgs},
 	}

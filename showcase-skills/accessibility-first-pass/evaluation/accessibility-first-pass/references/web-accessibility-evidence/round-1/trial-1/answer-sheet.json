@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "scenario_id": "accessibility-reference-1",
+  "expected": [
+    {"turn_id": "prioritize-dashboard", "skill": "accessibility-first-pass"}
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "scenario_id": "accessibility-body-1",
+  "expected": [
+    {"turn_id": "form-report", "skill": "accessibility-first-pass"}
+  ]
+}

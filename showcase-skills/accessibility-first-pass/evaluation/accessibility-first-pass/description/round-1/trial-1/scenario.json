@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "scenario_id": "accessibility-description-1",
+  "turns": [
+    {
+      "turn_id": "review-form",
+      "prompt": "Review the account-request form in index.html before release. Produce a prioritized first-pass accessibility report that clearly states what you inspected, what users may be affected, and what still needs hands-on testing."
+    }
+  ]
+}

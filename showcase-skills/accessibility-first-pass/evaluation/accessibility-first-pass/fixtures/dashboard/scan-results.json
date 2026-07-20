@@ -1,0 +1,7 @@
+{
+  "tool": "synthetic-checker",
+  "results": [
+    {"rule": "color-only-status", "severity": "minor", "target": ".status"},
+    {"rule": "heading-structure", "severity": "serious", "target": ".page-title"}
+  ]
+}

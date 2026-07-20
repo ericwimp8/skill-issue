@@ -1,31 +1,68 @@
-# Web Accessibility Evidence
+# Web Accessibility Evidence Guide
 
-## Select Authoritative Guidance
+## Evidence Classes
 
-- Prefer the current [W3C WCAG overview](https://www.w3.org/WAI/standards-guidelines/wcag/) and the linked normative recommendation when a finding needs a WCAG mapping. W3C encourages use of the latest WCAG version; record the version and requested conformance level rather than assuming either.
-- Use [WAI Easy Checks](https://www.w3.org/WAI/test-evaluate/easy-checks/) to inform a preliminary review. Preserve its boundary that these checks cover only a few issues and that a page may appear to pass while retaining significant barriers.
-- Use the [WCAG-EM overview](https://www.w3.org/WAI/test-evaluate/conformance/wcag-em/) when explaining the additional scope, representative sampling, expertise, evaluation, and reporting needed for a conformance evaluation.
-- Use the [WAI evaluation report guidance](https://www.w3.org/WAI/test-evaluate/report-template/) when a fuller WCAG evaluation report is requested after this first pass.
-- Prefer project-owned tool configuration and the tool's primary documentation for scanner behavior. For example, Playwright's [accessibility testing guidance](https://playwright.dev/docs/accessibility-testing) and the [axe-core project](https://github.com/dequelabs/axe-core) both state that automated checks find only some accessibility problems and must be combined with manual assessment.
+Use one of these labels for every substantive finding, pass, or limitation:
 
-Check current sources when exact success-criterion text, status, tool coverage, rule tags, or platform behavior matters. Do not copy a generic checklist into the report as if every item was tested.
+- **Observed:** directly demonstrated in inspected source, rendered behavior, captured accessibility state, or a recorded tool result. Name the observation method and tested state.
+- **Inferred:** strongly indicated by inspected evidence but dependent on a runtime, content, browser, device, or assistive-technology condition that was not directly exercised. State the evidence and the dependency.
+- **Unverified:** plausible or required to investigate, but the available environment did not establish the behavior. Describe the exact follow-up rather than presenting a finding or pass.
 
-## Preserve Evidence Boundaries
+Automated output is observed evidence that a tool reported a rule result. It is not automatically observed evidence of the complete user impact, correct remediation, or overall accessibility.
 
-- A success-criterion mapping explains why a finding matters; it does not establish that the rest of the criterion, page, process, or product passes.
-- Scanner results apply to the inspected DOM and state under the recorded configuration. Hidden, inactive, later, authenticated, responsive, or otherwise unexercised content may require separate activation and scanning.
-- An accessibility tree exposes computed semantics, not complete usability with a screen reader, speech input, switch control, magnification, or other assistive technology.
-- Keyboard traversal by a reviewer can establish observed focus and operation in the tested environment. It cannot establish every input method, platform convention, or user experience.
-- Source inspection can establish implementation facts and risks. It cannot prove rendered layout, computed contrast, timing, focus order, announcements, or assistive-technology behavior that was not executed.
-- Testing with disabled people contributes evidence about real use. Keep participant scope and observed experience explicit rather than generalizing one result to universal accessibility.
+## Authority Levels
 
-## Refer Responsibly
+- Treat WCAG success criteria and applicable WAI-ARIA requirements as normative when the requested standard uses them.
+- Treat W3C techniques, failures, tutorials, Easy Checks, and the ARIA Authoring Practices Guide as informative implementation and evaluation guidance.
+- Treat project conventions and tool documentation as evidence about the implementation or checker, not as accessibility standards.
+- Link the exact authoritative page supporting a material criterion mapping. When applicability or conformance interpretation is uncertain, label the mapping tentative.
 
-Use criterion identifiers and concise paraphrases. Link to the authoritative source. Distinguish:
+Core public sources:
 
-- a directly established failure;
-- a likely failure requiring runtime or specialist confirmation;
-- related best-practice guidance outside the declared standards baseline;
-- an untested requirement.
+- [WCAG 2.2](https://www.w3.org/TR/WCAG22/)
+- [How to Meet WCAG 2.2](https://www.w3.org/WAI/WCAG22/quickref/)
+- [Understanding WCAG 2.2](https://www.w3.org/WAI/WCAG22/Understanding/)
+- [Easy Checks](https://www.w3.org/WAI/test-evaluate/preliminary/)
+- [Selecting Web Accessibility Evaluation Tools](https://www.w3.org/WAI/test-evaluate/tools/selecting/)
+- [ARIA Authoring Practices Guide](https://www.w3.org/WAI/ARIA/apg/)
 
-Reserve conformance language for a separately governed evaluation that covers the complete conformance scope and requirements.
+W3C states that evaluation tools cannot check every accessibility aspect and cannot determine accessibility; human judgment is required. Preserve that boundary in findings and summaries.
+
+## Affected-User Prompts
+
+Identify concrete effects for relevant people, including people who:
+
+- navigate by keyboard, switch, speech input, or other non-pointer input;
+- use screen readers, refreshable braille, magnification, or high-contrast settings;
+- have low vision, color-vision differences, or photosensitivity;
+- are Deaf, hard of hearing, or depend on captions and transcripts;
+- have cognitive, learning, language, attention, or memory disabilities;
+- have limited dexterity, tremor, reach, or fine-motor control;
+- use zoom, text resizing, alternate orientation, reduced motion, or constrained viewports.
+
+Describe the task effect as blocked, difficult, error-prone, confusing, fatiguing, time-sensitive, or degraded. Do not infer a diagnosis or claim every member of a group experiences the same effect.
+
+## Priority Rules
+
+Use these levels as review priorities rather than compliance grades:
+
+- **Critical:** observed barrier blocks a critical task or safety-relevant information for affected users with no reasonable workaround.
+- **High:** observed barrier blocks or seriously impedes an important task, affects a repeated or broad interaction, or creates substantial error or exclusion risk.
+- **Medium:** observed or strongly inferred barrier degrades a task, increases effort or confusion, or has a limited workaround, reach, or state.
+- **Low:** localized improvement with limited task impact, or a well-supported risk whose user impact is modest.
+- **Needs verification:** evidence is insufficient to assign a defensible finding priority; retain it as follow-up rather than forcing a severity.
+
+Explain priority using task importance, impact, reach, frequency, workaround burden, and confidence. Tool severity may inform investigation but does not own report priority.
+
+## Human and Assistive-Technology Follow-Up
+
+Require targeted follow-up when correctness depends on perception, interaction quality, content intent, announcements, interoperability, or user strategy. Examples include:
+
+- screen-reader name, role, state, reading order, live-region, and focus announcements;
+- keyboard efficiency and focus behavior across complete dynamic workflows;
+- magnification, reflow, text-spacing, high-contrast, and reduced-motion usability;
+- caption accuracy, audio-description adequacy, alternative-text purpose, and plain-language clarity;
+- voice-input label matching and target operability;
+- representative usability testing with disabled people for critical journeys.
+
+Name the browser, device, assistive technology, state, journey, and expected behavior when known. A first pass may recommend these checks but cannot substitute for them.

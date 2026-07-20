@@ -95,6 +95,10 @@ body {
   background: var(--color-canvas);
 }
 
+body.dialog-open {
+  overflow: hidden;
+}
+
 button,
 input,
 select,
@@ -169,8 +173,8 @@ a:focus-visible {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  min-height: 4.5rem;
-  padding-inline: var(--space-4);
+  min-height: 9rem;
+  padding-inline: var(--space-5);
   border-right: 1px solid var(--color-line);
   border-bottom: 1px solid var(--color-line);
   border-left: 1px solid var(--color-line);
@@ -179,7 +183,6 @@ a:focus-visible {
 }
 
 .brand,
-.site-nav,
 .header-actions,
 .hero-actions,
 .chart-header,
@@ -192,41 +195,39 @@ a:focus-visible {
 }
 
 .brand {
+  justify-self: center;
   gap: var(--space-3);
-  font-weight: 650;
-  letter-spacing: -0.02em;
+  font-size: clamp(2.6rem, 4vw, 3.3rem);
+  font-weight: 680;
+  letter-spacing: -0.035em;
 }
 
 .brand-mark {
   display: grid;
-  width: 2rem;
-  height: 2rem;
+  width: 6rem;
+  height: 6rem;
   place-items: center;
   border: 1px solid var(--color-line-strong);
   border-radius: 50%;
   font-family: var(--font-mono);
-  font-size: 0.7rem;
-}
-
-.site-nav {
-  gap: var(--space-6);
-  color: var(--color-text-muted);
-  font-size: 0.875rem;
-}
-
-.site-nav a,
-.site-footer a {
-  transition: color var(--transition-fast);
-}
-
-.site-nav a:hover,
-.site-footer a:hover {
-  color: var(--color-text);
+  font-size: 1.8rem;
 }
 
 .header-actions {
   justify-content: flex-end;
   gap: var(--space-2);
+}
+
+.site-header > .icon-button {
+  justify-self: start;
+}
+
+.site-footer a {
+  transition: color var(--transition-fast);
+}
+
+.site-footer a:hover {
+  color: var(--color-text);
 }
 
 .icon-button,
@@ -285,7 +286,7 @@ a:focus-visible {
   flex-direction: column;
   min-height: 0;
   justify-content: center;
-  padding: 5.5rem var(--space-4) 6rem;
+  padding: 5.5rem var(--space-4) 5rem;
   text-align: center;
 }
 
@@ -339,7 +340,7 @@ h3 {
 }
 
 h1 {
-  max-width: 61rem;
+  max-width: 65rem;
   margin-bottom: var(--space-5);
   font-size: clamp(3rem, 4.4vw, 4.25rem);
   font-weight: 580;
@@ -358,11 +359,270 @@ h1 {
   gap: var(--space-3);
 }
 
-.release-note {
-  max-width: 34rem;
-  margin: var(--space-4) 0 0;
+.product-switcher-shell {
+  padding: var(--space-3);
+  border: 1px solid var(--color-line);
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+}
+
+.product-switcher {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+  max-width: 58rem;
+  margin-inline: auto;
+}
+
+.product-tab {
+  display: grid;
+  gap: 0.25rem;
+  min-height: 4.8rem;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: transparent;
   color: var(--color-text-muted);
-  font-size: 0.75rem;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    border-color var(--transition-fast),
+    background var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.product-tab:hover {
+  color: var(--color-text);
+  transform: translateY(-1px);
+}
+
+.product-tab[aria-selected='true'] {
+  border-color: var(--color-line-strong);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-subtle);
+  color: var(--color-text);
+}
+
+.product-tab span {
+  font-size: 1rem;
+  font-weight: 660;
+  letter-spacing: -0.02em;
+}
+
+.product-tab small {
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.product-panel {
+  border-right: 1px solid var(--color-line);
+  border-left: 1px solid var(--color-line);
+  background: color-mix(in srgb, var(--color-canvas) 90%, transparent);
+}
+
+.arm-introduction {
+  display: grid;
+  justify-items: center;
+  padding: 5.5rem var(--space-6);
+  text-align: center;
+}
+
+.arm-introduction h2 {
+  max-width: 54rem;
+  margin-bottom: var(--space-5);
+  font-size: clamp(2.6rem, 5.6vw, 5.4rem);
+  font-weight: 560;
+  line-height: 0.98;
+}
+
+.arm-introduction > p:last-child {
+  max-width: 48rem;
+  margin-bottom: 0;
+  color: var(--color-text-muted);
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  line-height: 1.65;
+}
+
+.build-workflow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--color-line);
+}
+
+.workflow-card {
+  min-height: 18rem;
+  padding: var(--space-6);
+  border-right: 1px solid var(--color-line);
+  background: var(--color-surface);
+}
+
+.workflow-card:last-child {
+  border-right: 0;
+}
+
+.workflow-card > span,
+.skill-card-index,
+.skill-card-action {
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.67rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.workflow-card h3 {
+  max-width: 16rem;
+  margin: var(--space-7) 0 var(--space-4);
+  font-size: clamp(1.55rem, 2.7vw, 2.3rem);
+  font-weight: 580;
+  line-height: 1.04;
+}
+
+.workflow-card p {
+  margin-bottom: 0;
+  color: var(--color-text-muted);
+  font-size: 0.86rem;
+  line-height: 1.65;
+}
+
+.skill-showcase {
+  padding-block: var(--space-9);
+  border-top: 1px solid var(--color-line);
+}
+
+.skill-gallery {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--color-line);
+}
+
+.skill-card {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  min-height: 22rem;
+  padding: var(--space-6);
+  border: 0;
+  border-right: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.skill-card:last-child {
+  border-right: 0;
+}
+
+.skill-card:hover {
+  background: color-mix(in srgb, var(--color-focus) 4%, var(--color-surface));
+}
+
+.skill-card-copy {
+  display: grid;
+  grid-row: 2;
+  gap: var(--space-4);
+  margin-top: var(--space-7);
+}
+
+.skill-card-copy strong {
+  font-size: clamp(1.5rem, 2.7vw, 2.25rem);
+  font-weight: 580;
+  letter-spacing: -0.045em;
+  line-height: 1.05;
+}
+
+.skill-card-copy small {
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.skill-card-action {
+  display: flex;
+  grid-row: 4;
+  justify-content: space-between;
+  margin-top: var(--space-7);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-line);
+}
+
+.skill-reader-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: var(--space-5);
+  background: color-mix(in srgb, var(--color-canvas) 42%, transparent);
+  backdrop-filter: blur(14px);
+}
+
+.skill-reader {
+  display: grid;
+  width: min(58rem, 100%);
+  max-height: min(52rem, calc(100vh - 3rem));
+  overflow: hidden;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-surface);
+  background: var(--color-surface-elevated);
+  box-shadow: 0 2rem 7rem rgb(0 0 0 / 24%);
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.skill-reader-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.skill-reader-header .eyebrow {
+  margin-bottom: var(--space-2);
+}
+
+.skill-reader-header h2 {
+  margin-bottom: 0;
+  font-size: clamp(1.5rem, 3vw, 2.4rem);
+  font-weight: 590;
+}
+
+.skill-reader-close {
+  display: grid;
+  width: 2.6rem;
+  height: 2.6rem;
+  flex: none;
+  place-items: center;
+  border: 1px solid var(--color-line);
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 1.4rem;
+}
+
+.skill-reader-body {
+  overflow: auto;
+  padding: var(--space-6);
+}
+
+.skill-reader-body pre {
+  max-width: 48rem;
+  margin: 0 auto;
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 
 .metrics-grid {
@@ -446,33 +706,6 @@ h1 {
 .evaluation-explorer {
   border-top: 1px solid var(--color-line);
   background: var(--color-surface);
-}
-
-.results-notice {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-4) var(--space-6);
-  border-bottom: 1px solid var(--color-line);
-  background: color-mix(in srgb, var(--color-focus) 5%, var(--color-surface));
-}
-
-.results-notice span {
-  flex: none;
-  padding: 0.35rem 0.55rem;
-  border-radius: 999px;
-  background: var(--color-focus);
-  color: #fff;
-  font-family: var(--font-mono);
-  font-size: 0.67rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.results-notice p {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: 0.82rem;
 }
 
 .explorer-controls {
@@ -961,17 +1194,30 @@ h1 {
 }
 
 @media (max-width: 800px) {
-  .site-header {
-    grid-template-columns: 1fr auto;
-  }
-
-  .site-nav {
-    display: none;
-  }
-
   .hero {
     min-height: 0;
     padding-block: 5rem;
+  }
+
+  .build-workflow,
+  .skill-gallery {
+    grid-template-columns: 1fr;
+  }
+
+  .workflow-card,
+  .skill-card,
+  .skill-card:last-child {
+    min-height: 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .workflow-card {
+    min-height: 15rem;
+  }
+
+  .skill-card {
+    min-height: 18rem;
   }
 
   .section-heading,
@@ -1021,13 +1267,23 @@ h1 {
   }
 
   .site-header {
-    min-height: 4rem;
+    min-height: 4.75rem;
     padding-inline: var(--space-3);
   }
 
-  .brand > span:last-child,
   .button-compact {
     display: none;
+  }
+
+  .brand {
+    gap: var(--space-2);
+    font-size: 1rem;
+  }
+
+  .brand-mark {
+    width: 2.35rem;
+    height: 2.35rem;
+    font-size: 0.72rem;
   }
 
   .hero {
@@ -1046,11 +1302,48 @@ h1 {
     width: min(100%, 18rem);
   }
 
+  .product-switcher-shell {
+    padding: var(--space-2);
+  }
+
+  .product-tab {
+    min-height: 4.5rem;
+    padding: var(--space-3);
+  }
+
+  .product-tab span {
+    font-size: 0.82rem;
+  }
+
+  .product-tab small {
+    font-size: 0.55rem;
+  }
+
+  .arm-introduction {
+    padding: var(--space-8) var(--space-5);
+  }
+
+  .arm-introduction h2 {
+    font-size: 2.65rem;
+  }
+
+  .skill-reader-backdrop {
+    padding: var(--space-2);
+  }
+
+  .skill-reader {
+    max-height: calc(100vh - 1rem);
+  }
+
+  .skill-reader-header,
+  .skill-reader-body {
+    padding: var(--space-4);
+  }
+
   .metrics-grid {
     grid-template-columns: 1fr;
   }
 
-  .results-notice,
   .selection-summary {
     align-items: flex-start;
     flex-direction: column;

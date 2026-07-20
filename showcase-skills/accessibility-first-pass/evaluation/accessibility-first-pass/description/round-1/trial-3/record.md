@@ -1,10 +1,44 @@
-# Description Trial 3 Record
+# Evaluation Record
 
-- **Prompt:** "Work in the Skill Issue repository. You are one fresh independent evaluation trial. Other agents are working concurrently; do not revert, overwrite, reformat, or clean up their work. Read only `showcase-skills/accessibility-first-pass/evaluation/accessibility-first-pass/fixtures/dashboard/` as the supplied implementation plus any repository guidance or skills the harness selects normally. Review this service-health dashboard for accessibility risks and actionable next steps, including its likely responsive behavior. Use available source, rendered capability, project tooling, and authoritative public guidance as appropriate. Write the completed review only to `showcase-skills/accessibility-first-pass/evaluation/accessibility-first-pass/description/round-1/trial-3/output.md`. Do not modify the fixture or any other file. Finish by reporting the output path and the evidence capabilities you actually used."
-- **Prompt preservation:** The native session retains the exact unmodified prompt. The durable prompt above normalizes its machine-specific checkout path for publication.
-- **Fresh agent:** `a11y_description_3`; native session `019f7ee6-f446-7c50-9ac6-b2495b998dd6`; Codex CLI `0.145.0-alpha.18`; `gpt-5.6-sol` with high reasoning.
-- **Fixture:** `fixtures/dashboard/index.html`.
-- **Direct invocation evidence:** At `2026-07-20T09:41:43.091Z`, the native pre-output tool trace read `showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/SKILL.md` before fixture inspection and report generation.
-- **Observable output:** `output.md` contains source, desktop and narrow rendered, geometry, semantics, contrast, tooling, and guidance evidence with responsive limitations.
-- **Description result:** Pass. The unleading request did not name or request the target skill, and direct native evidence identifies the exact candidate load.
-- **Cleanup ownership:** The campaign owns this record and output; no transient fixture change was retained.
+## User Task
+
+Investigate accessibility risks in the service dashboard in index.html. I need a responsible first-pass report that prioritizes likely user impact and separates evidence from checks that have not been run.
+
+## Agent Identity
+
+`/root/accessibility_reference_rerun/a11y_desc_3`
+
+## Candidate Set
+
+- `showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/SKILL.md`
+- `skills/skill-generation/SKILL.md`
+- `skills/skill-intake/SKILL.md`
+- `supporting-skills/prompt-writing/SKILL.md`
+
+## Selection Decision
+
+Selected `accessibility-first-pass`. Its description directly covers responsible first-pass accessibility investigation, evidence, and remediation direction without unsupported completeness or conformance claims. The other candidate descriptions do not naturally apply.
+
+## Durable Paths
+
+- **Evidence log:** `showcase-skills/accessibility-first-pass/evaluation/accessibility-first-pass/description/round-1/trial-3/native-evidence.log`
+- **Fixture:** `showcase-skills/accessibility-first-pass/evaluation/accessibility-first-pass/fixtures/dashboard/index.html`
+- **Output:** `showcase-skills/accessibility-first-pass/evaluation/accessibility-first-pass/description/round-1/trial-3/output.md`
+
+## Criteria Audit
+
+- PASS: Scope, methods, available evidence, and material limitations are explicit.
+- PASS: Findings are ordered by likely user impact and include affected users, task impact, evidence, inspection steps, guidance, rationale, remediation direction, follow-up, and limitations.
+- PASS: Observed source facts, source-backed inferences, and unverified behavior are distinguished.
+- PASS: Passed checks are bounded to exact static source inspection and do not imply runtime success.
+- PASS: Automated, rendered, keyboard, assistive-technology, preference-mode, zoom/reflow, contrast, and complete-journey checks that were not run are recorded as follow-up.
+- PASS: The report avoids claims of overall accessibility, certification, standards conformance, or absence of barriers.
+- PASS: All durable paths are repository-relative and publication-safe.
+
+## Cleanup Ownership
+
+This trial owns only `native-evidence.log`, `output.md`, and `record.md` in `showcase-skills/accessibility-first-pass/evaluation/accessibility-first-pass/description/round-1/trial-3/`. The evaluation coordinator may remove these disposable trial artifacts when the campaign ends.
+
+## Result
+
+PASS

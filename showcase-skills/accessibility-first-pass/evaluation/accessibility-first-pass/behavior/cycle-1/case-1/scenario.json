@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "scenario_id": "accessibility-body-1",
+  "turns": [
+    {
+      "turn_id": "form-report",
+      "prompt": "Review index.html and write a complete first-pass accessibility report. Focus on the account-request journey, prioritize actionable findings, cite the inspected evidence, and identify checks that still require rendered or assistive-technology testing."
+    }
+  ]
+}

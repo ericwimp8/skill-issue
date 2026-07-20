@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "scenario_id": "accessibility-body-3",
+  "turns": [
+    {
+      "turn_id": "clean-scan-boundary",
+      "prompt": "The automated result in clean-scan.json reports no violations for index.html. Determine whether the dashboard can be declared WCAG 2.2 AA conformant and provide the appropriate first-pass accessibility report and next steps."
+    }
+  ]
+}

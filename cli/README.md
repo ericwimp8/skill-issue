@@ -5,6 +5,7 @@ The Skill Issue CLI is a standalone Go executable that installs the canonical Sk
 ## Commands
 
 ```sh
+skill-issue install
 skill-issue install --workspace <path> --harness <id> --scope project|user
 skill-issue uninstall --workspace <path> --harness <id> --scope project|user
 skill-issue evaluate run --workspace <path> --output <path> --harness <id> [--executable <path>] [--model <id>] [--reasoning <level>] [--turns <number>] --evaluation gardening-web-application [--events] [--transcript]
@@ -14,18 +15,18 @@ skill-issue evaluate cleanup --output <path> --run <id>
 
 Ordinary install and uninstall operations retain project and user scopes. Evaluation runs are always project-local: their interface has no scope argument, `--workspace` is required, and temporary skills use the selected harness's researched native project skill directory. Every evaluation also requires `--output`; the CLI stores its two default result artifacts under a unique `<output>/<harness>-<UTC-timestamp>-<run-prefix>/` directory and rejects an output root inside the evaluated workspace.
 
-Installation supports `copilot`, `claude-code`, `codex`, `cursor`, `gemini-cli`, `grok-build`, `opencode`, `kilo-code`, and `pi`. Evaluation currently supports `claude-code`, `codex`, `cursor`, and `pi`.
+The product targets `claude-code`, `codex`, `cursor`, `opencode`, `kilo-code`, and `pi`. Installation and evaluation currently support `claude-code`, `codex`, `cursor`, and `pi`; OpenCode and Kilo Code remain in progress.
 
 ### Effective evaluation configuration
 
 Every evaluation resolves one model and reasoning value before installing temporary skills. `--model` and `--reasoning` are optional overrides; when omitted, the CLI uses these harness defaults:
 
-| Harness | Model | Reasoning | Native controls |
-| --- | --- | --- | --- |
-| `codex` | `gpt-5.6-sol` | `medium` | `--model`, `--config model_reasoning_effort=...` |
-| `cursor` | native Auto-select | `medium` | explicit `--model`; default omits the flag because Cursor owns Auto-select |
-| `claude-code` | `opus` | `medium` | `--model`, `--effort` |
-| `pi` | `openai-codex/gpt-5.6-sol` | `medium` | `--model`, `--thinking` |
+| Harness       | Model                      | Reasoning | Native controls                                                            |
+| ------------- | -------------------------- | --------- | -------------------------------------------------------------------------- |
+| `codex`       | `gpt-5.6-sol`              | `medium`  | `--model`, `--config model_reasoning_effort=...`                           |
+| `cursor`      | native Auto-select         | `medium`  | explicit `--model`; default omits the flag because Cursor owns Auto-select |
+| `claude-code` | `opus`                     | `medium`  | `--model`, `--effort`                                                      |
+| `pi`          | `openai-codex/gpt-5.6-sol` | `medium`  | `--model`, `--thinking`                                                    |
 
 Model identifiers and supported reasoning values are passed to the selected native harness. Skill Issue does not maintain a model catalogue or prevalidate compatibility; a native harness owns rejection of an unsupported value. Cursor uses its native Auto-select model and model-native reasoning when no model override is supplied. An explicit Cursor `--reasoning` override is rejected before evaluation side effects because the CLI exposes no independent reasoning control.
 
@@ -41,9 +42,13 @@ Custom evaluation results are caller-selected local evidence. `result.json`, `we
 
 ## Installation
 
-The executable embeds the complete canonical `skills/` and `supporting-skills/` trees and validates referenced-file closure before installing. Installation creates or reuses the selected harness's researched native project or user skill root, then replaces only the known Skill Issue payload directories with the current embedded copies. Unrelated files and skill directories are not inspected or changed.
+The executable embeds the complete canonical `skills/` and `supporting-skills/` trees and validates referenced-file closure before installing. Installation creates or reuses the selected harness's researched native project or user skill root, then replaces only the known Skill Issue payload directories with the current embedded copies. Portable skill files are shared across harnesses, and each harness specification owns the installed metadata it supports. Codex installations include each skill's `agents/openai.yaml`; Claude Code, Cursor, and Pi add `disable-model-invocation: true` to the installed `skill-intake` frontmatter. The canonical source remains portable, and custom evaluation skills retain their supplied frontmatter. Unrelated files and skill directories are not inspected or changed.
 
-The payload is disposable and contains no user configuration or mutable application data. Running `install` again is the reinstall and update path. `uninstall` removes the same known Skill Issue payload directories directly. The CLI does not create an ownership receipt, backup, rollback inventory, or platform application-state directory. Detection, confirmation, and preview are not yet implemented.
+Run `skill-issue install` in an interactive terminal for guided installation. Use the up and down arrow keys to select Claude Code, OpenAI Codex, Cursor, or Pi and then select project or user scope. OpenCode and Kilo Code appear as disabled in-progress targets. Project scope uses the current working directory. Before writing anything, the CLI previews the harness, scope, native destination, and seven embedded skills and asks for confirmation. It does not detect or automatically choose a harness.
+
+After confirmation, installation verifies that every expected harness-specific payload file exists. The CLI then directs the user to open the selected harness and explicitly invoke `skill-intake`. Its canonical description says, "Use only when the user explicitly requests this skill." Codex enforces that boundary through `allow_implicit_invocation: false`; Claude Code, Cursor, and Pi enforce it through `disable-model-invocation: true`. The argument-driven form remains available for scripted installation and does not prompt.
+
+The payload is disposable and contains no user configuration or mutable application data. Running `install` again is the reinstall and update path. `uninstall` removes the same known Skill Issue payload directories directly. The CLI does not create an ownership receipt, backup, rollback inventory, or platform application-state directory.
 
 ## Blind Evaluation
 
@@ -193,9 +198,9 @@ Private run state and token mappings use restrictive permissions. A successful r
 
 ## Harness Boundary
 
-The runner uses headless resumable commands for Copilot, Codex, Cursor, Gemini CLI, and Grok Build; Claude streaming JSON; OpenCode and Kilo programmatic run sessions; and Pi RPC mode. Model access and the underlying harness login remain user-provided prerequisites. Codex, Cursor, Claude Code, and Pi have CLI-owned runtime preparation. A launch, required permission, session, marker, timeout, cancellation, or protocol failure is a tooling failure rather than a model result.
+The runner uses headless resumable commands for Codex and Cursor, Claude streaming JSON, and Pi RPC mode. Model access and the underlying harness login remain user-provided prerequisites. Codex, Cursor, Claude Code, and Pi have CLI-owned runtime preparation. A launch, required permission, session, marker, timeout, cancellation, or protocol failure is a tooling failure rather than a model result.
 
-The adapters are implemented from the direct-install and automation contracts but remain unqualified on harnesses unavailable locally. Gemini CLI is the Google target; Antigravity automation is outside this runner. Kilo targets local Kilo Code and excludes Kilo Cloud. The Grok root is present, but ordinary installation does not yet enforce the required `grok inspect --json` discovery gate and must not be treated as a supported route until that fail-closed check exists.
+OpenCode and local Kilo Code remain product targets, but their installation and evaluation routes are not yet implemented. Kilo Cloud remains outside the product boundary.
 
 ## Local Smoke Qualification
 

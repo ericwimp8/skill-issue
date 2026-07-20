@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "scenario_id": "accessibility-description-4",
+  "expected": [
+    {"turn_id": "review-media", "skill": "accessibility-first-pass"}
+  ]
+}

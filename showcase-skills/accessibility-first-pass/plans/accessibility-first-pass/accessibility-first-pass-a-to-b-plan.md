@@ -1,54 +1,58 @@
-# Accessibility First Pass A-to-B Plan
+# Accessibility First-Pass A-to-B Plan
 
 ## A — Current Position
 
-- A supplied web page, feature, or implementation may include source files, a runnable or already-rendered surface, project-specific tooling, and incomplete contextual information.
-- The reviewer can inspect available production source, rendered states, interaction behavior, project commands and dependencies, and public authoritative accessibility guidance.
-- Automated accessibility tools find only some classes of issues. Manual inspection, assistive-technology testing, and testing with disabled users remain necessary for many barriers and for reliable conformance claims.
-- Review inputs may be partial, unrunnable, authentication-gated, dynamic, responsive, stateful, or dependent on capabilities unavailable in the current environment.
-- The finished skill must preserve evidence boundaries: observed behavior, source-backed findings, tool output, inference, and unverified behavior must remain distinguishable.
-- Review artifacts must use synthetic or repository-owned inputs and public sources. Durable public artifacts must use repository-relative paths and contain no secrets, personal or business identities, usernames, home-directory names, or machine-specific checkout paths.
-- The intended destination is `showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/`.
-- The canonical payload targets portable Agent Skills content and OpenAI Codex project or user skill delivery without requiring host-specific metadata.
+- The requested reusable skill is named `accessibility-first-pass` and belongs under `showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/`.
+- The supplied review target may be a web page, feature, or implementation with some combination of source, rendered behavior, project tooling, and user-provided evidence available.
+- The skill must use repository-owned or synthetic review material and public authoritative accessibility guidance.
+- W3C guidance establishes that automated tools can assist evaluation but cannot determine accessibility on their own, and that human judgment remains necessary.
+- Durable artifacts must use repository-relative paths and exclude secrets, personal or business identities, usernames, home-directory names, and machine-specific checkout paths. The only permitted public project identities are `Eric Wimp` and `ericwimp8`.
+- Production workflow skills, canonical supporting skills, CLI code, website code, and other showcase work are outside the edit boundary.
 
 ## B — Desired Position
 
-A ready-to-use `accessibility-first-pass` agent skill guides a responsible, bounded first-pass review of a web surface. It investigates the available implementation and rendered experience, selects project-compatible automated checks, performs targeted manual inspection, relates findings to authoritative guidance, and produces a prioritized actionable report without representing limited evidence as proof of accessibility or standards conformance.
+A ready-to-use agent skill conducts a bounded, responsible first-pass accessibility review; connects source, rendered, automated, manual, and authoritative evidence; separates observation from inference and unverified behavior; and delivers a prioritized report that helps a team investigate and remediate barriers without claiming accessibility or conformance proof.
 
-## Path From A to B
+## Path from A to B
 
-1. Establish a concise review workflow that records scope, tested states, available evidence, affected user needs, and material environmental limitations before drawing conclusions.
-2. Direct the reviewer to trace relevant production source and project tooling, exercise the rendered surface when available, and use authoritative accessibility guidance appropriate to the review.
-3. Define evidence handling that separates directly observed results, tool findings, source-backed facts, reasoned inference, and behavior that remains unverified.
-4. Combine compatible automated checks with manual inspection of high-impact interaction, perception, structure, content, responsive, and state-change behavior without treating either method as exhaustive.
-5. Require explicit routing of checks that need keyboard-only, zoom/reflow, high-contrast, reduced-motion, screen-reader, speech-input, switch, cognitive, or disabled-user testing to qualified human follow-up when the current environment cannot establish them.
-6. Create a report contract that prioritizes actionable findings and records scope, affected users, evidence, reproduction or inspection steps, remediation direction, follow-up testing, and limitations.
-7. Keep WCAG or other standards references accurately scoped to the evidence and prohibit conformance, certification, completeness, and accessibility claims from a first-pass review.
-8. Validate the skill structure, reference closure, authoring discipline, completion criteria, and privacy constraints, then hand it to a governed evaluation campaign.
-9. Evaluate representative source-only, rendered-interaction, and constrained-environment cases where qualified harness evidence is available, refining only generalized meaning that materially fails the target contract.
+1. Define the review sequence and evidence classifications that govern source inspection, rendered inspection, project-native automation, manual checks, and authoritative guidance.
+2. Define risk-based prioritization around affected users, task impact, reach, and evidence confidence rather than treating tool severity as the final priority.
+3. Define reporting fields for scope, evidence, reproduction or inspection steps, affected users, remediation direction, human or assistive-technology follow-up, and limitations.
+4. Package stable accessibility-evidence guidance in one routed reference and a reusable report structure as an output asset.
+5. Add portable skill frontmatter and OpenAI Codex interface metadata without making unsupported harness claims.
+6. Structurally validate the generated bundle and record criteria requiring behavioral proof.
+7. Evaluate the description, every packaged reference, and representative body behavior through the current evaluation workflow, refining only at the semantic owner of retained failures.
+8. Audit all retained publication candidates for privacy and record workflow weaknesses without changing production workflow owners.
 
 ## C — Completion Criteria
 
-- The skill begins by defining the review target, included states and viewports, available source and rendered access, relevant project tooling, known user journeys, and exclusions.
-- The skill inspects production source through concrete behavior owners rather than relying on tests, screenshots, or declarations as behavioral truth.
-- The skill exercises available rendered states and interactions, including meaningful state changes, before reporting them as observed.
-- The skill uses appropriate project-compatible automated checks and preserves their raw or summarized evidence without treating zero reported violations as proof of accessibility.
-- The skill performs manual inspection targeted to the reviewed surface and identifies affected users without claiming that a generic checklist represents lived experience.
-- Every material finding distinguishes evidence from inference and includes priority, affected users, evidence, reproduction or inspection steps, and remediation direction.
-- The report separately records checks requiring human, assistive-technology, or disabled-user testing and explains why they remain open.
-- The report states material limitations, unreviewed states, unavailable capabilities, and the exact evidence level established.
-- References to WCAG or other guidance identify the applicable source and avoid claiming full standards coverage or conformance from partial checks.
-- The skill remains useful when rendered execution or a preferred scanner is unavailable by producing a source-bounded review and an actionable external verification route.
-- The skill folder contains only the canonical skill document and genuinely required supporting resources, with valid relative references and no public-repository privacy violations.
-- Structural validation passes, and behavior evaluation either passes every governed case or stops with the exact retained gate and evidence.
+- The skill accepts a supplied page, feature, implementation, or repository-owned fixture and states the exact review scope and unavailable surfaces.
+- The skill inspects available source, rendered behavior, and project-native tooling before selecting checks, and records which evidence actually ran or was observed.
+- The skill uses authoritative guidance appropriate to each claim and distinguishes normative requirements from informative implementation guidance.
+- Automated findings are verified where possible and are never represented as complete accessibility or conformance evidence.
+- Manual inspection covers applicable keyboard, focus, structure, names and roles, content alternatives, forms and errors, visual presentation, motion, reflow or zoom, and dynamic-state concerns.
+- Findings identify affected users, evidence, reproduction or inspection steps, remediation direction, priority rationale, and follow-up requiring human or assistive-technology testing.
+- Findings visibly distinguish observed facts, source-backed inference, and unverified behavior.
+- The report begins with scope and limitations, includes prioritized actionable findings, records passed checks only at the tested scope, and identifies material unknowns.
+- The skill refuses to claim that a first-pass review, clean automated scan, or limited manual check proves accessibility or WCAG conformance.
+- The generated skill passes structural validation and the available governed description, reference, and behavior evaluations, or records the exact stopping gate and retained evidence.
+- All retained artifacts remain under `showcase-skills/accessibility-first-pass/` and pass the repository privacy audit.
 
 ## Generation Contract
 
 - **Destination:** `showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/`
-- **Generation viability:** Autonomous. The intended behavior, evidence boundaries, destination, authoritative public sources, repository conventions, and evaluation prerequisites are available without an expected user-owned design decision.
-- **Execution preference:** Autonomous continuation through generation and evaluation/refinement, as explicitly authorized by the user.
-- **Authority to act:** Create and refine only the new `showcase-skills/accessibility-first-pass/` workspace and artifacts governed by this task.
-- **Required user stops:** Stop only if a workflow gate requires a user-owned choice, the qualified harness cannot produce required evidence, or safe evaluation would require unavailable credentials, private data, or external actions.
-- **External dependencies or unavailable inputs:** Live rendered review depends on a runnable fixture and browser capability; assistive-technology and disabled-user findings cannot be inferred when those testers or technologies are unavailable.
-- **Unresolved implementation choices:** Generation may decide the smallest useful split between the canonical skill body, conditional reference material, and an output template; it may select repository-available validators and synthetic fixtures.
-- **Expected handoff:** Continue directly to `skill-generation`, then to `skill-evaluation-and-refinement` in automatic-refinement mode when its qualification and evidence gates are satisfied.
+- **Supported surface:** portable Agent Skills content with OpenAI Codex interface metadata; no broader runtime reliability claim.
+- **Generation viability:** autonomous.
+- **Execution preference:** autonomous continuation through generation and evaluation.
+- **Authority to act:** create and refine only artifacts owned by `showcase-skills/accessibility-first-pass/`.
+- **Required user stops:** none identified; stop only if a governing evaluation prerequisite or unavailable capability prevents reliable evidence.
+- **External dependencies:** public W3C WAI and WCAG guidance; local review tools only when the target project already provides them or the environment safely exposes them.
+- **Implementation-time choices:** exact fixture mix, report-template layout, and concise routing language may be decided during generation without changing intent.
+- **Evaluation handoff:** continue directly into `skill-evaluation-and-refinement`; retain structural, reference-traversal, behavior, refinement, and stopping evidence under the showcase workspace.
+
+## Authoritative Context
+
+- [W3C WAI: Selecting Web Accessibility Evaluation Tools](https://www.w3.org/WAI/test-evaluate/tools/selecting/)
+- [W3C: Web Content Accessibility Guidelines 2.2](https://www.w3.org/TR/WCAG22/)
+- [W3C WAI: Easy Checks](https://www.w3.org/WAI/test-evaluate/preliminary/)
+- [W3C WAI-ARIA Authoring Practices Guide](https://www.w3.org/WAI/ARIA/apg/)

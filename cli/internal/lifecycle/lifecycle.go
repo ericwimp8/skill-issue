@@ -71,6 +71,9 @@ func (service Service) install(action Action, args []string) (Result, error) {
 	if err != nil {
 		return Result{}, err
 	}
+	if !harness.InstallationAvailable(request.Harness) {
+		return Result{}, fmt.Errorf("%s installation is still in progress", request.Harness)
+	}
 	installed, err := service.installer.Install(request)
 	if err != nil {
 		return Result{}, err

@@ -1,14 +1,31 @@
-# Accessibility First Pass Generation Handoff
+# Generation-to-Evaluation Handoff
 
-- **Generated skill:** `showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/`
-- **Canonical target:** `showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/SKILL.md`
-- **Intake contract:** `showcase-skills/accessibility-first-pass/plans/accessibility-first-pass/accessibility-first-pass-a-to-b-plan.md`
-- **Supported surfaces:** Portable Agent Skills content and OpenAI Codex project or user delivery.
-- **Goal:** Produce a responsible, evidence-bounded first-pass accessibility review that identifies actionable web accessibility risks and required follow-up.
-- **Intended use:** Review a supplied web page, feature, or implementation with any combination of production source, rendered access, project tooling, and authoritative guidance.
-- **Expected behavior:** Establish scope; trace production owners; exercise available states; combine compatible automation with risk-based manual inspection; separate evidence levels; prioritize user impact; and route unresolved human or assistive-technology checks.
-- **Expected result:** A prioritized report with affected users, evidence, inspection steps, remediation direction, verification, authoritative mappings, open human or assistive-technology checks, and material limitations.
-- **Preserved boundaries:** No accessibility, completeness, certification, or standards-conformance claim; no invented observation; no scanner-only conclusion; no conversion of missing evidence into a pass.
-- **Known limitations:** Browser, scanner, project execution, assistive technology, accessibility expertise, and disabled-user access depend on the review environment and remain explicit report inputs.
-- **Refinement mode:** Automatic semantic refinement; no material failure required a change.
-- **Evaluation result:** Passed in `showcase-skills/accessibility-first-pass/evaluation/accessibility-first-pass/`.
+## Generated Target
+
+- Skill: `showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/SKILL.md`
+- Reference: `showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/references/web-accessibility-evidence.md`
+- Report asset: `showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/assets/accessibility-first-pass-report.md`
+- OpenAI metadata: `showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/agents/openai.yaml`
+
+## Evaluation Contract
+
+- **Goal:** create a bounded, evidence-labeled first-pass accessibility report that prioritizes user impact and actionable remediation without overstating completeness or conformance.
+- **Intended use:** preliminary accessibility review of supplied web pages, features, implementations, and representative fixtures.
+- **Expected behavior:** investigate available production source, rendered behavior, native tooling, and authoritative guidance; combine applicable automated and manual checks; classify evidence; identify affected users; prioritize findings; and direct unresolved checks to human or assistive-technology testing.
+- **Expected result:** a report containing scope, methods, limitations, prioritized findings, passed checks within tested scope, follow-up checks, unknowns, and next actions.
+- **Boundaries:** do not claim complete accessibility, certification, conformance, or absence of barriers; do not convert unverified behavior into findings or passes; do not install tooling or broaden review scope without authority.
+- **Supported surface:** portable Agent Skills content with OpenAI Codex interface metadata. Runtime reliability outside the evaluated Codex environment is unclaimed.
+- **Refinement mode:** automatic, as authorized by the initiating prompt, constrained to the showcase workspace and governed semantic-owner updates.
+
+## Runtime Criteria
+
+Evaluation must prove that an independent agent can:
+
+- discover and apply the evidence reference rather than relying on the core body alone;
+- distinguish observed, inferred, and unverified behavior in a real report;
+- prioritize by user impact and evidence rather than copying automated severity;
+- report relevant manual and assistive-technology follow-up;
+- preserve scope and limitations while producing actionable remediation direction; and
+- refuse unsupported accessibility or conformance conclusions even when automated checks are clean.
+
+Continue directly into `skill-evaluation-and-refinement` using the intake plan as source of truth.

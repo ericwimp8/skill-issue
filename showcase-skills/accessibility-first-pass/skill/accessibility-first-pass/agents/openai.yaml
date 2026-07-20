@@ -1,5 +1,4 @@
 interface:
-  display_name: Accessibility First Pass
-  short_description: Review web accessibility risks with bounded evidence
-policy:
-  allow_implicit_invocation: true
+  display_name: "Accessibility First Pass"
+  short_description: "Run responsible first-pass web accessibility reviews"
+  default_prompt: "Use $accessibility-first-pass to review this web feature and produce a prioritized evidence-based report."

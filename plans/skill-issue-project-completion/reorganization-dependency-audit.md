@@ -14,7 +14,7 @@ Document authority classes, consumer links, and future update routing are mainta
 
 - `skills/skill-intake/`, `skills/skill-generation/`, and `skills/skill-evaluation-and-refinement/` contain the three production workflow skills and their supporting references.
 - `research/audits/skill-generation-and-refinement/` preserves the first-pass audit evidence, semantic walkthroughs, and accepted runtime deferrals.
-- The first-pass Codex plugin wrapper and explicit-only overlay exist in `.codex-plugin/`, `.codex/`, and `packaging/overlays/`.
+- The canonical `skill-intake` description carries its explicit-request boundary. Harness-specific enforcement is owned by CLI materialization rather than a repository-only overlay.
 
 ### Production Refinement Campaign
 
@@ -25,7 +25,7 @@ Document authority classes, consumer links, and future update routing are mainta
 
 ### Product, Support, and Evidence Contract
 
-- `plans/skill-issue-project-completion/01-reconcile-the-definitive-product-support-and-evidence-contract.md` owns the selected-nine boundary, five-harness minimum release tier, thirteen medium-setting evaluation cells, one three-scenario-suite minimum, default-environment expectation, and transparent public-claim rules.
+- `plans/skill-issue-project-completion/01-reconcile-the-definitive-product-support-and-evidence-contract.md` owns the six-harness boundary, five-harness minimum release tier, thirteen medium-setting evaluation cells, one three-scenario-suite minimum, default-environment expectation, and transparent public-claim rules.
 - Its section audit is complete.
 
 ### Direct-Installation Architecture
@@ -39,7 +39,7 @@ Document authority classes, consumer links, and future update routing are mainta
 - `cli/` contains a pure-Go executable foundation with platform reporting, embedded payload loading, direct install and uninstall routing, evaluation replay and cleanup, a six-target cross-build script, and six locally built binaries. Codex, Cursor, Claude Code, and Pi now have configurable native evaluation routes, custom supplied-skill input, effective-configuration confirmation, bounded cleanup, and completed two-turn real-launcher smoke checks.
 - `plans/skill-issue-project-completion/06-establish-the-cross-platform-cli-foundation.md` and `cli/README.md` document that foundation.
 - `evaluations/skill-calling/smoke/real-harness-smoke-report.md` preserves the bounded runtime evidence for the completed four-harness runner implementation.
-- Work Block 2 has extended the baseline with the canonical payload, concrete lifecycle manager, researched native roots, blind evaluation runner, four native launcher routes, and ownership-backed cleanup. Ordinary installer detection and preview, concrete installation-adapter preflight, final packaging, and the block audit remain open. Full product, OpenCode, governed-campaign, native-platform, and release qualification remain downstream.
+- Work Block 2 has extended the baseline with the canonical payload, concrete lifecycle manager, retained native roots, blind evaluation runner, four native launcher routes, guided selection and preview, file verification, and ownership-backed cleanup. OpenCode and Kilo Code implementation, concrete installation-adapter preflight, final packaging, and the block audit remain open. Governed-campaign, native-platform, and release qualification remain downstream.
 
 ### Website Mock-Up
 
@@ -53,8 +53,8 @@ Document authority classes, consumer links, and future update routing are mainta
 | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | `research/deep-research/harness-direct-installation-architecture/`                   | Retained source evidence for direct-install paths, adapter classifications, verification, and boundaries.               | Work Block 2 consumes it through the integrated architecture plan; Work Blocks 3 and 4 use its public support distinctions. |
 | `research/cross-platform-cli-distribution/cross-platform-cli-distribution-report.md` | Authoritative Go, prebuilt-binary, GitHub Releases, signing, checksums, GoReleaser, and native qualification direction. | Work Block 2 completes the CLI; Work Block 4 produces public release artifacts.                                             |
-| `research/harness-subagent-launch/`                                                  | Source-backed delegation capability evidence for the selected harnesses.                                                | Production skills consume it when they require independent-agent behavior.                                                  |
-| `research/deep-research/manual-skill-invocation-nine-harnesses/`                     | Source-backed manual and explicit invocation evidence for the selected harnesses.                                       | Live skill references and later user-facing guidance consume it when invocation behavior changes.                           |
+| `research/harness-subagent-launch/`                                                  | Source-backed delegation capability evidence for the selected harnesses.                                                | Environment qualification consumes it when establishing isolated trial methods.                                             |
+| `research/deep-research/manual-skill-invocation-nine-harnesses/`                     | Source-backed manual and explicit invocation evidence for the selected harnesses.                                       | CLI adapters and harness qualification guidance consume it when invocation behavior changes.                                |
 | `research/deep-research/free-website-hosting-cli-downloads/`                         | Authoritative GitHub Pages and GitHub Releases hosting direction for the free MVP.                                      | Work Block 4 publishes the binaries and website.                                                                            |
 | `research/implementation-research/website-chart-migration/`                          | Source and design evidence for the implemented chart migration and accepted-data handoff.                               | Work Blocks 3 and 4 use it when replacing illustrative data with accepted campaign artifacts.                               |
 | `research/deep-research/codex-friendly-youtube-video-tools/`                         | Retained video-production research and risk record.                                                                     | Work Block 5 rechecks current requirements and uses only still-valid findings immediately before production.                |
@@ -64,21 +64,21 @@ Document authority classes, consumer links, and future update routing are mainta
 
 ## Dependency and Ownership Findings
 
-### 1. Current Harness References Are Reconciled
+### 1. Harness Ownership Is Reconciled
 
-- `skills/skill-evaluation-and-refinement/references/harness-evaluation-controls.md`, `skills/skill-intake/references/explicit-invocation-controls.md`, and `skills/skill-generation/references/harness-packaging.md` now use the current selected nine and authoritative direct-install findings.
-- Those live references link to their support and installation authorities and state their update triggers.
+- Harness installation paths, invocation controls, and qualification setup are owned by the CLI adapters and harness documentation rather than bundled production-skill references.
+- Production skills retain only task-owned references that are complete inside their installed skill directories.
+- The product support contract, direct-install architecture, and retained research preserve the repository-only decision and evidence chain.
 - Superseded popularity and plugin-packaging research has been removed after its current decisions were reconciled into the support contract and direct-install architecture.
-- Work Block 1 completed this reconciliation. Later support changes must update the live references through the documentation authority map.
+- Later support changes follow the CLI, qualification, and public-document routes in the documentation authority map.
 
 ### 2. The Installer Exists but Its User Journey and Lifecycle Semantics Remain Incomplete
 
-- `cli/internal/harness/harness.go` contains all nine researched project and user roots, while ordinary commands still require the caller to supply the harness and scope without detection, enumeration, confirmation, or preview.
+- `cli/internal/harness/harness.go` contains the six retained project and user roots. Guided installation presents explicit harness and scope selection, marks OpenCode and Kilo Code as in progress, previews the destination and payload, and requires confirmation.
 - `cli/internal/payload/assets/manifest.json` contains the complete canonical component inventory, and the payload owner validates canonical frontmatter and referenced-file closure.
 - `cli/internal/installer/installer.go` stages and replaces only the known Skill Issue payload directories. It stores no ordinary receipt, digest, backup, rollback, or mutable application state. Repeated installation is the reinstall, update, and repair path; uninstallation removes those same known directories.
 - `cli/internal/lifecycle/lifecycle.go` exposes ordinary `install` and `uninstall` plus evaluation run and cleanup. The former verify, repair, and update command paths are removed.
-- Detection and preview must consume the same harness roots and embedded payload as installation. Generic adapter metadata, persistent rollback, and installation-time discovery or activation results are not required.
-- The Grok ordinary installation path is currently materializable without enforcing the required `grok inspect --json` discovery gate. Work Block 2 must make that route fail closed before it can be advertised.
+- Selection and preview consume the same harness roots and embedded payload as installation. Generic adapter metadata, persistent rollback, and installation-time discovery or activation results are not required.
 - Work Block 3 owns live harness discovery, activation, final regression, and native qualification after Work Block 2 freezes the installer candidate.
 
 ### 3. The CLI-Owned Supporting-Skills Bundle Exists
@@ -163,7 +163,7 @@ Research is read and any remaining authoritative gap is resolved inside the work
 | Previous completion meaning                                                            | Preserved owner                                                               |
 | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | Runtime-free macOS, Windows, and Linux CLI                                             | Work Block 2 implementation and Work Blocks 3 and 4 qualification and release |
-| Harness and scope detection, confirmation, installation records, and safe lifecycle    | Work Block 2                                                                  |
+| Harness and scope selection, confirmation, installation verification, and safe lifecycle | Work Block 2                                                               |
 | Complete payload with primary workflows and the supporting-skills bundle               | Work Blocks 1 and 2                                                           |
 | Ordinary-language skill creation through evaluation and refinement                     | Work Block 1, proven in Work Block 3                                          |
 | Existing-skill evaluation and semantic refinement                                      | Work Block 1, proven in Work Block 3                                          |

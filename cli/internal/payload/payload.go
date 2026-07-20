@@ -34,7 +34,7 @@ type Skill struct {
 	Files map[string][]byte
 }
 
-var localReference = regexp.MustCompile("`((?:references|scripts|assets)/[^`]+)`")
+var localReference = regexp.MustCompile("`((?:(?:references|scripts|assets)/|\\.\\.?/)[^`]+)`")
 
 const builtInEvaluationRoot = "evaluations/skill-calling/built-ins"
 
@@ -153,6 +153,9 @@ func readSkill(root, name string) (map[string][]byte, error) {
 		if walkErr != nil {
 			return walkErr
 		}
+		if entry.Name() == ".DS_Store" {
+			return nil
+		}
 		if entry.IsDir() {
 			return nil
 		}
@@ -174,7 +177,7 @@ func readSkill(root, name string) (map[string][]byte, error) {
 	if err := validateFrontmatter(name, entrypoint); err != nil {
 		return nil, err
 	}
-	if err := validateReferenceClosure(name, entrypoint, files); err != nil {
+	if err := validateReferenceClosure(name, files); err != nil {
 		return nil, err
 	}
 	return files, nil
@@ -189,6 +192,9 @@ func readExternalSkill(root, name string) (map[string][]byte, error) {
 		}
 		if entry.Type()&os.ModeSymlink != 0 {
 			return fmt.Errorf("custom skill %q contains unsupported symlink %q", name, filePath)
+		}
+		if entry.Name() == ".DS_Store" {
+			return nil
 		}
 		if entry.IsDir() {
 			return nil
@@ -214,29 +220,37 @@ func readExternalSkill(root, name string) (map[string][]byte, error) {
 	if err := validateFrontmatter(name, entrypoint); err != nil {
 		return nil, err
 	}
-	if err := validateReferenceClosure(name, entrypoint, files); err != nil {
+	if err := validateReferenceClosure(name, files); err != nil {
 		return nil, err
 	}
 	return files, nil
 }
 
-func validateReferenceClosure(name string, entrypoint []byte, files map[string][]byte) error {
-	inFence := false
-	for _, line := range strings.Split(string(entrypoint), "\n") {
-		if strings.HasPrefix(strings.TrimSpace(line), "```") {
-			inFence = !inFence
+func validateReferenceClosure(name string, files map[string][]byte) error {
+	for source, data := range files {
+		if path.Ext(source) != ".md" {
 			continue
 		}
-		if inFence {
-			continue
-		}
-		for _, match := range localReference.FindAllStringSubmatch(line, -1) {
-			reference := path.Clean(match[1])
-			if strings.HasPrefix(reference, "../") {
-				return fmt.Errorf("canonical skill %q has escaping reference %q", name, reference)
+		inFence := false
+		for _, line := range strings.Split(string(data), "\n") {
+			if strings.HasPrefix(strings.TrimSpace(line), "```") {
+				inFence = !inFence
+				continue
 			}
-			if _, ok := files[reference]; !ok {
-				return fmt.Errorf("canonical skill %q references absent file %q", name, reference)
+			if inFence {
+				continue
+			}
+			for _, match := range localReference.FindAllStringSubmatch(line, -1) {
+				reference := path.Clean(match[1])
+				if strings.HasPrefix(match[1], ".") {
+					reference = path.Clean(path.Join(path.Dir(source), match[1]))
+				}
+				if reference == ".." || strings.HasPrefix(reference, "../") {
+					return fmt.Errorf("canonical skill %q has escaping reference %q in %q", name, match[1], source)
+				}
+				if _, ok := files[reference]; !ok {
+					return fmt.Errorf("canonical skill %q references absent file %q in %q", name, reference, source)
+				}
 			}
 		}
 	}

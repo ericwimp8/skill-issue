@@ -1,93 +1,113 @@
-# Accessibility First Pass Report
+# Accessibility First-Pass Report
 
 ## Review Scope
 
 - **Target:** `showcase-skills/accessibility-first-pass/evaluation/accessibility-first-pass/fixtures/form/index.html`
-- **Included journeys, states, routes, and viewports:** Source representation of the initial “Create account” page and the only declared activation path, which changes the URL fragment to `#submitted`. No rendered state, route, or viewport was exercised.
-- **Available source and rendered access:** Complete access to the single HTML fixture, including its inline CSS and inline click handler. Rendered access was deliberately unavailable.
-- **Project tooling and commands used:** Read-only, line-numbered source inspection with shell text tools. No browser, server, accessibility tree, scanner, or other accessibility automation was used.
-- **Guidance baseline:** The request establishes no WCAG version or conformance level. WCAG criterion references below are narrow, provisional guidance mappings for remediation and verification, not a conformance baseline. The skill’s supplied W3C evidence reference was used; current criterion text and status could not be checked online within this case boundary.
-- **Exclusions:** Every other repository file; rendered and computed behavior; keyboard, pointer, touch, screen-reader, speech-input, switch-control, magnification, zoom, reflow, responsive, forced-colors, and disabled-user testing; current web guidance lookup; and standards-conformance evaluation.
+- **Journeys and states:** Source-level review of the account-request journey: identifying the email field, understanding its required state, encountering the visible error text, and activating “Send request.” Only the authored default state was available.
+- **Source areas:** Complete HTML, inline CSS, form markup, and inline submission script in the single fixture.
+- **Rendered environments:** None. No page was served or opened in a browser; no keyboard, pointer, accessibility-tree, screen-reader, voice-input, zoom, or forced-colors session was run.
+- **Standards or guidance considered:** WCAG 2.2 criterion relationships were considered using W3C Understanding guidance. Mappings below are bounded to the inspected evidence and are not conformance determinations.
+- **Out of scope:** Server behavior and responses; success, loading, and failure states after submission; other routes; browser/device interoperability; computed styles; native validation presentation; and assistive-technology output.
 
-## Evidence Summary
+## Methods and Evidence
 
-- **Observed:** None. “Observed” is reserved for behavior directly reproduced in a rendered surface, and no rendered surface was available.
-- **Tool:** None. No automated accessibility check was run.
-- **Source-backed:** The document declares English, a page title, and an `h1` (`index.html`, lines 2, 5, and 14). The email field has a visually adjacent but unbound `label` (lines 15–16). The error paragraph is always present in the initial source and has no programmatic association with the input (lines 16–17). The Continue action is a `div` with only an inline `onclick` handler (line 18). The heading and label inherit `#aaa` text on `#fff` from `body` (line 7), approximately 2.32:1 contrast.
-- **Inference:** The source defects are likely to block or materially impede keyboard-only, screen-reader, speech-input, switch-control, and low-vision users. These impacts require rendered and assistive-technology verification; they are not reported as observed user behavior.
-- **Unverified:** Computed accessible names, roles, states, descriptions, focus order and visibility, actual keyboard operation, validation timing, error announcement, mobile viewport behavior, zoom and reflow, platform color rendering, and end-to-end account creation.
-- **Evidence artifact:** `showcase-skills/accessibility-first-pass/evaluation/accessibility-first-pass/fixtures/form/index.html`, inspected 2026-07-20.
-
-## Prioritized Findings
-
-### [P1] Continue Is Implemented as a Pointer-Only Generic Element
-
-- **Affected users and tasks:** Keyboard-only and switch-control users may be unable to activate Continue; screen-reader and speech-input users may not have an identifiable button target. The affected task is advancing from the account-creation page.
-- **Evidence level:** Source-backed implementation fact; inferred user impact.
-- **Evidence:** Line 18 uses `<div class="submit" onclick="location.hash='submitted'">Continue</div>`. In the complete fixture, this element has no native control semantics, `role`, `tabindex`, or keyboard handler. Its only declared activation mechanism is `onclick`.
-- **Reproduction or inspection steps:** Open the fixture source; inspect line 18; identify the element type, declared event handlers, and absence of keyboard-focus and control-semantic code elsewhere in the file.
-- **User impact:** A primary action can be absent from sequential keyboard navigation and can lack a programmatic button role. This is a likely task blocker rather than a cosmetic issue.
-- **Authoritative guidance:** Provisionally related to [WCAG 2.2 SC 2.1.1 Keyboard](https://www.w3.org/WAI/WCAG22/Understanding/keyboard.html) and [SC 4.1.2 Name, Role, Value](https://www.w3.org/WAI/WCAG22/Understanding/name-role-value.html). Exact current wording was not live-verified in this source-only review.
-- **Remediation direction and owner:** The action element at line 18 owns the correction. Use a native `<button>`; choose `type="submit"` if the intended owner is an actual account-creation form, otherwise use `type="button"`. Preserve visual styling through the existing class and implement the intended outcome through the button/form behavior rather than recreating button semantics on a `div`.
-- **Verification route:** In the rendered initial state, verify that Tab reaches the control with a visible focus indicator; Enter and Space perform the same action as pointer activation; the accessibility tree exposes a button named “Continue”; and the action is usable with a screen reader, speech input, and switch control. Verify the resulting state, not just activation.
-- **Confidence and open questions:** High confidence in the implementation defect. Runtime focus behavior, assistive-technology output, and whether the intended action submits a form or only navigates remain unverified.
-
-### [P1] Email Field Has No Programmatically Associated Label
-
-- **Affected users and tasks:** Screen-reader and speech-input users may not receive or be able to target the field by the visible label. Users with cognitive disabilities may also encounter inconsistent label activation. The affected task is entering an email address.
-- **Evidence level:** Source-backed implementation fact; inferred user impact.
-- **Evidence:** Line 15 contains `<label>Email address</label>` and line 16 contains `<input type="email" />`. The label does not wrap the input and has no `for` attribute; the input has no `id`, `aria-label`, or `aria-labelledby`. The complete file contains no other naming relationship.
-- **Reproduction or inspection steps:** Inspect lines 15–16; compare the label’s association mechanism with the input’s identifiers and naming attributes; confirm no association is established elsewhere in the fixture.
-- **User impact:** Visual proximity alone does not encode the label-input relationship. The field can therefore have no reliable programmatic name, making orientation and voice targeting difficult.
-- **Authoritative guidance:** Provisionally related to [WCAG 2.2 SC 1.3.1 Info and Relationships](https://www.w3.org/WAI/WCAG22/Understanding/info-and-relationships.html), [SC 3.3.2 Labels or Instructions](https://www.w3.org/WAI/WCAG22/Understanding/labels-or-instructions.html), and [SC 4.1.2 Name, Role, Value](https://www.w3.org/WAI/WCAG22/Understanding/name-role-value.html).
-- **Remediation direction and owner:** The field-label pair at lines 15–16 owns the correction. Give the input a stable `id` and set the label’s `for` to that value, or wrap the input inside the label. Retain the visible “Email address” text. Add form-processing attributes such as `name` and appropriate `autocomplete` only according to the actual form contract.
-- **Verification route:** Inspect the rendered accessibility tree for an email field named “Email address”; verify clicking the visible label focuses the field; and verify the field can be found and operated by label with a screen reader and speech input.
-- **Confidence and open questions:** High confidence that the source lacks an explicit label association. The browser-computed name and behavior were not rendered, and the wider form contract is unavailable.
-
-### [P1] Required Error Is Not Tied to the Field or a Defined Validation State
-
-- **Affected users and tasks:** Screen-reader users may not discover which field the error belongs to or hear it when validation changes. Users with cognitive or learning disabilities may receive an error before they have acted and without a clearly stated requirement. The affected task is identifying and correcting an empty email value.
-- **Evidence level:** Source-backed implementation fact; inferred user impact and timing risk.
-- **Evidence:** Line 17 renders `<p class="error">Required</p>` in the initial document. It has no `id`; the input at line 16 has no `required`, `aria-required`, `aria-invalid`, `aria-describedby`, or `aria-errormessage`; and the source contains no validation logic or state transition. The error is visually adjacent, but the relationship is not encoded.
-- **Reproduction or inspection steps:** Inspect lines 16–18; identify the initial presence of the error, the input’s declared state and relationships, and the absence of code that creates, removes, associates, or announces an invalid state.
-- **User impact:** A user can encounter an unassociated “Required” message with no programmatic error relationship. If the message is intended to appear after validation, the source also provides no announcement or focus-management mechanism.
-- **Authoritative guidance:** Provisionally related to [WCAG 2.2 SC 3.3.1 Error Identification](https://www.w3.org/WAI/WCAG22/Understanding/error-identification.html) and [SC 1.3.1 Info and Relationships](https://www.w3.org/WAI/WCAG22/Understanding/info-and-relationships.html). If the error is introduced dynamically, [SC 4.1.3 Status Messages](https://www.w3.org/WAI/WCAG22/Understanding/status-messages.html) may also be relevant; that mapping depends on the intended runtime behavior.
-- **Remediation direction and owner:** The email field’s validation state owns this correction. State the requirement before entry when applicable; use native `required` when it matches the validation contract; give the error a stable identifier; associate explanatory/error text with the field; expose invalid state only when invalid; and render or reveal the message according to a defined validation policy. Choose focus movement or live announcement based on the complete submission interaction rather than adding an indiscriminate live region.
-- **Verification route:** Exercise untouched, focused, empty-submission, invalid-email, corrected, and resubmission states. Confirm the visible message identifies the field and correction, the accessibility tree exposes the intended required/invalid state and description, keyboard focus follows the designed policy, and a screen reader announces the error at a useful time without duplicate output.
-- **Confidence and open questions:** High confidence in the missing source relationships and undefined initial state. Intended validation timing, error lifecycle, submission behavior, and actual assistive-technology announcements are unknown.
-
-### [P2] Primary Text Colors Specify Insufficient Contrast
-
-- **Affected users and tasks:** Users with low vision, reduced contrast sensitivity, or color-vision differences may have difficulty reading the page heading and email label needed to understand and complete the task.
-- **Evidence level:** Source-backed color values and contrast calculation; rendered perception unverified.
-- **Evidence:** Line 7 specifies `body { color: #aaa; background: #fff; }`. The `h1` and `label` have no overriding color, so the source makes them inherit this pair. The calculated contrast ratio is approximately 2.32:1. This is below both the commonly applied 4.5:1 threshold for normal text and 3:1 threshold for qualifying large text. The error and Continue text use separate color rules and are not included in this finding.
-- **Reproduction or inspection steps:** Inspect the inline CSS at lines 7–9; trace inheritance to the heading and label; calculate relative luminance contrast for `#aaa` against `#fff`; then confirm computed colors and text sizes at runtime.
-- **User impact:** Key instructions can be difficult to perceive, increasing reading effort and the risk of missing the field label.
-- **Authoritative guidance:** Provisionally related to [WCAG 2.2 SC 1.4.3 Contrast (Minimum)](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html).
-- **Remediation direction and owner:** The shared body color token/rule at line 7 owns the correction. Select a foreground color that meets the intended text-size threshold against the actual background in every state, while retaining distinguishable error and control styling. Validate the final computed colors rather than only the literal source values.
-- **Verification route:** Run a contrast check against rendered computed styles for heading, label, error, control text, focus indicators, and every interactive state. Manually inspect at browser zoom and with platform contrast/forced-color settings, and include low-vision user evaluation where available.
-- **Confidence and open questions:** High confidence in the specified color pair and calculated ratio. Actual font sizes, anti-aliasing, user overrides, forced-color behavior, and all state colors remain unverified.
-
-## Checks Requiring Human or Assistive-Technology Testing
-
-- **Keyboard and alternative-input completion:** A keyboard-only or switch-control tester should complete the email-and-Continue journey from the initial state through its resulting state, checking focus order, visible focus, activation parity, recovery from errors, and lack of traps. Source inspection cannot establish runtime focus or operation.
-- **Screen-reader field and error experience:** Screen-reader users on at least the project’s supported browser/platform combinations should identify the page, field name/type/required/invalid state, associated error, Continue control, and resulting state. The accessibility tree and announcements were unavailable, and model inference cannot substitute for assistive-technology use.
-- **Speech-input targeting:** A speech-input user should target “Email address” and “Continue” by their visible labels and complete correction after an error. Source inspection cannot establish generated target names or recognition behavior.
-- **Low-vision, zoom, and reflow use:** A low-vision tester using magnification should inspect the journey at the project’s required zoom and viewport conditions, checking readable contrast, text resizing, clipping, overlap, horizontal scrolling, and maintained focus visibility. No viewport or computed layout was available; the source also has no viewport metadata, whose practical mobile effect requires rendering.
-- **Validation comprehension:** A disabled-user review, including people with cognitive or learning disabilities where feasible, should assess whether the requirement, error timing, wording, correction path, and outcome are understandable. Markup alone cannot establish comprehension or lived usability.
+| Method | Target and state | Result or evidence path | Evidence class | Limitations |
+| --- | --- | --- | --- | --- |
+| Complete source inspection | Default authored account-request page | `showcase-skills/accessibility-first-pass/evaluation/accessibility-first-pass/fixtures/form/index.html:1` | Observed | Establishes authored elements, attributes, styles, and script only. |
+| Form semantics inspection | Email input, error text, and submission control | `showcase-skills/accessibility-first-pass/evaluation/accessibility-first-pass/fixtures/form/index.html:16` | Observed | Runtime accessible names, roles, relationships, focus behavior, and announcements were not captured. |
+| Inline submission-path inspection | `onclick` activation and `form.submit()` call | `showcase-skills/accessibility-first-pass/evaluation/accessibility-first-pass/fixtures/form/index.html:19` | Observed | The path exists in source; browser behavior and server outcome were not exercised. |
+| Automated accessibility checks | Not run | Not run | Unverified | No rendered target or project-native accessibility checker was exercised. |
+| Rendered manual and assistive-technology checks | Not run | Not run | Unverified | Requires browsers, keyboard/pointer interaction, accessibility inspection, and assistive technologies. |
 
 ## Material Limitations
 
-- Review evidence is limited to one static source file. No browser, server, DOM, accessibility tree, computed style, screenshot, scanner, or runtime event trace was available.
-- No initial, focus, hover, active, invalid, corrected, submitted, loading, success, or failure state was rendered. The source only declares a URL-fragment change and does not expose a complete account-creation process.
-- No viewport, breakpoint, browser, operating system, input modality, assistive technology, user preference, localization, content variation, zoom level, or forced-colors mode was exercised.
-- No project accessibility configuration or commands were inspected because the case scope allowed review of only the fixture. No automation pass or violation/incomplete count exists.
-- No current web lookup was permitted. Criterion identifiers and links are provisional navigation aids derived from the supplied evidence reference and reviewer knowledge; confirm them against the current W3C recommendation before using them in a governed standards evaluation.
-- No qualified accessibility specialist or disabled participant evaluated the page. User-impact statements are evidence-supported risks, not claims of observed lived experience.
-- Source absence establishes what this fixture does not declare, but it cannot prove all browser-computed behavior. No missing evidence has been converted into a pass.
+- This is a source-only first pass. It cannot establish computed contrast, focus order or visibility, keyboard completion, accessible names exposed by a browser, native validation presentation, error announcements, zoom/reflow behavior, or assistive-technology interoperability.
+- Only the initial authored state exists in the fixture. Submission results, server validation, conditional errors, recovery, and success confirmation are unavailable.
+- No automated checker result is available. Even a later clean automated scan would require human judgment and targeted interaction testing.
 
-## Conclusion
+## Prioritized Findings
 
-This source-bounded first pass establishes four remediation priorities: replace the generic Continue element with a native control, create an explicit email label relationship, make validation state and error association coherent, and correct the shared low-contrast text color. The first external verification step should render the initial and validation/result states, then perform keyboard, accessibility-tree, screen-reader, speech-input, contrast, zoom, and reflow checks across supported environments.
+### High: Submission is implemented as a pointer-click `div`
 
-This first pass does not prove accessibility, completeness, certification, or standards conformance.
+- **Evidence class:** Inferred. The source observation is definitive: “Send request” is a `div` with an `onclick` handler, with no native button element or authored keyboard handler (`index.html:19`). Whether another keyboard submission path works, and the actual focus/activation behavior, were not rendered.
+- **Affected users and task impact:** People using keyboard, switch, speech-input, or other keyboard-emulating input may be unable to discover or activate the visible submission control. Screen-reader users may encounter text without an actionable button role. This can seriously impede completion of the account-request journey.
+- **Evidence:** `showcase-skills/accessibility-first-pass/evaluation/accessibility-first-pass/fixtures/form/index.html:19` contains `<div class="submit" onclick="document.querySelector('form').submit()">Send request</div>`.
+- **Reproduction or inspection steps:** Open the fixture source; inspect line 19; confirm the visible control is a `div`, activation is attached only to `onclick`, and no native button or keyboard handler is authored. Rendered keyboard behavior remains a follow-up.
+- **Authoritative guidance:** W3C’s [Understanding SC 2.1.1 Keyboard](https://www.w3.org/WAI/WCAG22/Understanding/keyboard.html) says pointer actions need a keyboard equivalent and recommends native HTML form controls. [Understanding SC 4.1.2 Name, Role, Value](https://www.w3.org/WAI/WCAG22/Understanding/name-role-value.html) is also potentially relevant to the control’s programmatic role. Applicability must be confirmed against rendered behavior and the complete journey.
+- **Priority rationale:** Submitting the form is the journey’s decisive action. The source shows a broad, repeated interaction pattern with a substantial risk of blocking non-pointer users; confidence in the authored-risk evidence is high, while runtime behavior remains unverified.
+- **Remediation direction:** At the form interaction owner, use a native submit button and the form’s normal submit flow. Preserve platform keyboard activation, focus semantics, and validation rather than recreating them on a generic element.
+- **Human or assistive-technology follow-up:** In current Chrome and Firefox, complete the journey using Tab, Shift+Tab, Enter, and Space without a pointer; record focus order, visible focus, and whether the visible control submits. In Safari with VoiceOver and Chrome with NVDA, confirm the control is announced as a button with the name “Send request” and can be activated.
+- **Confidence and limitations:** High confidence that the authored visible control is a click-handled `div`; no claim is made about runtime focusability, alternate implicit submission, or standards conformance.
+
+### High: The required email field has placeholder text but no persistent associated label
+
+- **Evidence class:** Inferred. Source inspection observes one input with `placeholder="Email address"` and `required`, and no `label`, `aria-label`, or `aria-labelledby` in the complete document (`index.html:17`). The browser-exposed accessible name was not captured.
+- **Affected users and task impact:** Screen-reader and refreshable-braille users may receive an unclear or inconsistent name; speech-input users may be unable to target the field by its visible wording; people with cognitive, language, attention, or memory disabilities may lose the only instruction after entering text. Identifying the required account email can become confusing or error-prone.
+- **Evidence:** `showcase-skills/accessibility-first-pass/evaluation/accessibility-first-pass/fixtures/form/index.html:17` contains only the input’s `id`, `name`, placeholder, and required attribute; the complete form at lines 16–20 contains no associated label.
+- **Reproduction or inspection steps:** Inspect lines 16–20; confirm that “Email address” appears only as placeholder content and that no persistent label or authored accessible-name attribute is present. Capture the actual accessible name in a browser before making a runtime claim.
+- **Authoritative guidance:** W3C’s [Understanding SC 3.3.2 Labels or Instructions](https://www.w3.org/WAI/WCAG22/Understanding/labels-or-instructions.html) calls for labels or instructions for user input and distinguishes visible labels from programmatic names. SC 1.3.1 and SC 4.1.2 may also be relevant, subject to rendered accessibility-tree confirmation.
+- **Priority rationale:** The field is required and is the journey’s only data-entry control. The issue affects orientation, input, and recovery; the workaround burden can be substantial for assistive-technology users. Source confidence is high, while the exact runtime name remains unverified.
+- **Remediation direction:** Give the email input a persistent, descriptive visible label associated through native HTML. Keep placeholder text only as optional supplemental guidance, and communicate the required state in a form users can perceive and programmatically determine.
+- **Human or assistive-technology follow-up:** In Safari/VoiceOver and Chrome/NVDA, inspect and announce the field’s name, role, required state, and description before and after entering text. With voice control, attempt to focus it using the visible phrase “Email address.”
+- **Confidence and limitations:** High confidence in the placeholder-only authored pattern; accessible-name computation and assistive-technology speech/braille output remain unverified.
+
+### High: The direct submission path risks bypassing required-field validation
+
+- **Evidence class:** Inferred. The source definitively establishes `required` on the input (`index.html:17`) and direct invocation of `form.submit()` (`index.html:19`). Whether the tested browser presents native validation, whether submission succeeds, and what the server does were not exercised.
+- **Affected users and task impact:** People who rely on clear error prevention and recovery—including screen-reader users and people with cognitive, learning, language, attention, or memory disabilities—may submit incomplete data without timely, perceivable guidance or may encounter a later unexplained failure.
+- **Evidence:** `showcase-skills/accessibility-first-pass/evaluation/accessibility-first-pass/fixtures/form/index.html:17` declares the field required; `index.html:19` invokes `document.querySelector('form').submit()` directly.
+- **Reproduction or inspection steps:** Inspect lines 17 and 19 to establish the authored validation constraint and submission path. Then render the page, leave the field empty, activate the visible control, and observe whether the browser blocks submission, identifies the field, moves focus, and presents an error.
+- **Authoritative guidance:** W3C’s [Understanding SC 3.3.1 Error Identification](https://www.w3.org/WAI/WCAG22/Understanding/error-identification.html) is potentially relevant if a detected input error is not identified and described. A criterion determination requires the actual validation and submission result.
+- **Priority rationale:** Validation sits on the only required input and directly affects journey completion. The source establishes a credible high-impact risk, but the report deliberately withholds a runtime failure or conformance claim until browser and server behavior are observed.
+- **Remediation direction:** Route activation through the form’s native submit behavior or equivalent constraint-validation-aware handling. At the validation owner, prevent invalid submission, identify the affected field, provide a specific correction message, and manage focus/announcement appropriately.
+- **Human or assistive-technology follow-up:** In current Chrome, Firefox, and Safari, submit the empty form using pointer and keyboard paths. Record whether native validation runs, the exact visible message, focus placement, accessibility-tree state, and VoiceOver/NVDA announcement; repeat with server-side rejection if available.
+- **Confidence and limitations:** High confidence in the authored `required` and `form.submit()` path; native validation presentation and end-to-end outcome are unverified.
+
+### Medium: Error text is always present and has no authored relationship to the field
+
+- **Evidence class:** Inferred. Source inspection observes a static `<span class="error">Invalid value</span>` immediately after the input, with no `id`, `aria-describedby`, live-region attribute, conditional state, or other authored association (`index.html:18`). The rendered accessibility relationship and announcement were not captured.
+- **Affected users and task impact:** Screen-reader and braille users may not discover which field the message describes or hear it when an error occurs. Sighted users, including people with cognitive or learning disabilities, may see “Invalid value” before interacting and be unsure whether an error already exists or how to fix it. Recovery may be confusing and error-prone.
+- **Evidence:** `showcase-skills/accessibility-first-pass/evaluation/accessibility-first-pass/fixtures/form/index.html:18` contains the always-authored generic error text; lines 16–20 contain no programmatic relationship or state change.
+- **Reproduction or inspection steps:** Inspect lines 16–20; confirm the error text is unconditional in the source and lacks an authored identifier/relationship. Render the initial, invalid, and corrected states to verify visibility and announcements.
+- **Authoritative guidance:** W3C’s [Understanding SC 3.3.1 Error Identification](https://www.w3.org/WAI/WCAG22/Understanding/error-identification.html) is potentially relevant when detected errors need text identification and description. SC 1.3.1 may also be relevant to the field-message relationship; both require runtime/state confirmation here.
+- **Priority rationale:** The message affects the only field and can impair error recovery, but the degree of blockage depends on unavailable runtime and server behavior. Source confidence is high; user impact is medium pending confirmation.
+- **Remediation direction:** At the validation-message owner, show a specific error only when the corresponding invalid state exists, associate it programmatically with the email field, expose invalid state, and ensure newly presented feedback is perceivable without disorienting focus changes.
+- **Human or assistive-technology follow-up:** With VoiceOver/Safari and NVDA/Chrome, compare the initial, empty-submit, invalid-response, and corrected states. Confirm the message is announced once at the right time, includes corrective guidance, is associated with the email field, and clears when resolved.
+- **Confidence and limitations:** High confidence in the unconditional, unassociated source text; actual visibility, announcement timing, and validation-state lifecycle are unverified.
+
+## Passed Checks Within Tested Scope
+
+| Check | Exact state and method | Evidence | Limitations |
+| --- | --- | --- | --- |
+| Document language is authored | Complete source inspection found `<html lang="en">` | `showcase-skills/accessibility-first-pass/evaluation/accessibility-first-pass/fixtures/form/index.html:2` | Establishes the authored value only; language accuracy for all future content was not evaluated. |
+| Page title is authored | Complete source inspection found `<title>Account request</title>` | `showcase-skills/accessibility-first-pass/evaluation/accessibility-first-pass/fixtures/form/index.html:6` | Browser presentation and multi-page title uniqueness were not tested. |
+| Main landmark and one top-level heading are authored | Complete source inspection found `<main>` and `<h1>Request an account</h1>` | `showcase-skills/accessibility-first-pass/evaluation/accessibility-first-pass/fixtures/form/index.html:14` | Reading order and accessibility-tree exposure were not rendered. |
+| Viewport metadata permits initial responsive layout | Complete source inspection found width/device-width and initial-scale metadata | `showcase-skills/accessibility-first-pass/evaluation/accessibility-first-pass/fixtures/form/index.html:5` | Zoom, reflow, orientation, and obscured-content behavior were not tested. |
+
+No interaction, validation, visual, or assistive-technology check is reported as passed.
+
+## Follow-Up Checks and Unknowns
+
+| Check | Why unresolved | Required environment or method | Expected behavior |
+| --- | --- | --- | --- |
+| Complete keyboard journey and visible focus | Source cannot establish focus order, focus indicator, implicit Enter submission, or final operability | Current Chrome and Firefox; keyboard-only Tab/Shift+Tab/Enter/Space from page load through submission | Every operable element is reachable in a logical order, focus remains visible, and the journey completes without pointer input. |
+| Accessible names, roles, states, and relationships | Browser accessibility-tree computation was not captured | Chrome accessibility inspector plus NVDA; Safari accessibility inspector plus VoiceOver | Email has a concise persistent name and required state; submit is exposed as a button; error is associated and announced when relevant. |
+| Native and server validation presentation | `required` and `form.submit()` are observed, but runtime validation and response behavior are unavailable | Chrome, Firefox, and Safari; empty submission by pointer, Enter, and button activation; test server rejection if available | Invalid submission is prevented or clearly handled; the field and correction are identified; focus/announcement support recovery. |
+| Computed color contrast and non-color cues | Inline declarations do not establish final computed colors, font sizes, states, or perception | Browser computed-style inspection and contrast measurement for normal, focus, hover, invalid, and disabled states | Text and controls meet the project’s WCAG target; errors and focus are identifiable without color alone. |
+| Zoom, reflow, text spacing, and orientation | No rendered viewport was available | Browser at 200% and 400% zoom, 320 CSS-pixel width, WCAG text-spacing overrides, portrait and landscape | Content remains readable and operable without loss, overlap, clipping, or two-dimensional scrolling where not essential. |
+| Target size and pointer usability | Rendered dimensions and adjacent targets are unknown | Browser measurement and touch-device testing | The submission target is large enough and reliably operable for people with limited dexterity or tremor. |
+| High contrast and forced colors | Computed presentation and system overrides were not exercised | Windows forced-colors mode and macOS increased-contrast settings | Text, field boundaries, error state, and focus remain perceivable. |
+| Voice-input operation | Visible-label matching and semantic activation were not exercised | Voice Control or Dragon; target “Email address” and “Send request” by spoken label | Visible control wording can be used to focus and activate the corresponding controls. |
+| Disabled-user journey usability | A source review cannot assess clarity, efficiency, or user strategy | Moderated testing with representative disabled users after remediation | Users can understand, complete, correct, and confirm an account request without avoidable confusion or blockage. |
+
+## Prioritized Next Actions
+
+1. Replace the click-handled `div` with a native submit button and use a constraint-validation-aware form submission path.
+2. Add a persistent, natively associated email label and perceivable required-field instruction.
+3. Make validation state-specific: show a corrective message when needed, associate it with the field, expose invalid state, and support appropriate announcement/focus behavior.
+4. Run the exact keyboard, browser-validation, accessibility-tree, VoiceOver, NVDA, and voice-input checks listed above across initial, invalid, corrected, and submitted states.
+5. Measure computed contrast and verify zoom, reflow, text spacing, target size, forced-colors, and orientation behavior in the rendered page.
+
+## Review Boundary
+
+This first-pass review identifies evidence and risks within the stated scope. It does not establish overall accessibility, certification, or standards conformance. Automated results and limited manual checks cannot replace comprehensive evaluation and testing with disabled people and relevant assistive technologies.

@@ -1,0 +1,7 @@
+Native evidence log
+
+READ COMPLETE SUCCESS | path=showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/SKILL.md | sha256=a7b9fc077912a1454e0b2e4d00ce800d5846f71dc243310020c3091d945b0eaa | method=complete sequential file read
+READ COMPLETE SUCCESS | path=showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/references/web-accessibility-evidence.md | sha256=c52f41f96a138d9cf8d891146a4482dd367a93d82c8fb43da83ee600575c03da | method=complete sequential file read
+READ COMPLETE SUCCESS | path=showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/assets/accessibility-first-pass-report.md | sha256=9ccc238fa29f9ec076ddc17817faba03b2143b4eddafcadbcbceb69d72db4ac3 | routed_by=showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/SKILL.md | method=complete sequential file read
+READ COMPLETE SUCCESS | path=showcase-skills/accessibility-first-pass/evaluation/accessibility-first-pass/fixtures/dashboard/index.html | sha256=f866b0052264668b0c5ad7d63c8cbd607e7a57aa177767ae4877698ca623c368 | method=complete sequential file read
+READ COMPLETE SUCCESS | path=showcase-skills/accessibility-first-pass/evaluation/accessibility-first-pass/fixtures/dashboard/clean-scan.json | sha256=31bb492ef07dd11dac686bbac11c762603a98c95469455d87883bf586825f740 | method=complete sequential file read

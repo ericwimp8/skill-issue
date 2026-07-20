@@ -1,87 +1,96 @@
-# Accessibility First Pass Report
+# Accessibility First-Pass Report
 
 ## Review Scope
 
-- **Target:** Account-deletion confirmation dialog in `showcase-skills/accessibility-first-pass/evaluation/accessibility-first-pass/fixtures/dialog/index.html`.
-- **Included journeys, states, routes, and viewports:** The single local route at its default desktop viewport; initial closed state; opening with the keyboard; sequential keyboard focus while open; `Escape`; pointer cancellation; and pointer confirmation.
-- **Available source and rendered access:** Complete HTML, CSS, and JavaScript source plus a rendered local page in Chrome. Rendered inspection used Browser Playwright DOM snapshots, keyboard and pointer actions, and bounded DOM/computed-style reads on 2026-07-20.
-- **Project tooling and commands used:** `python3 -m http.server 8872 --bind 127.0.0.1` served the fixture. No compatible project accessibility scanner was identified or run, so there are no automated rule pass, violation, or incomplete counts.
-- **Guidance baseline:** WCAG 2.2 at Levels A and AA where a narrow mapping is supportable, plus the WAI-ARIA Authoring Practices Guide (APG) modal-dialog pattern as interaction guidance.
-- **Exclusions:** Other account settings, authentication and production deletion services, mobile and responsive viewports, zoom/reflow, forced-colors and high-contrast modes, reduced motion, touch, browser/platform combinations, screen readers, speech input, switch control, automated accessibility scanning, and disabled-user testing.
+- **Target:** Preferences dialog in `showcase-skills/accessibility-first-pass/evaluation/accessibility-first-pass/fixtures/dialog/index.html`.
+- **Journeys and states:** Initial closed state, opening from the Preferences button, Save control exposure, and closing from the visible close control.
+- **Source areas:** HTML structure, accessible semantics, and inline JavaScript at lines 9-22.
+- **Rendered environments:** None. This was a source-only preliminary review.
+- **Standards or guidance considered:** WCAG 2.2 Success Criteria 2.1.1, 2.4.3, and 4.1.2; WAI-ARIA Authoring Practices dialog guidance.
+- **Out of scope:** Browser rendering, computed accessibility tree, CSS presentation, automated scanning, assistive-technology interoperability, zoom/reflow, contrast, target size, high-contrast mode, reduced motion, and representative user testing.
 
-## Evidence Summary
+## Methods and Evidence
 
-- **Observed:** The opener worked with `Enter`. On opening, the DOM snapshot exposed an unnamed `dialog` with the expected heading, warning, and buttons, while keyboard focus remained on `#open`. `Escape` left the dialog visible. Sequential focus moved from the opener to `#confirm`, then `#cancel`, then outside the page content rather than wrapping. Activating Cancel hid the dialog and left focus on `BODY`, rather than restoring it to the opener. Activating Delete left the dialog visible and produced no visible state change or outcome. The focused opener's computed outline was `none`.
-- **Tool:** No automated accessibility-rule tool was run. Browser Playwright supplied rendered-state and computed-DOM evidence; its DOM snapshot is not equivalent to assistive-technology testing.
-- **Source-backed:** `:focus { outline: none; }` removes the browser focus outline. Opening and cancellation only toggle `hidden`. The dialog has `role="dialog"` but no `aria-labelledby`, `aria-label`, or `aria-modal`. No listener or deletion behavior is attached to `#confirm`; no code moves, contains, or restores focus; and no code handles `Escape`.
-- **Inference:** The fixed confirmation surface for an irreversible account deletion appears intended to be modal. Product intent must confirm that classification; the remediation below assumes modal behavior because the interaction interrupts the deletion workflow and requires a choice.
-- **Unverified:** The accessible name and announcements in specific screen reader/browser combinations, actual account deletion and recovery behavior, deletion success and error feedback, focus styling in forced-colors mode, reflow and obscuring at zoom, and any behavior outside this standalone fixture.
-
-## Prioritized Findings
-
-### P0 — Confirmation Cannot Complete the Deletion Task
-
-- **Affected users and tasks:** Everyone attempting account deletion is blocked. Users of screen readers or other assistive technology also receive no outcome or failure information from the confirm action.
-- **Evidence level:** Observed and Source-backed.
-- **Evidence:** Activating the visible Delete button left the dialog open with `#confirm` focused and no visible content change. Source contains event listeners only for `#open` and `#cancel`; `#confirm` has no behavior.
-- **Reproduction or inspection steps:** Open the dialog, activate Delete, and inspect the visible state and source event handlers.
-- **User impact:** The destructive workflow cannot be completed or meaningfully verified, including its success, failure, recovery, and announcement paths.
-- **Authoritative guidance:** When production behavior deletes user-controllable account data, [WCAG 2.2 SC 3.3.4](https://www.w3.org/WAI/WCAG22/Understanding/error-prevention-legal-financial-data.html) requires a reversible, checked, or confirmed safeguard. [W3C technique G168](https://www.w3.org/WAI/WCAG22/Techniques/general/G168) describes confirmation that identifies the selected action and consequences. The current fixture does not reach deletion, so the complete SC 3.3.4 path remains unverified.
-- **Remediation direction and owner:** The deletion-action owner should connect confirmation to the real operation, define pending/success/failure states, prevent accidental duplicate submission, preserve the confirmation safeguard, and provide perceivable outcome and recovery information. Keep the owning behavior in the production deletion workflow rather than in presentation-only styling.
-- **Verification route:** Exercise successful, failed, delayed, and repeated confirmation against the production service with keyboard and pointer input. Verify data recovery or confirmation requirements and test outcome announcements with supported screen reader/browser combinations.
-- **Confidence and open questions:** High confidence that the fixture is a task blocker. Whether deletion is reversible and what production feedback contract applies are unknown.
-
-### P1 — Dialog Focus and Dismissal Lifecycle Is Incomplete
-
-- **Affected users and tasks:** Keyboard, switch-control, screen-reader, speech-input, and screen-magnifier users who need predictable entry, containment, dismissal, and return from an interrupting dialog.
-- **Evidence level:** Observed and Source-backed.
-- **Evidence:** Focus remained on `#open` after opening; `Tab` traversed `#confirm`, `#cancel`, then left page content; `Escape` did not close the dialog; and Cancel left focus on `BODY`. Source has no focus-management, outside-content inertness, focus-loop, Escape, or focus-restoration behavior.
-- **Reproduction or inspection steps:** Focus Delete account and press `Enter`; inspect the active element. Press `Tab` through both dialog controls. Reopen and press `Escape`. Reopen, activate Cancel, and inspect the active element.
-- **User impact:** Users may not know the dialog opened, may move away from the required decision, may be unable to use the expected Escape route, and may lose their place when the dialog closes.
-- **Authoritative guidance:** The [WAI-ARIA APG modal-dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/) directs authors to move focus inside on open, keep `Tab` and `Shift+Tab` within the dialog, close with `Escape`, and generally return focus to the invoking control. [WCAG 2.2 SC 2.4.3](https://www.w3.org/WAI/WCAG22/Understanding/focus-order.html) requires sequential focus order to preserve meaning and operability. The exact WCAG failure determination depends on confirming that this surface is modal and evaluating it in the complete page.
-- **Remediation direction and owner:** The dialog interaction owner should establish one coherent modal lifecycle: make background content inert, place initial focus deliberately inside the dialog, contain forward and reverse tab movement, support Escape as cancellation, and restore focus to the opener or the next logical workflow target. A native `<dialog>` may reduce custom behavior, but it still requires deliberate naming, initial focus, close handling, and verification.
-- **Verification route:** Repeat keyboard-only checks for open, forward and reverse traversal, Escape, Cancel, confirmation success, and failure. Inspect background operability and active element after every transition, then test with supported screen readers, switch control, speech input, and magnification.
-- **Confidence and open questions:** High confidence in the observed lifecycle defects; medium confidence in the WCAG 2.4.3 mapping until modal intent and the full page are confirmed.
-
-### P1 — Keyboard Focus Has No Visible Indicator
-
-- **Affected users and tasks:** Sighted keyboard and switch users, including people with low vision, attention limitations, or memory and executive-function limitations, cannot visually locate the active control.
-- **Evidence level:** Observed and Source-backed.
-- **Evidence:** The stylesheet applies `:focus { outline: none; }` without a replacement. The focused opener's computed outline was `rgb(0, 0, 0) none 3px`, and no alternate focus styling exists in the source.
-- **Reproduction or inspection steps:** Load the page, press `Tab` to focus the opener, open the dialog, and traverse its buttons while checking for a visible focus indicator.
-- **User impact:** Keyboard operation becomes guesswork, especially after the dialog opens or focus is lost during close.
-- **Authoritative guidance:** [WCAG 2.2 SC 2.4.7 Focus Visible](https://www.w3.org/WAI/WCAG22/Understanding/focus-visible) requires a mode in which the keyboard focus indicator is visible; W3C identifies removing outlines without a visible replacement as a common failure.
-- **Remediation direction and owner:** The shared focus-style owner should remove the blanket suppression or replace it with a clear `:focus-visible` treatment that remains discernible across dialog and page backgrounds and in forced-colors mode.
-- **Verification route:** Keyboard-test every focusable state in default, hover, pressed, disabled, forced-colors, and relevant theme states. Check SC 2.4.7 at the declared conformance level and optionally assess WCAG 2.2 SC 2.4.13 if AAA focus appearance is in scope.
-- **Confidence and open questions:** High confidence. Contrast, thickness, and forced-colors behavior of the eventual replacement remain to be tested.
-
-### P1 — Dialog Has No Programmatic Name or Modal State
-
-- **Affected users and tasks:** Screen-reader users may hear only a generic dialog announcement without the visible “Confirm deletion” title, and may not be informed that surrounding content is unavailable during a modal decision.
-- **Evidence level:** Observed and Source-backed.
-- **Evidence:** The rendered DOM snapshot showed `dialog:` with no accessible name. Bounded DOM inspection found `role="dialog"`, `aria-labelledby=null`, and `aria-modal=null`; the heading has no identifier linking it to the dialog.
-- **Reproduction or inspection steps:** Open the dialog and inspect its computed semantic snapshot and the dialog container's naming and modal attributes.
-- **User impact:** The purpose and interaction boundary of a high-consequence confirmation can be unclear to assistive-technology users.
-- **Authoritative guidance:** [WCAG 2.2 SC 4.1.2 Name, Role, Value](https://www.w3.org/WAI/WCAG22/Understanding/name-role-value) requires a programmatically determinable name and role for interface components. The [WAI-ARIA APG modal-dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/) calls for `aria-modal="true"` on a modal dialog and an accessible name supplied by `aria-labelledby` or `aria-label`.
-- **Remediation direction and owner:** The dialog semantic owner should give the heading a stable ID and reference it with `aria-labelledby`. If product intent confirms modal behavior and the interaction actually makes outside content inert, expose `aria-modal="true"`; keep semantic modality aligned with behavior. Consider `aria-describedby` for the short warning only after testing whether the combined announcement is clear.
-- **Verification route:** Inspect the accessibility tree, then open and operate the dialog with supported screen reader/browser combinations. Confirm announcement of the dialog role, title, warning where appropriate, initial focus, and modal boundary.
-- **Confidence and open questions:** High confidence that the accessible name is absent. Modal-state remediation depends on confirmed product intent and implemented modal behavior.
-
-## Checks Requiring Human or Assistive-Technology Testing
-
-- **Screen reader orientation:** A screen-reader user should open, understand, confirm, cancel, and recover from failure in the complete workflow. Verify concise announcement of role, title, warning, focused control, progress, outcome, and errors; computed semantics alone cannot establish usability.
-- **Keyboard, switch, and speech operation:** Qualified users should verify that every action has a discoverable name, focus stays predictable, background controls are unavailable while modal, and dismissal and return do not cause disorientation.
-- **Magnification and low vision:** Test at 200% and 400% zoom and with a screen magnifier to verify that the dialog, warning, actions, and visible focus remain in view without obscuring or two-dimensional scrolling barriers.
-- **Destructive-action comprehension:** Disabled-user evaluation should assess whether “Confirm deletion” and “This action cannot be undone” communicate the scope and consequence of deleting the account clearly enough before final submission.
+| Method | Target and state | Result or evidence path | Evidence class | Limitations |
+| --- | --- | --- | --- | --- |
+| Static source inspection | Closed and scripted open/close states | `showcase-skills/accessibility-first-pass/evaluation/accessibility-first-pass/fixtures/dialog/index.html:9` | Observed | Establishes markup and implemented event behavior, not browser or assistive-technology output |
+| Authoritative guidance review | Dialog keyboard, focus, and naming expectations | [W3C APG Dialog Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/), [WCAG 2.1.1](https://www.w3.org/WAI/WCAG22/Understanding/keyboard.html), [WCAG 2.4.3](https://www.w3.org/WAI/WCAG22/Understanding/focus-order.html), [WCAG 4.1.2](https://www.w3.org/WAI/WCAG22/Understanding/name-role-value.html) | Observed | APG is informative implementation guidance; WCAG mappings still require runtime confirmation where behavior is environment-dependent |
+| Automated accessibility scan | Not run | Not run | Unverified | No scanner result can be claimed |
+| Keyboard and screen-reader exercise | Not run | Not run | Unverified | Focus behavior, announcements, and complete interaction quality require runtime testing |
 
 ## Material Limitations
 
-- The fixture is a standalone page with no production account state, deletion service, authentication, recovery path, or post-deletion destination.
-- Only one default Chrome desktop viewport and one browser/platform path were exercised. Reverse tabbing, touch, responsive states, zoom, forced colors, reduced motion, and alternate browsers were not executed.
-- No automated scanner was available in the bounded review, so no automated coverage or rule counts can be claimed.
-- Browser Playwright DOM snapshots and computed reads expose rendered semantics and state but do not reproduce screen-reader, speech-input, switch-control, magnifier, or disabled-user experience.
-- The review did not establish whether the intended dialog is modal; remediation and WCAG 2.4.3 interpretation should be reconciled with product intent and the complete page.
+- Only the supplied HTML source was inspected. No rendered browser state, accessibility tree, keyboard sequence, or assistive-technology announcement was observed.
+- The source does not state whether the dialog is intended to be modal. Modal-only requirements are therefore retained as follow-up rather than asserted as failures.
+- The fixture contains no preference fields and no Save behavior, so the complete preference workflow and its validation or status messaging could not be reviewed.
 
-## Conclusion
+## Prioritized Findings
 
-This source-and-rendered first pass found one universal task blocker and three high-confidence accessibility risks: incomplete dialog lifecycle, removed focus visibility, and missing dialog naming/modal semantics. First connect the real confirmation outcome, then implement the dialog's semantic and focus lifecycle as one owned behavior, restore visible focus, and verify all success and failure states with keyboard, automated scanning, and supported assistive technologies. This first pass does not prove accessibility, completeness, certification, or standards conformance.
+### High: The visible close control is pointer-only
+
+- **Evidence class:** Observed.
+- **Affected users and task impact:** Keyboard, switch, speech-input, and some screen-reader users can open the dialog with the native Preferences button but have no implemented keyboard-operable way to dismiss it. This blocks completion of the dialog interaction without a pointer.
+- **Evidence:** Line 13 uses a non-focusable `<span>` with an inline `onclick`; lines 20-22 provide the only close behavior. No keyboard handler or Escape handler exists.
+- **Reproduction or inspection steps:** Inspect line 13; confirm the close glyph is a `<span>` without native control semantics or a tab stop. Inspect lines 15-22; confirm `closeDialog()` is reachable only from that pointer click handler.
+- **Authoritative guidance:** [WCAG 2.1.1 Keyboard](https://www.w3.org/WAI/WCAG22/Understanding/keyboard.html) requires content functionality to be operable through a keyboard interface. The [APG dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/) recommends a visible button that closes the dialog and Escape dismissal.
+- **Priority rationale:** Dismissal is a core, repeated dialog action; the source provides no comparable keyboard path or workaround.
+- **Remediation direction:** Replace the span at the behavior owner with a native `<button type="button">` whose accessible name identifies the action, such as `Close preferences`. Wire the existing close behavior to that button and support Escape while the dialog is open.
+- **Human or assistive-technology follow-up:** In each supported browser, open the dialog using only the keyboard, reach and activate the close button with Tab plus Enter/Space, then reopen and dismiss with Escape. Confirm the control is announced as a button with the intended name in supported screen readers and works with voice input.
+- **Confidence and limitations:** High confidence from source. Runtime verification is still required after remediation.
+
+### Medium: Opening and closing do not manage focus
+
+- **Evidence class:** Observed implementation; user impact is source-backed inference pending runtime exercise.
+- **Affected users and task impact:** Keyboard and screen-reader users may remain on the trigger after the dialog appears, receive no immediate dialog context, and navigate in an unexpected order. After dismissal, the implementation provides no explicit restoration to the invoking control.
+- **Evidence:** The open handler at lines 17-19 only sets `hidden` to `false`; `closeDialog()` at lines 20-22 only sets it to `true`. Neither path calls `focus()` or otherwise manages focus.
+- **Reproduction or inspection steps:** Inspect both event paths and confirm that their only effect is changing `dialog.hidden`. In a browser, focus Preferences, activate it, and record the active element; then dismiss and record focus again.
+- **Authoritative guidance:** The [APG dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/) places initial focus inside an opened dialog and normally returns focus to the invoker on close. [WCAG 2.4.3 Focus Order](https://www.w3.org/WAI/WCAG22/Understanding/focus-order.html) requires sequential focus order to preserve meaning and operability.
+- **Priority rationale:** The dialog remains discoverable in DOM order, but missing focus movement can make a newly opened context confusing or easy to miss; exact impact depends on browser and assistive technology.
+- **Remediation direction:** On open, move focus to the most appropriate element inside the dialog, likely the dialog heading made programmatically focusable or the first meaningful control. On close, return focus to the Preferences trigger unless the workflow establishes a more logical destination.
+- **Human or assistive-technology follow-up:** Verify the active element and spoken context on open and close with keyboard-only navigation and supported screen-reader/browser pairs.
+- **Confidence and limitations:** High confidence that focus management is absent; medium confidence in the precise experienced impact until runtime testing.
+
+### Medium: The dialog has no programmatically determinable name
+
+- **Evidence class:** Observed.
+- **Affected users and task impact:** Screen-reader and refreshable-braille users may encounter an unnamed dialog, making its purpose harder to identify when context changes.
+- **Evidence:** The container at line 10 has `role="dialog"` but no `aria-labelledby` or `aria-label`. The visible heading at line 11 has no `id` and is not referenced by the dialog.
+- **Reproduction or inspection steps:** Inspect lines 10-11 and confirm there is no programmatic naming relationship. In browser accessibility tools, inspect the dialog node after opening and record its computed name.
+- **Authoritative guidance:** The [APG dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/) specifies that a dialog has a name through `aria-labelledby` referencing its visible title or through `aria-label`; this supports [WCAG 4.1.2 Name, Role, Value](https://www.w3.org/WAI/WCAG22/Understanding/name-role-value.html).
+- **Priority rationale:** The role is exposed but its purpose is not programmatically attached, degrading orientation for affected users throughout the interaction.
+- **Remediation direction:** Give the visible `Preferences` heading a stable `id` and set `aria-labelledby` on the dialog container to that `id` so the visible and accessible names stay aligned.
+- **Human or assistive-technology follow-up:** Confirm the computed accessible name and the announcement when focus enters the dialog in supported screen readers.
+- **Confidence and limitations:** High confidence from source; announcement wording remains unverified.
+
+## Passed Checks Within Tested Scope
+
+| Check | Exact state and method | Evidence | Limitations |
+| --- | --- | --- | --- |
+| Page language is declared | Static inspection of the document root | Line 2 sets `lang="en"` | Language accuracy for all future content was not assessed |
+| Page has a descriptive title | Static inspection of the head | Line 6 sets the title to `Preferences` | Browser presentation was not exercised |
+| Trigger and Save use native buttons | Static inspection of closed/open source states | Lines 9 and 12 use `<button>` elements | Save behavior, focus visibility, target size, and announcement were not tested |
+| Dialog is excluded while closed | Static inspection of initial markup | Line 10 includes `hidden` | Runtime accessibility-tree removal was not independently confirmed |
+| Visible dialog heading exists | Static inspection of open-state markup | Line 11 uses `<h2>` | The heading is not yet connected as the dialog's accessible name |
+
+## Follow-Up Checks and Unknowns
+
+| Check | Why unresolved | Required environment or method | Expected behavior |
+| --- | --- | --- | --- |
+| Modal versus non-modal contract | Product intent is unstated; source does not make outside content inert or set `aria-modal` | Confirm interaction design, then test pointer and keyboard access outside the open dialog | If modal, outside content is visually obscured and inert, focus remains within the dialog, and `aria-modal="true"` is applied only when behavior is genuinely modal; if non-modal, provide a logical route between dialog and page content |
+| Focus visibility and order | No CSS or rendered interaction was exercised | Keyboard test in each supported browser at default and zoomed views | Focus is always visible and follows a logical sequence without escaping a modal dialog |
+| Screen-reader announcements | Static markup cannot establish browser/AT interoperability | Test supported browser and screen-reader combinations | Opening announces the dialog name and role; controls have accurate names and roles; closing restores understandable context |
+| Save workflow | No preference controls, save handler, validation, or success/error state exists in the fixture | Review the completed production workflow, including failure and success states | Every preference is labelled and keyboard operable; validation and save status are perceivable and focus is managed appropriately |
+| Zoom, reflow, contrast, target size, high contrast, and text spacing | No styles or rendered viewport were available | Manual checks at required viewport, zoom, spacing, and forced-color settings | Content remains perceivable and operable without clipping, overlap, loss of focus, or color-only meaning |
+| Automated rules | No scan was run | Run the project's approved accessibility scanner against closed and open states | Investigate all results manually; a clean scan remains limited evidence |
+
+## Prioritized Next Actions
+
+1. Replace the close span with a correctly named native button and add Escape dismissal.
+2. Implement initial-focus placement and focus restoration, then keyboard-test the complete open/save/close journey.
+3. Name the dialog from its visible heading with `aria-labelledby`.
+4. Confirm whether the product intends a modal or non-modal dialog and implement the corresponding outside-content and focus behavior.
+5. Before release, run the completed production dialog through approved automation plus targeted keyboard, screen-reader, zoom/reflow, high-contrast, and disabled-user testing; retain evidence for each supported environment.
+
+## Review Boundary
+
+This first-pass review identifies evidence and risks within the stated scope. It does not establish overall accessibility, certification, or standards conformance. Automated results and limited manual checks cannot replace comprehensive evaluation and testing with disabled people and relevant assistive technologies.

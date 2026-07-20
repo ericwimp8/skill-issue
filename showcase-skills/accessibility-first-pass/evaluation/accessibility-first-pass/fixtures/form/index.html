@@ -2,20 +2,22 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Create account</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Account request</title>
     <style>
-      body { color: #aaa; background: #fff; font-family: sans-serif; }
-      .error { color: #d00; }
-      .submit { background: #246; color: white; padding: 0.75rem; width: 8rem; }
+      body { font-family: sans-serif; color: #777; background: #fff; }
+      .submit { background: #2457d6; color: #fff; padding: 0.35rem 0.55rem; }
+      .error { color: #d11; }
     </style>
   </head>
   <body>
     <main>
-      <h1>Create account</h1>
-      <label>Email address</label>
-      <input type="email" />
-      <p class="error">Required</p>
-      <div class="submit" onclick="location.hash='submitted'">Continue</div>
+      <h1>Request an account</h1>
+      <form>
+        <input id="email" name="email" placeholder="Email address" required />
+        <span class="error">Invalid value</span>
+        <div class="submit" onclick="document.querySelector('form').submit()">Send request</div>
+      </form>
     </main>
   </body>
 </html>

@@ -1,0 +1,22 @@
+Candidate description evidence
+
+- showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/SKILL.md
+  SHA-256: a7b9fc077912a1454e0b2e4d00ce800d5846f71dc243310020c3091d945b0eaa
+  Description decision: SELECT. The user requests a responsible first-pass accessibility-risk investigation that separates evidence from checks not run, which directly matches this description.
+- skills/skill-generation/SKILL.md
+  SHA-256: 260b9ae54eb2e7d3eaac226af25efff9cf2dbf9dbf7054e38fdf8c10e806a63a
+  Description decision: DO NOT SELECT. The task is not execution of a completed skill-intake plan.
+- skills/skill-intake/SKILL.md
+  SHA-256: be2d8973c80643ace22ba5bc1ec729cf7952b13bd2246d57548a81e3b9fd1ac7
+  Description decision: DO NOT SELECT. The user did not request skill intake or invoke this skill.
+- supporting-skills/prompt-writing/SKILL.md
+  SHA-256: c6b7ff268497e3174cdf572ad6b1902d447c00ca4d5f02e43157a89fabe3e05f
+  Description decision: DO NOT SELECT. The task does not involve writing an agent, sub-agent, skill, or plan prompt.
+
+Selection decision: accessibility-first-pass applies naturally from its description alone; no other candidate applies.
+
+Selected-skill reading evidence
+
+- Read complete showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/SKILL.md; SHA-256: a7b9fc077912a1454e0b2e4d00ce800d5846f71dc243310020c3091d945b0eaa
+- Read complete routed reference showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/references/web-accessibility-evidence.md; SHA-256: c52f41f96a138d9cf8d891146a4482dd367a93d82c8fb43da83ee600575c03da
+- Read complete routed report structure showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/assets/accessibility-first-pass-report.md; SHA-256: 9ccc238fa29f9ec076ddc17817faba03b2143b4eddafcadbcbceb69d72db4ac3

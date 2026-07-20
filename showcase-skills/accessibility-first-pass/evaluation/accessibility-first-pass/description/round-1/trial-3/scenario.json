@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "scenario_id": "accessibility-description-3",
+  "turns": [
+    {
+      "turn_id": "review-dashboard",
+      "prompt": "Investigate accessibility risks in the service dashboard in index.html. I need a responsible first-pass report that prioritizes likely user impact and separates evidence from checks that have not been run."
+    }
+  ]
+}

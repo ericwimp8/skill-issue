@@ -2,15 +2,15 @@
 
 ## A: Starting Position
 
-- Skill Issue has selected nine harness targets: GitHub Copilot, Claude Code, OpenAI Codex, Cursor, Gemini CLI, Grok, OpenCode, Kilo Code, and Pi.
+- Skill Issue has selected six harness targets: Claude Code, OpenAI Codex, Cursor, OpenCode, Kilo Code, and Pi.
 - The product direction is fixed: Skill Issue will use its own CLI to install and remove canonical skills directly rather than shipping and maintaining a separate native plugin for every harness.
-- The pure-Go CLI foundation is complete under `cli/`. Work Block 2 has since populated its canonical payload, implemented all nine native project and user roots, added direct disposable materialization, and built the evaluation runner. Detection, confirmation, preview, the Grok fail-closed preflight, and final qualification remain unfinished.
+- The pure-Go CLI foundation is complete under `cli/`. Work Block 2 has populated its canonical payload, implemented project and user installation for Claude Code, OpenAI Codex, Cursor, and Pi, added direct disposable materialization, built the evaluation runner, and added guided harness and scope selection with preview and confirmation. OpenCode and Kilo Code installation and evaluation remain in progress; final qualification remains unfinished.
 - The internet-only direct-installation research is complete in `research/deep-research/harness-direct-installation-architecture/harness-direct-installation-architecture-deep-research.md`, supported by the ten reports under `research/deep-research/harness-direct-installation-architecture/assignments/`.
 - That research establishes a portable Agent Skill payload and host-specific adapters for paths, activation, verification, trust, policy, configuration, and unsupported surfaces. The implemented ordinary lifecycle is intentionally narrower than the research proposal: repeated installation replaces the known payload paths, and uninstallation removes them.
 
 ## B: Desired Position
 
-The completed research is adopted as the authoritative path and support-boundary source for later payload and CLI work. One strict portable Skill Issue payload is materialized into each harness's documented native project or user root through a direct disposable lifecycle. Harness adapters own detection, exact paths, and any concrete preflight required by their real installation route. The CLI reports filesystem materialization; Work Block 3 separately proves host discovery and activation in qualified environments.
+The completed research remains the path and support-boundary evidence for retained targets. One strict portable Skill Issue payload is materialized into each implemented harness's documented native project or user root through a direct disposable lifecycle. Harness adapters own exact paths, harness-specific skill files or frontmatter, and any concrete preflight required by their real installation route. Codex adds `agents/openai.yaml`; Claude Code, Cursor, and Pi add their documented `disable-model-invocation: true` field to the installed `skill-intake` frontmatter. The CLI reports filesystem materialization; Work Block 3 separately proves host discovery and activation in qualified environments.
 
 ## Path from A to B
 
@@ -19,24 +19,22 @@ The completed research is adopted as the authoritative path and support-boundary
 - Use one immutable Agent Skill directory as the source payload for every supported direct-install target.
 - Require the directory basename to match a unique lowercase hyphenated `name`, an exact-case `SKILL.md`, required YAML `name` and non-empty `description`, the established 64-character name limit, and a complete relative-file closure for every referenced resource.
 - Permit portable supporting directories such as `scripts/`, `references/`, `assets/`, `examples/`, and `templates/` when the skill requires them.
-- Keep host-specific frontmatter, plugin manifests, hooks, MCP or LSP configuration, permission widening, and other nonportable behavior outside the canonical core unless a later explicit host overlay is separately justified and owned.
+- Keep host-specific frontmatter, plugin manifests, hooks, MCP or LSP configuration, permission widening, and other nonportable behavior out of nonmatching installations. Let each harness specification apply only its justified metadata: Codex selects `agents/openai.yaml`, while Claude Code, Cursor, and Pi add `disable-model-invocation: true` only to the installed `skill-intake` entrypoint.
 - Install independent copies into each harness's documented native root by default rather than coupling multiple harnesses to one shared physical directory.
 
 ### 2. Adopt the compatibility matrix and adapter classifications
 
-- Treat GitHub Copilot, Claude Code, OpenAI Codex, Cursor, OpenCode, local Kilo Code, and Pi as common filesystem adapters with host-specific descriptors.
-- Treat Gemini CLI as the supported Google adapter. Antigravity Desktop and `agy` remain outside the current runner.
-- Treat Grok Build as a bespoke fail-closed adapter: its project and user roots are documented, but installation is accepted only when `grok inspect --json` proves the canonical candidate was discovered.
-- Treat Grok selected as a model inside Cursor as a Cursor installation, not as a Grok Build installation.
+- Treat Claude Code, OpenAI Codex, Cursor, OpenCode, local Kilo Code, and Pi as common filesystem adapters with host-specific descriptors.
+- Treat Grok selected as a model inside Cursor as a Cursor installation.
 - Keep Kilo Cloud, Codex cloud, Cursor Background Agents, Claude cloud or Cowork propagation, and other remote surfaces outside supported direct installation.
 - Offer only the project or user scopes documented for the exact detected surface; do not manufacture a universal system-wide scope.
 
 ### 3. Adopt the direct lifecycle and adapter contract
 
-- Implement detection, scope enumeration, preview, install, and uninstall through the existing command, harness, and installer owners.
-- Make detection present likely harnesses and the researched project and user destinations for user confirmation rather than silently choosing a target.
+- Implement keyboard selection, scope enumeration, preview, install, and uninstall through the existing command, harness, and installer owners.
+- Present the retained harnesses for explicit user selection rather than detecting or silently choosing a target. Keep unfinished OpenCode and Kilo Code routes visible but disabled until implemented.
 - Build preview from the same payload, native-path, executable-helper, and blocker facts used by installation.
-- Make each adapter own exact surface detection, path resolution, and only the concrete blockers or restart information required by that installation route.
+- Make each adapter own exact path resolution and only the concrete blockers or restart information required by that installation route.
 - Treat successful materialization as an installation result without implying that the host discovered or activated the skill. Work Block 3 records discovery and activation evidence.
 
 ### 4. Preserve unrelated harness content
@@ -65,20 +63,20 @@ The completed research is adopted as the authoritative path and support-boundary
 ## C: Observable Completion Criteria
 
 - The research synthesis and its assignments are named as the authoritative source material for direct-install implementation.
-- One strict portable payload contract and one direct disposable lifecycle are defined for the nine selected targets.
+- One strict portable payload contract and one direct disposable lifecycle are defined for the six selected targets, with OpenCode and Kilo Code explicitly in progress.
 - Every selected local harness surface has a documented native project or user route, adapter classification, and limitation boundary.
 - Installation reports direct materialization without claiming discovery or activation; Work Block 3 owns that live evidence.
 - Reinstallation and uninstallation replace or remove only the known Skill Issue payload paths and preserve unrelated user state.
-- Claude managed paths, Kilo Cloud, and remote surfaces remain outside supported direct installation. Grok remains fail-closed unless native inspection proves discovery.
+- Claude managed paths, Kilo Cloud, and remote surfaces remain outside supported direct installation.
 - Work Blocks 2, 3, and 4 identify and consume their local consequences from this architecture without repeating the research or creating competing owners.
 
 ## Dependency Handoffs
 
 ### Upstream inputs
 
-- The completed product, support, and evidence contract is authoritative for the selected nine, the unified five-harness minimum release tier, and the environments requiring complete installation, workflow, and evaluation proof.
+- The completed product, support, and evidence contract is authoritative for the six selected harnesses, the unified five-harness minimum release tier, and the environments requiring complete installation, workflow, and evaluation proof.
 - `research/deep-research/harness-direct-installation-architecture/harness-direct-installation-architecture-deep-research.md` is the authoritative synthesis for the direct-install architecture.
-- `research/deep-research/harness-direct-installation-architecture/assignments/` contains the nine surface reports and the cross-harness adapter contract that preserve source-level evidence and support boundaries.
+- `research/deep-research/harness-direct-installation-architecture/assignments/` retains the original surface reports and cross-harness adapter contract as source evidence; current implementation consumes only the six selected targets.
 - The completed CLI foundation record and `cli/README.md` define the existing CLI implementation owners this architecture must extend.
 
 ### Authoritative outputs

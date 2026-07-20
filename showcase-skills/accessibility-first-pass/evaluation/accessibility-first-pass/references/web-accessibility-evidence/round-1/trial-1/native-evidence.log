@@ -1,0 +1,150 @@
+PATH showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/SKILL.md
+SHA256 a7b9fc077912a1454e0b2e4d00ce800d5846f71dc243310020c3091d945b0eaa
+CAT_BEGIN showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/SKILL.md
+---
+name: accessibility-first-pass
+description: Performs responsible first-pass accessibility reviews of web pages, features, and implementations. Use when Codex needs to investigate accessibility risks, evidence, and remediation direction without claiming complete accessibility or standards conformance.
+---
+
+# Accessibility First Pass
+
+## Establish the Review Contract
+
+1. Identify the supplied page, feature, implementation, user journey, and requested standard or policy target.
+2. State the exact review scope: routes, states, viewports, themes, input modes, source areas, browsers, and tools actually available.
+3. Record unavailable inputs and surfaces before investigating. Ask only when a missing input changes the requested scope; otherwise proceed and label the limitation.
+4. Read `references/web-accessibility-evidence.md` before selecting checks or making accessibility claims. It owns evidence classes, authority levels, affected-user prompts, priority rules, and required follow-up boundaries.
+
+## Investigate the Available System
+
+1. Trace the feature from its entry point through components, styles, state, validation, routing, and rendered effect. Inspect concrete implementations rather than stopping at wrappers or tests.
+2. Identify existing accessibility tooling, browser automation, lint rules, component tests, build commands, and project instructions from production configuration and source.
+3. Run applicable project-native automated checks when the environment safely permits them. Record the command, target, result, and tool limitations. Do not install tools, broaden the target, or treat a clean scan as proof.
+4. Inspect rendered behavior when a runnable target or retained rendering is available. Exercise relevant states with keyboard and pointer input, visible focus, zoom or reflow, and supported color or motion preferences.
+5. Inspect source and accessibility semantics for the selected surface. Correlate markup and styles with rendered behavior instead of inferring the complete user experience from source alone.
+6. Consult authoritative guidance appropriate to each material claim. Distinguish normative requirements from informative techniques or patterns.
+
+## Perform the First-Pass Checks
+
+Select checks that apply to the reviewed surface rather than mechanically filling a checklist. Cover relevant concerns across:
+
+- document structure, language, headings, landmarks, reading order, and bypass mechanisms;
+- keyboard access, focus order, focus visibility, focus management, traps, and operable target behavior;
+- accessible names, roles, values, states, relationships, status updates, and native semantics;
+- images, icons, audio, video, captions, transcripts, and other content alternatives;
+- form labels, instructions, required states, validation, error identification, and error recovery;
+- contrast, color dependence, text spacing, target size, orientation, zoom, reflow, and obscured content;
+- motion, animation, flashing, time limits, drag or pointer gestures, and input alternatives;
+- dynamic content, dialogs, menus, tabs, custom widgets, loading, empty, success, and failure states.
+
+For checks that depend on user judgment, assistive technology, browser and device combinations, content intent, or states unavailable in the environment, record the exact follow-up needed instead of assigning a pass.
+
+## Classify and Prioritize Findings
+
+1. Label every substantive statement as observed evidence, source-backed inference, or unverified behavior using the definitions in the evidence reference.
+2. Describe the affected users and blocked, difficult, or degraded task. Avoid treating a guideline identifier as the impact description.
+3. Reproduce each finding with the shortest reliable inspection path and include relevant source locations, rendered state, command output, or captured evidence.
+4. Assign priority from user impact, task criticality, reach, workaround burden, and evidence confidence. Record uncertainty rather than inflating severity.
+5. Give remediation direction at the behavior owner. Prefer native platform behavior where it meets the requirement; avoid prescribing an exact patch unless the available source establishes it.
+6. Map authoritative criteria only when the evidence supports the relationship. Mark tentative mappings as requiring confirmation.
+
+## Write the Report
+
+Use `assets/accessibility-first-pass-report.md` as the output structure unless the user supplies an established project format. Keep all sections even when the value is `None observed`, `Not run`, or `Unknown`.
+
+- Lead with scope, methods, evidence available, and material limitations.
+- Order findings by priority and explain the rationale for each.
+- Separate findings, passed checks, follow-up checks, and unknowns.
+- Claim a passed check only for the exact state, method, and environment tested.
+- End with a prioritized next-action list and the human or assistive-technology testing still required.
+- State that the first pass does not establish overall accessibility or standards conformance.
+
+## Completion Gate
+
+Before concluding, verify that the report:
+
+- identifies scope, affected users, evidence, reproduction or inspection steps, remediation direction, and limitations;
+- distinguishes observation, inference, and unverified behavior throughout;
+- records automated and manual methods without overstating either;
+- identifies checks requiring human or assistive-technology testing;
+- avoids unsupported conformance, certification, completeness, or absence-of-barriers claims; and
+- uses durable, share-safe paths and excludes secrets or private identity information.
+
+If a requested conclusion exceeds the evidence, provide the bounded findings and state what additional evaluation would be required.
+
+CAT_SUCCESS showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/SKILL.md
+
+PATH showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/references/web-accessibility-evidence.md
+SHA256 c52f41f96a138d9cf8d891146a4482dd367a93d82c8fb43da83ee600575c03da
+CAT_BEGIN showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/references/web-accessibility-evidence.md
+# Web Accessibility Evidence Guide
+
+## Evidence Classes
+
+Use one of these labels for every substantive finding, pass, or limitation:
+
+- **Observed:** directly demonstrated in inspected source, rendered behavior, captured accessibility state, or a recorded tool result. Name the observation method and tested state.
+- **Inferred:** strongly indicated by inspected evidence but dependent on a runtime, content, browser, device, or assistive-technology condition that was not directly exercised. State the evidence and the dependency.
+- **Unverified:** plausible or required to investigate, but the available environment did not establish the behavior. Describe the exact follow-up rather than presenting a finding or pass.
+
+Automated output is observed evidence that a tool reported a rule result. It is not automatically observed evidence of the complete user impact, correct remediation, or overall accessibility.
+
+## Authority Levels
+
+- Treat WCAG success criteria and applicable WAI-ARIA requirements as normative when the requested standard uses them.
+- Treat W3C techniques, failures, tutorials, Easy Checks, and the ARIA Authoring Practices Guide as informative implementation and evaluation guidance.
+- Treat project conventions and tool documentation as evidence about the implementation or checker, not as accessibility standards.
+- Link the exact authoritative page supporting a material criterion mapping. When applicability or conformance interpretation is uncertain, label the mapping tentative.
+
+Core public sources:
+
+- [WCAG 2.2](https://www.w3.org/TR/WCAG22/)
+- [How to Meet WCAG 2.2](https://www.w3.org/WAI/WCAG22/quickref/)
+- [Understanding WCAG 2.2](https://www.w3.org/WAI/WCAG22/Understanding/)
+- [Easy Checks](https://www.w3.org/WAI/test-evaluate/preliminary/)
+- [Selecting Web Accessibility Evaluation Tools](https://www.w3.org/WAI/test-evaluate/tools/selecting/)
+- [ARIA Authoring Practices Guide](https://www.w3.org/WAI/ARIA/apg/)
+
+W3C states that evaluation tools cannot check every accessibility aspect and cannot determine accessibility; human judgment is required. Preserve that boundary in findings and summaries.
+
+## Affected-User Prompts
+
+Identify concrete effects for relevant people, including people who:
+
+- navigate by keyboard, switch, speech input, or other non-pointer input;
+- use screen readers, refreshable braille, magnification, or high-contrast settings;
+- have low vision, color-vision differences, or photosensitivity;
+- are Deaf, hard of hearing, or depend on captions and transcripts;
+- have cognitive, learning, language, attention, or memory disabilities;
+- have limited dexterity, tremor, reach, or fine-motor control;
+- use zoom, text resizing, alternate orientation, reduced motion, or constrained viewports.
+
+Describe the task effect as blocked, difficult, error-prone, confusing, fatiguing, time-sensitive, or degraded. Do not infer a diagnosis or claim every member of a group experiences the same effect.
+
+## Priority Rules
+
+Use these levels as review priorities rather than compliance grades:
+
+- **Critical:** observed barrier blocks a critical task or safety-relevant information for affected users with no reasonable workaround.
+- **High:** observed barrier blocks or seriously impedes an important task, affects a repeated or broad interaction, or creates substantial error or exclusion risk.
+- **Medium:** observed or strongly inferred barrier degrades a task, increases effort or confusion, or has a limited workaround, reach, or state.
+- **Low:** localized improvement with limited task impact, or a well-supported risk whose user impact is modest.
+- **Needs verification:** evidence is insufficient to assign a defensible finding priority; retain it as follow-up rather than forcing a severity.
+
+Explain priority using task importance, impact, reach, frequency, workaround burden, and confidence. Tool severity may inform investigation but does not own report priority.
+
+## Human and Assistive-Technology Follow-Up
+
+Require targeted follow-up when correctness depends on perception, interaction quality, content intent, announcements, interoperability, or user strategy. Examples include:
+
+- screen-reader name, role, state, reading order, live-region, and focus announcements;
+- keyboard efficiency and focus behavior across complete dynamic workflows;
+- magnification, reflow, text-spacing, high-contrast, and reduced-motion usability;
+- caption accuracy, audio-description adequacy, alternative-text purpose, and plain-language clarity;
+- voice-input label matching and target operability;
+- representative usability testing with disabled people for critical journeys.
+
+Name the browser, device, assistive technology, state, journey, and expected behavior when known. A first pass may recommend these checks but cannot substitute for them.
+
+CAT_SUCCESS showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/references/web-accessibility-evidence.md
+

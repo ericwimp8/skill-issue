@@ -8,12 +8,9 @@ import (
 func TestEveryHarnessRetainsItsNativeProjectSkillRoot(t *testing.T) {
 	workspace := t.TempDir()
 	expected := map[ID]string{
-		Copilot:    ".github/skills",
 		ClaudeCode: ".claude/skills",
 		Codex:      ".agents/skills",
 		Cursor:     ".cursor/skills",
-		GeminiCLI:  ".gemini/skills",
-		GrokBuild:  ".grok/skills",
 		OpenCode:   ".opencode/skills",
 		KiloCode:   ".kilo/skills",
 		Pi:         ".pi/skills",

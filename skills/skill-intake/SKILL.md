@@ -1,6 +1,6 @@
 ---
 name: skill-intake
-description: Conversational intake and build-ready planning for a new or revised agent skill. Use only when the user explicitly requests skill intake or directly invokes this skill.
+description: Conversational intake and build-ready planning for a new or revised agent skill. Use only when the user explicitly requests this skill.
 ---
 
 # Skill Intake
@@ -67,5 +67,4 @@ When the recorded execution preference and authority boundary permit autonomous 
 
 Use the relevant reference document when needed from this skill.
 
-- `references/explicit-invocation-controls.md`: Supported harness packaging paths and explicit-only controls. Use when configuring or verifying that Skill Intake remains user-invoked.
 - `references/intake-plan-contract.md`: Build-readiness and generation-handoff criteria. Use when organizing dictation, assessing omissions, or concluding intake.

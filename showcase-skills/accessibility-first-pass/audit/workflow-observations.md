@@ -1,7 +1,11 @@
 # Workflow Observations
 
-## Unmodified Prompt Retention and Repository Privacy
+## Native Codex Runner Approval Boundary
 
-The evaluation campaign contract requires each trial record to retain the unmodified prompt. Fresh zero-context agents require a concrete checkout path, while the repository privacy contract prohibits durable machine-specific checkout paths.
+The repository's development CLI custom-evaluation route passed input preparation and reached the native Codex launch, but the sandbox prevented the Codex state database from opening for write. The required escalation was denied because authenticated external-harness transmission of the local skill, fixture, and transcript needed explicit approval beyond this agent's sandbox authority. No native CLI activation result is claimed.
 
-This campaign preserves each unmodified prompt in its native Codex session and retains a publication-safe prompt copy plus the native session identifier in the repository. The evaluation workflow does not currently define this privacy-normalized evidence shape or state whether the private native session alone satisfies durable prompt retention. A later workflow review should establish one explicit owner for publication-safe prompt evidence without weakening reproducibility or privacy.
+The current evaluation workflow would be easier to execute reliably if its environment preflight explicitly checked state-store writability and external authenticated-run approval before trial inputs are prepared. The source should also state whether a fresh-agent candidate-selection protocol with direct pre-output reads is an accepted fallback evidence class when the qualified native signal route is unavailable. This campaign retains both the stopped CLI boundary and the exact fallback method rather than treating them as equivalent.
+
+## Post-Evaluation Formatting Boundary
+
+The repository-required `npm run format:check` passes. A broader optional Prettier sweep over the entire showcase workspace reports style changes for some generated fixtures, retained trial outputs, the generated report asset, and OpenAI metadata. Applying those changes after evaluation would invalidate the content hashes recorded by every trial. The workflow does not currently say whether formatting normalization must occur before target hashing and independent evaluation. Future campaigns should run any intended broad formatter before generation hashes are frozen and trials begin.

@@ -1,21 +1,32 @@
-# Accessibility First Pass Evaluation Contract
+# Accessibility First-Pass Evaluation Contract
 
-- **Target:** `showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/SKILL.md`
-- **Goal:** produce a responsible, evidence-bounded first-pass accessibility review that identifies actionable web accessibility risks and required follow-up.
-- **Intended use:** review of a supplied web page, feature, or implementation with any combination of production source, rendered access, project tooling, and public authoritative guidance.
-- **Expected behavior:** establish scope; trace production owners; exercise available rendered states; combine compatible automation with risk-based manual inspection; separate observed, tool, source-backed, inferred, and unverified evidence; prioritize user impact; and route unresolved human or assistive-technology checks.
-- **Expected result:** a prioritized report with affected users, evidence, reproduction or inspection steps, remediation direction, verification routes, authoritative mappings, human or assistive-technology follow-up, and material limitations.
-- **Preserved boundaries:** no claim of accessibility, completeness, certification, or standards conformance; no invented observation; no scanner-only conclusion; no assumption that unavailable behavior passes; no use of private or non-permitted fixtures.
-- **Evaluation surface:** document output produced from isolated synthetic web fixtures, source inspection, and rendered or automated capability available to each trial.
+- **Target:** `showcase-skills/accessibility-first-pass/skill/accessibility-first-pass/`
+- **Goal:** produce a bounded, evidence-labeled first-pass accessibility review that prioritizes actionable user impact without overstating completeness or conformance.
+- **Intended use:** preliminary review of supplied web pages, features, implementations, or representative fixtures.
+- **Expected behavior:** inspect available production source, rendered evidence, native tooling, and authoritative guidance; combine applicable automated and manual checks; classify evidence; identify affected users; prioritize findings; and route unresolved checks to human or assistive-technology testing.
+- **Expected result:** a report with scope, methods, limitations, prioritized findings, passed checks within tested scope, unresolved checks, next actions, and an explicit first-pass boundary.
+- **Boundary:** preserve evidence uncertainty; do not claim overall accessibility, certification, conformance, or absence of barriers; do not install tools or broaden scope without authority.
 
 ## Observable Criteria
 
-1. The report defines included journeys, states, viewports, inputs, tooling, and exclusions before broad conclusions.
-2. Findings distinguish observed, tool, source-backed, inferred, and unverified evidence without upgrading one level into another.
-3. The review uses available project-compatible automation and records the command, scope, state, and result, or records the precise tooling limitation.
-4. Manual inspection covers the highest-risk behavior applicable to the target and does not substitute a generic checklist for executed evidence.
-5. Every material finding includes affected users, evidence, inspection steps, remediation direction, verification route, and narrowly scoped authoritative guidance.
-6. Priority follows user impact, task blockage, reach, recurrence, and evidence confidence rather than scanner severity alone.
-7. Human, assistive-technology, and disabled-user follow-up is explicit where the current review cannot establish the experience.
-8. The report records material limitations and states that the first pass does not prove accessibility, completeness, certification, or standards conformance.
-9. A source-only or capability-constrained review remains useful and gives an actionable external verification route without converting missing evidence into a pass.
+1. The description selects the skill for naturally phrased first-pass web accessibility review requests.
+2. The packaged evidence reference is opened and used for evidence classes, authority, affected-user reasoning, priority, and follow-up boundaries.
+3. Reports distinguish observed, inferred, and unverified behavior.
+4. Reports assign review priority from user impact and evidence rather than copying scanner severity.
+5. Reports correlate source or rendered evidence with affected users and reproducible inspection steps.
+6. Reports identify manual, human, and assistive-technology follow-up precisely.
+7. Reports preserve scope and material limitations while giving remediation direction at the likely behavior owner.
+8. Reports refuse unsupported accessibility or conformance conclusions, including after a clean automated scan.
+
+## Environment Qualification
+
+- **Harness surface:** OpenAI Codex CLI custom evaluation route.
+- **Harness version:** `codex-cli 0.144.1`.
+- **Model and reasoning:** `gpt-5.6-sol`, medium.
+- **Qualification date:** 2026-07-20 retained in `cli/README.md`; current live version and authentication rechecked before this campaign.
+- **Trial method:** one fresh isolated Codex session per one-turn custom scenario, installed project-only with ambient skills and project instructions excluded.
+- **Direct proactive-invocation evidence:** the development CLI injects an opaque neutral signal instruction and records the attributed native `command_execution` attempt or completed signal in `result.json` and `events.jsonl`; `plans/harness-setup.md` defines that structured attempt as Codex activation evidence.
+
+## Refinement Mode
+
+Automatic refinement is authorized within `showcase-skills/accessibility-first-pass/`. Any retained failure must be corrected at its semantic owner and the affected evaluation repeated from clean fixtures.

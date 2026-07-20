@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "scenario_id": "accessibility-body-2",
+  "turns": [
+    {
+      "turn_id": "dialog-report",
+      "prompt": "Conduct a source-based first-pass accessibility review of the preferences dialog in index.html. Deliver a prioritized report with affected-user impact, reproducible inspection steps, remediation direction, evidence confidence, and required manual follow-up."
+    }
+  ]
+}

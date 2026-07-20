@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "scenario_id": "accessibility-description-4",
+  "turns": [
+    {
+      "turn_id": "review-media",
+      "prompt": "Before publishing the product-tour page in index.html, carry out an initial accessibility assessment. Return prioritized remediation direction, affected-user impacts, evidence, and material limits of the assessment."
+    }
+  ]
+}

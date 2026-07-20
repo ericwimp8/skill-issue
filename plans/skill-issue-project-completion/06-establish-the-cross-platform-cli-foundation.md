@@ -2,7 +2,7 @@
 
 ## A: Starting Position
 
-- The direct-install research is complete and defines the authoritative paths, adapter classifications, receipt-owned materialization, later discovery-and-activation qualification, lifecycle behavior, and support boundaries for the nine selected harnesses.
+- The direct-install research is complete and retains evidence for the originally researched surfaces. The current product boundary selects Claude Code, OpenAI Codex, Cursor, OpenCode, Kilo Code, and Pi; later planning and production source own that revised support set.
 - Cross-platform CLI research selects a pure-Go executable distributed as prebuilt macOS, Windows, and Linux binaries without a user-installed language runtime.
 - At the start of this task, the repository had no existing CLI implementation.
 - The product decision is to embed the versioned Skill Issue payload in the executable so the downloaded CLI can install its supplied content without fetching or assembling a second package.

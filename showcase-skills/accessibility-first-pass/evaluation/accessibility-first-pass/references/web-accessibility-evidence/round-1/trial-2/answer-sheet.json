@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "scenario_id": "accessibility-reference-2",
+  "expected": [
+    {"turn_id": "classify-dialog", "skill": "accessibility-first-pass"}
+  ]
+}

@@ -231,14 +231,15 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 		return Result{}, fmt.Errorf("evaluation encountered a tooling error: %w", err)
 	}
 	installationState, _, err := service.installer.PrepareEvaluation(installer.Request{
-		Harness:         request.Harness,
-		Scope:           harness.ScopeProject,
-		Workspace:       workspace,
-		EvaluationRoot:  runtime.evaluationSkillRoot,
-		CLIPath:         cliPath,
-		SignalStateRoot: service.stateRoot,
-		Tokens:          tokens,
-		Skills:          inputs.skills,
+		Harness:              request.Harness,
+		Scope:                harness.ScopeProject,
+		Workspace:            workspace,
+		EvaluationRoot:       runtime.evaluationSkillRoot,
+		CLIPath:              cliPath,
+		SignalStateRoot:      service.stateRoot,
+		Tokens:               tokens,
+		Skills:               inputs.skills,
+		ApplyHarnessMetadata: request.EvaluationID != "",
 	})
 	if err != nil {
 		return Result{}, err

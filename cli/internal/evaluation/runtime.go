@@ -2,6 +2,7 @@ package evaluation
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -25,7 +26,7 @@ type runtimePreparation struct {
 	piSkillsRoot          string
 }
 
-func (service Service) prepareRuntime(harnessID harness.ID, reasoning, runID, workspace, executable, cliPath string) (runtimePreparation, error) {
+func (service Service) prepareRuntime(harnessID harness.ID, model, reasoning, runID, workspace, executable, cliPath string, skillNames []string) (runtimePreparation, error) {
 	if harnessID == harness.Codex {
 		skills, err := codexSkillsToDisable()
 		if err != nil {
@@ -56,11 +57,242 @@ func (service Service) prepareRuntime(harnessID harness.ID, reasoning, runID, wo
 		return prepareCursorRuntime(root, workspace, executable, cliPath)
 	case harness.ClaudeCode:
 		return prepareClaudeRuntime(root, workspace)
+	case harness.OpenCode:
+		return prepareOpenCodeRuntime(root, workspace, executable, model, reasoning, cliPath, skillNames)
+	case harness.KiloCode:
+		return prepareKiloRuntime(root, workspace, executable, model, reasoning, cliPath, skillNames)
 	case harness.Pi:
 		return preparePiRuntime(root, workspace, executable)
 	default:
 		return runtimePreparation{}, fmt.Errorf("unsupported evaluation harness %q", harnessID)
 	}
+}
+
+func prepareKiloRuntime(root, workspace, executable, model, reasoning, cliPath string, skillNames []string) (runtimePreparation, error) {
+	configHome := filepath.Join(root, "config")
+	configRoot := filepath.Join(configHome, "kilo")
+	skillRoot := filepath.Join(root, "passed-skills")
+	for _, path := range []string{configRoot, skillRoot, filepath.Join(root, "state"), filepath.Join(root, "cache")} {
+		if err := os.MkdirAll(path, 0o700); err != nil {
+			return runtimePreparation{}, fmt.Errorf("create Kilo runtime path: %w", err)
+		}
+	}
+	provider, _, found := strings.Cut(model, "/")
+	if !found || provider == "" {
+		return runtimePreparation{}, errors.New("Kilo model must use provider/model format")
+	}
+	skillPermissions := map[string]string{"*": "deny"}
+	for _, name := range skillNames {
+		skillPermissions[name] = "allow"
+	}
+	config := map[string]any{
+		"$schema":           "https://app.kilo.ai/config.json",
+		"model":             model,
+		"small_model":       model,
+		"default_agent":     "code",
+		"enabled_providers": []string{provider},
+		"share":             "disabled",
+		"autoupdate":        false,
+		"snapshot":          false,
+		"formatter":         false,
+		"lsp":               false,
+		"remote_control":    false,
+		"indexing":          map[string]any{"enabled": false},
+		"skills":            map[string]any{"paths": []string{skillRoot}, "urls": []string{}},
+		"agent": map[string]any{
+			"code": map[string]any{
+				"variant": reasoning,
+				"permission": map[string]string{
+					"codebase_search": "deny",
+					"semantic_search": "deny",
+				},
+			},
+		},
+		"permission": map[string]any{
+			"*": "deny",
+			"read": map[string]string{
+				"*":             "allow",
+				"*.env":         "deny",
+				"*.env.*":       "deny",
+				"*.env.example": "allow",
+			},
+			"edit":  "allow",
+			"glob":  "allow",
+			"grep":  "allow",
+			"list":  "allow",
+			"skill": skillPermissions,
+			"bash": map[string]string{
+				"*":                          "deny",
+				"*" + cliPath + `" signal *`: "allow",
+				cliPath + " signal *":        "allow",
+			},
+			"external_directory": "deny",
+			"question":           "deny",
+			"task":               "deny",
+			"webfetch":           "deny",
+			"websearch":          "deny",
+			"semantic_search":    "deny",
+			"codebase_search":    "deny",
+			"kilo_memory_save":   "deny",
+			"kilo_memory_recall": "deny",
+		},
+	}
+	if err := writeRuntimeJSON(filepath.Join(configRoot, "kilo.json"), config); err != nil {
+		return runtimePreparation{}, err
+	}
+	environment, err := kiloEnvironment(root, executable)
+	if err != nil {
+		return runtimePreparation{}, err
+	}
+	return runtimePreparation{
+		environment:         environment,
+		workingDirectory:    workspace,
+		evaluationSkillRoot: skillRoot,
+	}, nil
+}
+
+func kiloEnvironment(root, executable string) ([]string, error) {
+	path, err := runtimeExecutable(harness.KiloCode, executable)
+	if err != nil {
+		return nil, err
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return nil, fmt.Errorf("resolve Kilo home: %w", err)
+	}
+	dataHome := os.Getenv("XDG_DATA_HOME")
+	if dataHome == "" {
+		dataHome = filepath.Join(home, ".local", "share")
+	}
+	environment := controlledEnvironment(home, filepath.Join(root, "tmp"), path, false)
+	environment = append(environment,
+		"XDG_CONFIG_HOME="+filepath.Join(root, "config"),
+		"XDG_DATA_HOME="+dataHome,
+		"XDG_STATE_HOME="+filepath.Join(root, "state"),
+		"XDG_CACHE_HOME="+filepath.Join(root, "cache"),
+		"KILO_AUTO_SHARE=false",
+		"KILO_DISABLE_AUTOUPDATE=true",
+		"KILO_DISABLE_CLAUDE_CODE=true",
+		"KILO_DISABLE_CLAUDE_CODE_PROMPT=true",
+		"KILO_DISABLE_CLAUDE_CODE_SKILLS=true",
+		"KILO_DISABLE_CODEBASE_INDEXING=true",
+		"KILO_DISABLE_EXTERNAL_SKILLS=true",
+		"KILO_DISABLE_LSP_DOWNLOAD=true",
+		"KILO_DISABLE_PRESENCE=true",
+		"KILO_DISABLE_PROJECT_CONFIG=true",
+		"KILO_DISABLE_SESSION_INGEST=true",
+		"KILO_DISABLE_SHARE=true",
+		"KILO_EXPERIMENTAL_DISABLE_FILEWATCHER=true",
+		"KILO_NO_DAEMON=true",
+		"KILO_PURE=true",
+		"KILO_REMOTE=false",
+	)
+	return environment, nil
+}
+
+func prepareOpenCodeRuntime(root, workspace, executable, model, reasoning, cliPath string, skillNames []string) (runtimePreparation, error) {
+	configHome := filepath.Join(root, "config")
+	configRoot := filepath.Join(configHome, "opencode")
+	for _, path := range []string{configRoot, filepath.Join(root, "state"), filepath.Join(root, "cache")} {
+		if err := os.MkdirAll(path, 0o700); err != nil {
+			return runtimePreparation{}, fmt.Errorf("create OpenCode runtime path: %w", err)
+		}
+	}
+	provider, _, found := strings.Cut(model, "/")
+	if !found || provider == "" {
+		return runtimePreparation{}, errors.New("OpenCode model must use provider/model format")
+	}
+	skillPermissions := map[string]string{"*": "deny"}
+	for _, name := range skillNames {
+		skillPermissions[name] = "allow"
+	}
+	config := map[string]any{
+		"$schema":           "https://opencode.ai/config.json",
+		"model":             model,
+		"small_model":       model,
+		"default_agent":     "build",
+		"enabled_providers": []string{provider},
+		"share":             "disabled",
+		"autoupdate":        false,
+		"snapshot":          false,
+		"formatter":         false,
+		"lsp":               false,
+		"plugin":            []string{},
+		"instructions":      []string{},
+		"mcp":               map[string]any{},
+		"agent": map[string]any{
+			"build": map[string]any{"variant": reasoning},
+		},
+		"permission": map[string]any{
+			"*": "deny",
+			"read": map[string]string{
+				"*":             "allow",
+				"*.env":         "deny",
+				"*.env.*":       "deny",
+				"*.env.example": "allow",
+			},
+			"edit":  "allow",
+			"glob":  "allow",
+			"grep":  "allow",
+			"list":  "allow",
+			"skill": skillPermissions,
+			"bash": map[string]string{
+				"*":                          "deny",
+				"*" + cliPath + `" signal *`: "allow",
+				cliPath + " signal *":        "allow",
+			},
+			"external_directory": "deny",
+			"question":           "deny",
+			"task":               "deny",
+			"webfetch":           "deny",
+			"websearch":          "deny",
+		},
+	}
+	if err := writeRuntimeJSON(filepath.Join(configRoot, "opencode.json"), config); err != nil {
+		return runtimePreparation{}, err
+	}
+	environment, err := openCodeEnvironment(root, executable)
+	if err != nil {
+		return runtimePreparation{}, err
+	}
+	return runtimePreparation{
+		environment:         environment,
+		workingDirectory:    workspace,
+		evaluationSkillRoot: filepath.Join(configRoot, "skills"),
+	}, nil
+}
+
+func openCodeEnvironment(root, executable string) ([]string, error) {
+	path, err := runtimeExecutable(harness.OpenCode, executable)
+	if err != nil {
+		return nil, err
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return nil, fmt.Errorf("resolve OpenCode home: %w", err)
+	}
+	dataHome := os.Getenv("XDG_DATA_HOME")
+	if dataHome == "" {
+		dataHome = filepath.Join(home, ".local", "share")
+	}
+	environment := controlledEnvironment(home, filepath.Join(root, "tmp"), path, false)
+	environment = append(environment,
+		"XDG_CONFIG_HOME="+filepath.Join(root, "config"),
+		"XDG_DATA_HOME="+dataHome,
+		"XDG_STATE_HOME="+filepath.Join(root, "state"),
+		"XDG_CACHE_HOME="+filepath.Join(root, "cache"),
+		"OPENCODE_AUTO_SHARE=false",
+		"OPENCODE_DISABLE_AUTOUPDATE=true",
+		"OPENCODE_DISABLE_CLAUDE_CODE=true",
+		"OPENCODE_DISABLE_CLAUDE_CODE_PROMPT=true",
+		"OPENCODE_DISABLE_CLAUDE_CODE_SKILLS=true",
+		"OPENCODE_DISABLE_EXTERNAL_SKILLS=true",
+		"OPENCODE_DISABLE_LSP_DOWNLOAD=true",
+		"OPENCODE_DISABLE_PROJECT_CONFIG=true",
+		"OPENCODE_DISABLE_SHARE=true",
+		"OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER=true",
+	)
+	return environment, nil
 }
 
 func prepareCursorRuntime(root, workspace, executable, cliPath string) (runtimePreparation, error) {
@@ -225,6 +457,10 @@ func runtimeExecutable(harnessID harness.ID, override string) (string, error) {
 			names = []string{"agent", "cursor-agent"}
 		case harness.ClaudeCode:
 			names = []string{"claude"}
+		case harness.OpenCode:
+			names = []string{"opencode"}
+		case harness.KiloCode:
+			names = []string{"kilo"}
 		case harness.Pi:
 			names = []string{"pi"}
 		}

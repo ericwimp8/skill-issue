@@ -1,0 +1,26 @@
+# CI Failure Triage Target Status
+
+- Target: `showcase-skills/ci-failure-triage/skill/ci-failure-triage/SKILL.md`
+- Content hash: `f0e6cc087bef292a07a9ae9b7c22c8176d48af21df26ec93a2164727de0faaa9`
+- Environment qualification: `evaluations/skill-system-production-refinement/environment-qualification.md`
+- Requested trial surface: fresh `gpt-5.6-sol` agents, medium reasoning, `fork_turns: "none"`
+- Refinement mode: automatic
+- Description state: `passed`
+- Description evidence:
+  - `description/round-1/trial-1/record.md`
+  - `description/round-1/trial-2/record.md`
+  - `description/round-1/trial-3/record.md`
+  - `description/round-1/trial-4/record.md`
+- Reference state: `not-applicable`; the target has no `references/` files
+- Body state: `passed`
+- Body evidence:
+  - `behavior/cycle-1/case-1/record.md`
+  - `behavior/cycle-1/case-2/record.md`
+  - `behavior/cycle-1/case-3/record.md`
+- Current loop: concluded
+- Description failures: 0 of 5
+- Body failures: 0 of 5
+- Total campaign allowance: five unsuccessful rounds or cycles per governed loop
+- Last completed trial: behavior cycle 1 case 3 — pass; body 3/3
+- Next action: none
+- State: passed

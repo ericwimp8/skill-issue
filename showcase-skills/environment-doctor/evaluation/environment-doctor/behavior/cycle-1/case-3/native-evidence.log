@@ -1,0 +1,20 @@
+Environment Doctor Behavior Cycle 1 Case 3
+==========================================
+
+COMMAND=python3 showcase-skills/environment-doctor/script-validation/validate_diagnose.py
+EXIT=0
+OUTPUT=environment-doctor script validation passed
+
+TARGET_SHA256_BEFORE=502a690ae603b8f0399fb6e98d66753acc0813f83dc1b769ce85732df261a203
+TARGET_SHA256_AFTER=502a690ae603b8f0399fb6e98d66753acc0813f83dc1b769ce85732df261a203
+SCRIPT_SHA256_BEFORE=d3f235daeec5c1a90b3696619e4249a8018583a6fa3a6f0761c3c7c26fcab430
+SCRIPT_SHA256_AFTER=d3f235daeec5c1a90b3696619e4249a8018583a6fa3a6f0761c3c7c26fcab430
+HARNESS_SHA256_BEFORE=5d35613252192ff0e56175666f3ecbe94a04ba96348ca5632f2a29d0a257a3b7
+HARNESS_SHA256_AFTER=5d35613252192ff0e56175666f3ecbe94a04ba96348ca5632f2a29d0a257a3b7
+
+SOURCE_FIXTURE_HASHES_PRESERVED=true
+CALLER_ENVIRONMENT_MAPPING_PRESERVED=true
+TEMPORARY_FIXTURES_CLEANED=true
+TESTED_HOST=Darwin 25.2.0 arm64; macOS 26.2; Python 3.14.2
+SCOPE=exact tested macOS host using POSIX colon-separated PATH and executable-bit behavior
+CLEANUP_OWNER=case-3 audit.md and this evidence log only

@@ -1,0 +1,15 @@
+Environment Doctor Qualification Probe 1
+=========================================
+
+AGENT=fresh independent gpt-5.6-sol medium probe
+SELECTION=selected from the natural request and candidate frontmatter
+TARGET_READ=showcase-skills/environment-doctor/skill/environment-doctor/SKILL.md
+TARGET_SHA256=502a690ae603b8f0399fb6e98d66753acc0813f83dc1b769ce85732df261a203
+DIAGNOSTIC_FINAL_EXIT=0
+SOURCE_HASHES_PRESERVED=true
+UNSUPPORTED_EXECUTION_MARKER_ABSENT=true
+
+INTERRUPTION=the probe did not conclude after two bounded-finish instructions and was interrupted
+QUALIFICATION_USE=excluded
+TRANSIENT_OUTPUTS_REMOVED=true
+RETAINED_OWNER=probe-1 record.md and this sanitized interruption evidence only

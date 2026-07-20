@@ -1,0 +1,60 @@
+Environment Doctor Behavior Cycle 1 Case 2
+==========================================
+
+Target hashes before diagnostic
+502a690ae603b8f0399fb6e98d66753acc0813f83dc1b769ce85732df261a203  showcase-skills/environment-doctor/skill/environment-doctor/SKILL.md
+d3f235daeec5c1a90b3696619e4249a8018583a6fa3a6f0761c3c7c26fcab430  showcase-skills/environment-doctor/skill/environment-doctor/scripts/diagnose.py
+
+Fixture hashes before diagnostic
+5378796307535df3ec8d8b15a2e2dc5641419c3d3060cfe32238c0fa973f7aa3  showcase-skills/environment-doctor/fixtures/script/root/.node-version
+f14b4987904bcb5814e4459a057ed4d20f58a633152288a761214dcd28780b56  showcase-skills/environment-doctor/fixtures/script/root/mismatch.node-version
+626efabe18f06a84cadd6e991752b189b0a2738e72efea358122e3e4b86aeaff  showcase-skills/environment-doctor/fixtures/script/root/toolchain-primary/bin/mystery-tool
+20ccc0498ef0b7960d0fe68b521d2c0da36f1931c8f12b0ebc22421b39b01879  showcase-skills/environment-doctor/fixtures/script/root/toolchain-primary/bin/node
+2e042e73b2d6e214aa4e90c7e4c8300fab299658b2352ee5e27d665364045e61  showcase-skills/environment-doctor/fixtures/script/root/toolchain-secondary/bin/node
+
+Diagnostic command
+fixture_root="$(cd showcase-skills/environment-doctor/fixtures/script/root && pwd -P)"; case_root="$(cd showcase-skills/environment-doctor/evaluation/environment-doctor/behavior/cycle-1/case-2 && pwd -P)"; env -u INTENTIONALLY_UNSET PATH="$fixture_root/toolchain-primary/bin:$fixture_root/toolchain-secondary/bin:$PATH" python3 showcase-skills/environment-doctor/skill/environment-doctor/scripts/diagnose.py --root "$fixture_root" --output-dir "$case_root/output" --tool absent-tool --env INTENTIONALLY_UNSET --expect-path-before toolchain-secondary/bin toolchain-primary/bin --version-file node mismatch.node-version
+
+Diagnostic result
+exit_code=1
+stdout_bytes=0
+stderr_bytes=0
+expected_nonzero=true
+
+Output hashes
+ba3871204f36270305e54d3bda55d2711f986af323dcda97efdb84261e3e9fbc  showcase-skills/environment-doctor/evaluation/environment-doctor/behavior/cycle-1/case-2/output/report.txt
+6d2cf59a5b94ffe14e16d41be355cb8b683dbd8cfa322394db16240f70314bc0  showcase-skills/environment-doctor/evaluation/environment-doctor/behavior/cycle-1/case-2/output/evidence.json
+
+Target hashes after diagnostic
+502a690ae603b8f0399fb6e98d66753acc0813f83dc1b769ce85732df261a203  showcase-skills/environment-doctor/skill/environment-doctor/SKILL.md
+d3f235daeec5c1a90b3696619e4249a8018583a6fa3a6f0761c3c7c26fcab430  showcase-skills/environment-doctor/skill/environment-doctor/scripts/diagnose.py
+
+Fixture hashes after diagnostic
+5378796307535df3ec8d8b15a2e2dc5641419c3d3060cfe32238c0fa973f7aa3  showcase-skills/environment-doctor/fixtures/script/root/.node-version
+f14b4987904bcb5814e4459a057ed4d20f58a633152288a761214dcd28780b56  showcase-skills/environment-doctor/fixtures/script/root/mismatch.node-version
+626efabe18f06a84cadd6e991752b189b0a2738e72efea358122e3e4b86aeaff  showcase-skills/environment-doctor/fixtures/script/root/toolchain-primary/bin/mystery-tool
+20ccc0498ef0b7960d0fe68b521d2c0da36f1931c8f12b0ebc22421b39b01879  showcase-skills/environment-doctor/fixtures/script/root/toolchain-primary/bin/node
+2e042e73b2d6e214aa4e90c7e4c8300fab299658b2352ee5e27d665364045e61  showcase-skills/environment-doctor/fixtures/script/root/toolchain-secondary/bin/node
+
+Source comparison
+target_hashes_match=true
+fixture_manifest_cmp_exit=0
+source_modified=false
+
+Platform boundary
+host=Darwin 25.2.0 arm64
+script_platform=posix
+scope=Exact tested macOS host using POSIX colon-separated PATH and executable-bit behavior; no conclusion is generalized to unsupported platforms.
+
+Cleanup ownership
+retained_owner=case-2
+retained_files=output/report.txt,output/evidence.json,audit.md,native-evidence.log
+temporary_owner=case-2 evaluator
+temporary_paths=/tmp/environment-doctor-case2-*
+temporary_cleanup_required=true
+temporary_cleanup_complete=true
+
+Privacy scan
+command=home_path="$(cd ~ && pwd -P)"; secret_marker='trial-only''-value'; secret_name='DIAGNOSTIC''_SECRET'; rg -n -F -e "$home_path" -e "$secret_marker" -e "$secret_name" output/report.txt output/evidence.json audit.md native-evidence.log
+expected_exit=1
+result=no_matches

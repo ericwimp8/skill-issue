@@ -6,7 +6,7 @@
 - Confirmed project and platform context.
 - Intended skill purpose, outcome, and invocation boundary.
 - Observable completion criteria.
-- Destination and supported harness surfaces.
+- Destination, target harness surface when known, and whether Codex metadata is required.
 - Unresolved implementation-time matters.
 - User-owned stop conditions.
 - Generation viability.
@@ -18,7 +18,7 @@ If a missing item changes intent, return to intake. If it affects only implement
 ## Required Evaluation Outputs
 
 - Generated skill path.
-- Supported and unsupported harness surfaces.
+- Portable skill surface and any generated Codex metadata.
 - Goal, intended use, expected behavior, expected result, and preserved boundaries.
 - Runtime completion criteria.
 - Known limitations and unresolved capabilities.

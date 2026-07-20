@@ -12,7 +12,7 @@ Confirm that it establishes:
 - broad dependency-ordered creation tasks;
 - observable completion criteria;
 - material exclusions and preserved behavior;
-- supported target harness surfaces where platform behavior matters;
+- the target harness surface where known and whether Codex metadata is required;
 - unresolved implementation choices that generation may decide;
 - unresolved user-owned decisions that require a stop;
 - the generation-viability assessment, the user's execution preference, and the authority boundary.

@@ -42,7 +42,7 @@ The MVP scenarios contain 30 turns each and deliberately include substantial rea
 
 The planned campaign compares models across multiple harnesses and multiple models within the same harness wherever those combinations are supported. Repeating a model across harnesses may reveal harness-level patterns, such as one environment consistently discovering skills more or less reliably. Repeating several models within a harness may reveal model-level patterns that persist across environments. Flagship model-and-harness pairings provide useful anchors, while overlapping combinations make it easier to distinguish model behavior from harness behavior.
 
-The minimum comparison matrix spans OpenAI Codex, Claude Code, Cursor, Pi, and OpenCode. Each supported configuration uses the same scenarios, prompts, skill payload, reasoning target or closest available equivalent, and scoring rules. Exact model identifiers, harness versions, operating systems, and effective reasoning settings are recorded with the result.
+The minimum comparison matrix spans OpenAI Codex, Claude Code, Cursor, Pi, OpenCode, and Kilo Code. Each supported configuration uses the same scenarios, prompts, skill payload, reasoning target or closest available equivalent, and scoring rules. Exact model identifiers, harness versions, operating systems, and effective reasoning settings are recorded with the result.
 
 ### Evaluation isolation
 
@@ -92,7 +92,7 @@ The MVP uses a self-contained Go CLI distributed as prebuilt macOS, Windows, and
 
 The CLI owns deterministic installation, removal, evaluation execution, and reporting boundaries. Re-running installation replaces the disposable embedded payload. The installed agent skills own generation, diagnosis, and refinement behavior.
 
-The current implementation embeds the canonical primary and supporting skills, replaces only their known directories in researched native project or user roots, and provides blind primary-agent replay with private turn attribution, graph-ready evidence, direct canonical rematerialization, and cleanup. Harness adapters still require real-environment qualification before release claims are made.
+The current implementation embeds the canonical primary and supporting skills, replaces only their known directories in researched native project or user roots, and provides blind primary-agent replay with private turn attribution, graph-ready evidence, direct canonical rematerialization, and cleanup. Supported harness adapters retain bounded real-environment qualification records before release claims are made.
 
 ### CLI development
 

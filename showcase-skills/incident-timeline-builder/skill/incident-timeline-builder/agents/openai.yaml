@@ -1,0 +1,3 @@
+interface:
+  display_name: "Incident Timeline Builder"
+  short_description: "Build sourced timelines from incident evidence"

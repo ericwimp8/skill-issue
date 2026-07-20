@@ -1,0 +1,1 @@
+Determine the release readiness of `showcase-skills/release-readiness-checker/evaluation/release-readiness-checker/fixtures/description/trial-2/`. Do not publish or deploy anything. Retain a prioritized report at `showcase-skills/release-readiness-checker/evaluation/release-readiness-checker/description/round-1/trial-2/report.md`.

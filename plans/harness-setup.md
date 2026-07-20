@@ -1,19 +1,21 @@
 # Harness Setup Tasks: Evaluation Support
 
-This document owns the native setup contracts for Codex, Cursor, Claude Code, and Pi. The CLI implementation owns their current executable behavior, and the retained smoke report records the bounded runtime evidence.
+This document owns the native setup contracts for Codex, Cursor, Claude Code, OpenCode, Kilo Code, and Pi. The CLI implementation owns their current executable behavior, and the retained qualification records document the bounded runtime evidence.
 
 The evaluation contracts use the CLI's disposable lifecycle: temporary instrumented paths are materialized in the harness project root, cleanup rematerializes current canonical Skill Issue copies only for paths that existed before instrumentation, removes paths introduced for the evaluation, and retains the selected evidence. Ordinary installation has no receipts, backups, rollback inventories, repair commands, update commands, or platform application-state directory.
 
 ## Effective Evaluation Configuration
 
-The evaluation command currently accepts only `codex`, `cursor`, `claude-code`, and `pi`. It resolves one model and reasoning value before temporary skills are installed. Callers may provide `--model` and `--reasoning`; omitted values use the defaults below.
+The evaluation command accepts `codex`, `cursor`, `claude-code`, `opencode`, and `pi`. It resolves one model and reasoning value before temporary skills are installed. Callers may provide `--model` and `--reasoning`; omitted values use the defaults below.
 
-| Harness | Default model | Default reasoning | Native mapping |
-| --- | --- | --- | --- |
-| Codex | `gpt-5.6-sol` | `medium` | `--model` and `--config model_reasoning_effort="<reasoning>"` |
-| Cursor | native Auto-select | `medium` | explicit `--model`; default omits the flag because Cursor owns Auto-select |
-| Claude Code | `opus` | `medium` | `--model` and `--effort` |
-| Pi | `openai-codex/gpt-5.6-sol` | `medium` | `--model` and `--thinking` |
+| Harness     | Default model              | Default reasoning | Native mapping                                                             |
+| ----------- | -------------------------- | ----------------- | -------------------------------------------------------------------------- |
+| Codex       | `gpt-5.6-sol`              | `medium`          | `--model` and `--config model_reasoning_effort="<reasoning>"`              |
+| Cursor      | native Auto-select         | `medium`          | explicit `--model`; default omits the flag because Cursor owns Auto-select |
+| Claude Code | `opus`                     | `medium`          | `--model` and `--effort`                                                   |
+| OpenCode    | `openai/gpt-5.6-sol`       | `medium`          | `--model` and `--variant`                                                  |
+| Kilo Code   | `openai/gpt-5.6-sol`       | `medium`          | `--model` and `--variant`                                                  |
+| Pi          | `openai-codex/gpt-5.6-sol` | `medium`          | `--model` and `--thinking`                                                 |
 
 Model identifiers and supported reasoning values are passed through to the selected harness. Skill Issue does not maintain a model catalogue or prevalidate compatibility; unsupported values remain native harness errors. Cursor uses its native Auto-select model and model-native reasoning when no model override is supplied. An explicit Cursor `--reasoning` override is rejected before evaluation side effects because the CLI exposes no independent reasoning control.
 
@@ -631,6 +633,109 @@ The same process and session identifier preserve conversation history across all
 
 This configuration was qualified on macOS with Pi `0.80.10`.
 
+## OpenCode
+
+### Outcome
+
+OpenCode evaluations launch an existing qualified OpenCode CLI with a run-owned configuration, supply only the selected evaluation skills, preserve the operator-owned native authentication route, replay one resumable structured session, and delete that session during cleanup.
+
+### Preflight
+
+- Resolve the absolute `opencode` executable and require version `1.18.4`.
+- Require the selected model to use `provider/model` form.
+- Run `auth list --pure` and require the selected provider to be authenticated without reading credential contents.
+- Run `models <provider> --pure` and require the exact selected model.
+- Stop before temporary skill materialization when any preflight fails.
+
+### Runtime Configuration
+
+Create private XDG configuration, state, cache, and temporary roots under the run-owned runtime. Retain `HOME` and the operator-owned XDG data root so OpenCode continues to own native authentication and refresh behavior. Do not copy, print, migrate, or rewrite credentials.
+
+Write the generated skills beneath `<runtime-config>/opencode/skills/<skill-name>/`. Generate `opencode.json` with the effective model, `build` agent, requested variant, selected provider, sharing and updates disabled, snapshots disabled, formatter and LSP disabled, no external plugin list, no added instructions, and no MCP servers.
+
+Launch every command with a minimal environment and these controls:
+
+- `--pure` to exclude external plugins while preserving compiled internal plugins;
+- `OPENCODE_DISABLE_PROJECT_CONFIG=true`;
+- `OPENCODE_DISABLE_EXTERNAL_SKILLS=true`;
+- all Claude compatibility discovery disabled;
+- sharing, auto-updates, LSP downloads, and the file watcher disabled.
+
+The deny-first permission policy allows workspace reads and edits, `glob`, `grep`, `list`, the exact selected skill names, and the exact Skill Issue `signal` command through Bash. It denies unrelated Bash, external directories, questions, task delegation, web fetch, and web search.
+
+### Structured Replay
+
+Run the initial turn as:
+
+```sh
+'<opencode-executable>' run --pure --format json --model '<provider/model>' --variant '<reasoning>' '<verbatim-turn-prompt>'
+```
+
+Resume later turns by adding `--session '<captured-sessionID>'`. Parse newline-delimited JSON envelopes, capture camel-case `sessionID`, require that every reported session identifier remains stable, reject structured error envelopes, and require a terminal `step_finish` whose `part.reason` is `stop`. A failed exact marker Bash call is a tooling failure; unrelated denied tool calls remain ordinary structured events when the turn otherwise completes.
+
+### Cleanup
+
+- On cancellation or timeout, terminate only the process group started for the active turn.
+- Recover the session identifier from partial structured output when interruption occurs before normal capture.
+- Run `session delete <sessionID> --pure` with the same environment before removing the run-owned runtime.
+- Remove generated skills, configuration, state, cache, and temporary files while preserving operator-owned native authentication.
+
+### Platform
+
+This configuration was qualified on macOS ARM64 with OpenCode `1.18.4`, native OpenAI ChatGPT OAuth, `openai/gpt-5.6-sol`, and the `medium` variant. Governed 30-turn and additional-platform qualification remain separate work.
+
+## Kilo Code
+
+### Outcome
+
+Kilo evaluations launch an existing qualified Kilo CLI with a run-owned configuration, supply only the selected evaluation skills, preserve the operator-owned native authentication route, replay one resumable structured session, normalize Kilo's qualified duplicate-event behavior, and delete the exact captured session during cleanup.
+
+### Preflight
+
+- Resolve the absolute `kilo` executable and require version `7.4.11`.
+- Require the selected model to use `provider/model` form.
+- Run `auth list` and require the selected provider to be authenticated without reading credential contents.
+- Run `models <provider>` and require the exact selected model.
+- Stop before temporary skill materialization when any preflight fails.
+
+### Runtime Configuration
+
+Create private XDG configuration, state, cache, and temporary roots under the run-owned runtime. Retain `HOME` and the operator-owned XDG data root so Kilo continues to own native authentication and refresh behavior. Do not copy, print, migrate, or rewrite credentials.
+
+Write generated skills beneath `<runtime>/passed-skills/<skill-name>/`. Generate `kilo.json` with the effective model, `code` agent, requested variant, selected provider, the run-owned `skills.paths` root, sharing and remote control disabled, updates and snapshots disabled, formatter and LSP disabled, indexing disabled, and no remote skill URLs.
+
+Launch every command with a minimal environment and these controls:
+
+- `--pure` and `KILO_PURE=true` to exclude external plugins while preserving compiled internal plugins;
+- `KILO_DISABLE_PROJECT_CONFIG=true`;
+- `KILO_DISABLE_EXTERNAL_SKILLS=true`;
+- all Claude compatibility discovery disabled;
+- indexing, session ingest, presence, sharing, auto-updates, LSP downloads, and the file watcher disabled;
+- `KILO_NO_DAEMON=true` and `KILO_REMOTE=false`.
+
+The deny-first permission policy allows workspace reads and edits, `glob`, `grep`, `list`, the exact selected skill names, and the exact Skill Issue `signal` command through Bash. It denies unrelated Bash, external directories, questions, task delegation, web access, semantic search, codebase search, and Kilo memory tools. Because Kilo's compiled `code` agent later enables search tools, repeat semantic-search and codebase-search denials in that agent's permission layer.
+
+### Structured Replay
+
+Run the initial turn as:
+
+```sh
+'<kilo-executable>' run --pure --format json --model '<provider/model>' --variant '<reasoning>' --agent code --dir '<workspace>' '<verbatim-turn-prompt>'
+```
+
+Resume later turns by adding `--session '<captured-sessionID>'`. Parse newline-delimited JSON envelopes, then remove only adjacent byte-identical duplicates before validation and scoring. Preserve nonadjacent repeated events. Capture camel-case `sessionID`, require that every reported session identifier remains stable, reject structured error envelopes, and require a terminal `step_finish` whose `part.reason` is `stop`. A failed exact marker Bash call is a tooling failure; unrelated denied tool calls remain ordinary structured events when the turn otherwise completes.
+
+### Cleanup
+
+- On cancellation or timeout, terminate only the process group started for the active turn.
+- Recover the session identifier from partial structured output when interruption occurs before normal capture.
+- Run `session delete <sessionID>` directly with the same environment; do not depend on the broken Kilo `7.4.11` global session-list route.
+- Remove generated skills, configuration, state, cache, and temporary files while preserving operator-owned native authentication.
+
+### Platform
+
+This configuration was qualified on macOS ARM64 with Kilo `7.4.11`, native OpenAI ChatGPT OAuth, `openai/gpt-5.6-sol`, and the `medium` variant. Governed 30-turn and additional-platform qualification remain separate work.
+
 ## Local Smoke Qualification
 
 The 2026-07-20 smoke campaign used only two-turn inputs and did not run any governed 30-turn evaluation. Codex `0.144.1` completed the built-in default route and the explicit `gpt-5.6-sol`/`medium` custom route through one resumable session each. The pre-run confirmation showed effective values; transcripts and signal events prove selected-skill loading, turn attribution, and argument propagation; output artifacts were written under the caller-selected roots; and temporary skill contents and private run state were removed after completion.
@@ -638,3 +743,5 @@ The 2026-07-20 smoke campaign used only two-turn inputs and did not run any gove
 Cursor Agent `2026.07.16-899851b`, Claude Code `2.1.205`, and Pi `0.80.10` completed built-in and custom two-turn routes through their project-local or installed launchers. Cursor and Pi wrote directly in the caller-selected evaluation workspace. Claude received that workspace through its isolated settings and system prompt. Final Cursor and Claude runs left no detached worker or proxy, and every run removed private runtime and generated skill material. Pi reused its existing `openai-codex` authentication without the CLI modifying the auth directory. Custom smoke artifacts are local evidence only and require separate review before any publication claim.
 
 The qualification results, versions, observed calls, cleanup checks, and useful native errors are in `evaluations/skill-calling/smoke/real-harness-smoke-report.md`.
+
+On 2026-07-21, the development CLI completed Kilo `7.4.11` custom and built-in two-turn routes using native OpenAI ChatGPT OAuth with `openai/gpt-5.6-sol` and `medium`. The custom route observed `smoke-skill` on both turns. The built-in route observed its expected `document-update-discipline` call plus additional valid model behavior. Both runs used one stable session ID, produced normalized structured event arrays with no adjacent exact duplicates, removed temporary skills and private runtime state, deleted their exact native sessions, left the daemon stopped, and left no Kilo process.

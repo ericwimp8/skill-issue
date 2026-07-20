@@ -10,7 +10,7 @@ func TestEvaluationRunIsProjectLocalAndHasOneInputMode(t *testing.T) {
 		"model":      "model",
 		"evaluation": "gardening-web-application",
 	}
-	request, err := evaluationRunRequest(base, "test")
+	request, err := evaluationRunRequest(base)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -24,7 +24,7 @@ func TestEvaluationRunIsProjectLocalAndHasOneInputMode(t *testing.T) {
 			withoutOutput[key] = value
 		}
 	}
-	if _, err := evaluationRunRequest(withoutOutput, "test"); err == nil {
+	if _, err := evaluationRunRequest(withoutOutput); err == nil {
 		t.Fatal("evaluation run without output was accepted")
 	}
 
@@ -34,13 +34,13 @@ func TestEvaluationRunIsProjectLocalAndHasOneInputMode(t *testing.T) {
 	}
 	withCustom["scenario"] = "scenario.json"
 	withCustom["answer-sheet"] = "answer.json"
-	if _, err := evaluationRunRequest(withCustom, "test"); err == nil {
+	if _, err := evaluationRunRequest(withCustom); err == nil {
 		t.Fatal("built-in and custom inputs were accepted together")
 	}
 }
 
 func TestEvaluationCleanupAndSignalRequireOutputOwnedState(t *testing.T) {
-	service := New(t.TempDir(), "test")
+	service := New()
 	if _, err := service.evaluate([]string{"cleanup", "--run", "run-id"}); err == nil {
 		t.Fatal("evaluation cleanup without output was accepted")
 	}

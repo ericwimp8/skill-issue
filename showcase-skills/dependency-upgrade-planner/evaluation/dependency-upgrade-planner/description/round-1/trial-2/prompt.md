@@ -1,0 +1,1 @@
+Assess and sequence the migration of `showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/fixtures/vite-library/` from Vite 5.4 to Vite 6, including build and deployment constraints, before any dependency is changed.

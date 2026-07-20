@@ -1,0 +1,29 @@
+Environment Doctor Behavior Cycle 1 Case 1
+==========================================
+
+TARGET_SHA256_BEFORE=502a690ae603b8f0399fb6e98d66753acc0813f83dc1b769ce85732df261a203
+SCRIPT_SHA256_BEFORE=d3f235daeec5c1a90b3696619e4249a8018583a6fa3a6f0761c3c7c26fcab430
+FIXTURE_TREE_SHA256_BEFORE=65d1b7735c70533a8128c3d10341ae74f6a9bfd1d7181ed5dd80e002f48886b4
+
+RUN_A_COMMAND=resolve the repository-owned fixture root canonically; execute scripts/diagnose.py with child-only primary:secondary:/usr/bin:/bin PATH, synthetic selected value, node, mystery-tool, primary-before-secondary, and .node-version; write case-1/run-a
+RUN_A_EXIT=0
+RUN_B_COMMAND=same bounded command; write case-1/run-b
+RUN_B_EXIT=0
+
+BYTE_COMPARE_REPORT_EXIT=0
+BYTE_COMPARE_EVIDENCE_EXIT=0
+REPORT_SHA256=b032f6cf52ccd46d7f43cab14a6693a3231cfe0b2b7b3aaa665a561de468c3b6
+EVIDENCE_SHA256=a9d2b8cf74386f96869c2a6bb7405a4956f0a4f755f26290a191e09051d7bee4
+
+TARGET_SHA256_AFTER=502a690ae603b8f0399fb6e98d66753acc0813f83dc1b769ce85732df261a203
+SCRIPT_SHA256_AFTER=d3f235daeec5c1a90b3696619e4249a8018583a6fa3a6f0761c3c7c26fcab430
+FIXTURE_TREE_SHA256_AFTER=65d1b7735c70533a8128c3d10341ae74f6a9bfd1d7181ed5dd80e002f48886b4
+UNSUPPORTED_EXECUTION_MARKER_ABSENT=true
+SYNTHETIC_VALUE_ABSENT=true
+CANONICAL_FIXTURE_PATH_ABSENT=true
+JSON_VALIDATION_EXIT=0
+CRITERION_VALIDATION_EXIT=0
+
+TESTED_HOST=Darwin 25.2.0 arm64
+SCOPE=exact tested macOS host using POSIX colon-separated PATH and executable-bit behavior
+CLEANUP_OWNER=case-1 retained run-a, run-b, audit.md, and this evidence log only

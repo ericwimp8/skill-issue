@@ -25,6 +25,7 @@ type Run struct {
 	Status            string            `json:"status"`
 	ActiveTurn        string            `json:"active_turn,omitempty"`
 	HarnessSession    string            `json:"harness_session,omitempty"`
+	HarnessExecutable string            `json:"harness_executable,omitempty"`
 	Tokens            map[string]string `json:"tokens"`
 	InstallationState string            `json:"installation_state,omitempty"`
 	EvidencePath      string            `json:"evidence_path,omitempty"`

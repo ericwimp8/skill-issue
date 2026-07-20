@@ -1,0 +1,3 @@
+# Request
+
+Audit the synthetic development environment at `showcase-skills/environment-doctor/fixtures/script/root/` for a suspected PATH ambiguity. For the diagnostic child process only, prepend the root's `toolchain-primary/bin`, then `toolchain-secondary/bin`, then `toolchain-primary/bin` again to the existing PATH and set `DIAGNOSTIC_SECRET` to the synthetic value `trial-only-value`. Inspect `node`, check the intended primary-before-secondary relationship, and check only the selected variable's state. Produce structured and human-readable evidence in this trial's `output/` directory, retain duplicate and unsupported conclusions as unresolved, and require consent before suggesting any actual setup change.

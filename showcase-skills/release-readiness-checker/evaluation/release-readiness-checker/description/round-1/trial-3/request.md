@@ -1,0 +1,1 @@
+Prepare a go/no-go assessment for the candidate in `showcase-skills/release-readiness-checker/evaluation/release-readiness-checker/fixtures/description/trial-3/`. Stay within read-only review authority and write the result to `showcase-skills/release-readiness-checker/evaluation/release-readiness-checker/description/round-1/trial-3/report.md`.

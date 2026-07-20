@@ -1,0 +1,31 @@
+case: dependency-upgrade-planner behavior cycle-1 case-1
+inspection_mode: read-only
+inspected_at_utc: 2026-07-20T18:03:58Z
+
+target_complete_read_before_output: showcase-skills/dependency-upgrade-planner/skill/dependency-upgrade-planner/SKILL.md
+target_sha256: 42b99ec21c5dee1e081b7cab161fbad01f91d9b55b4d0513aa298bb0e8588096
+
+inspected_fixture_route: showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/fixtures/authoritative-sources.md
+sha256: 6f36d78a480d0ca01b585432347dc8935934f7e3970473b3806d2061bf5c6b24
+
+inspected_fixture: showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/fixtures/react-app/package.json
+sha256: a718ada781facc8acbd0fffdb0776de958d41fb2abd861dd5e72d4d841b32a6d
+inspected_fixture: showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/fixtures/react-app/package-lock.json
+sha256: 925ab2219358c9ab801f4f62e0318780a472b2d036a1be22501092825bfd964b
+inspected_fixture: showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/fixtures/react-app/tsconfig.json
+sha256: 73368479c68e25bae10e0cc4ce83fd5a963a495bb21973aa40f27b2e52ae5ee5
+inspected_fixture: showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/fixtures/react-app/src/main.tsx
+sha256: 6afa70de66eac33648ae5dbe28506249b94329c009cc7b26940118eb083f825f
+inspected_fixture: showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/fixtures/react-app/src/legacy-panel.tsx
+sha256: 4f31ecbc64249439bbb9b6dd9949c129a8755fbbd2a816c2a30f358c90969eb8
+
+live_source: https://react.dev/blog/2024/04/25/react-19-upgrade-guide
+retrieved_sha256: 5324032a049a581159d0be43b3c05d8e7d82c8de488520df5152a5a6f8ff54c7
+applicability: React-owner upgrade instructions for the requested 18.2-to-19 migration; directly applicable sections cover package/type pairing, ReactDOM.render removal, React.createFactory removal, function-component defaultProps removal, and TypeScript changes.
+live_source: https://react.dev/blog/2024/12/05/react-19
+retrieved_sha256: 15147b00c0f83cedb3335d217ea5e06c4a7106e7ccda5a43ab651dd4b891bebd
+applicability: React-owner release announcement establishing React 19 as stable on 2024-12-05; new feature sections are not migration work because the fixture does not use those features.
+
+excluded_source_routes: Vite 6, Pydantic, and FastAPI routes in authoritative-sources.md were not opened because this case requests React 19 and does not request a Vite or Python dependency upgrade.
+forbidden_inputs_read: none
+fixture_or_dependency_state_changed: no

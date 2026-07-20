@@ -1,0 +1,7 @@
+candidate_description_sha256  0b7c78ace9c8a62e4e763a7360c99fc9f1012634f1484cae70d03c93d2db2ed2  showcase-skills/dependency-upgrade-planner/skill/dependency-upgrade-planner/SKILL.md
+candidate_description_sha256  2900eadb4e0fbfe50ca1dfabc3753f8826166f85d9a080ffae5967a59cb8934f  skills/skill-evaluation-and-refinement/SKILL.md
+candidate_description_sha256  29825004b48368b6976840670d1719efca3e2189edf2d91cac3c6e81eaa48b5f  supporting-skills/document-update-discipline/SKILL.md
+candidate_description_sha256  f7a25f2d14b119368198ea05a9c5a4c25c99218e7577c28975d4cd872feddfaf  supporting-skills/system-change-ownership/SKILL.md
+selected_skill  showcase-skills/dependency-upgrade-planner/skill/dependency-upgrade-planner/SKILL.md
+selected_skill_complete_read_sha256  42b99ec21c5dee1e081b7cab161fbad01f91d9b55b4d0513aa298bb0e8588096  showcase-skills/dependency-upgrade-planner/skill/dependency-upgrade-planner/SKILL.md
+selection_method  YAML frontmatter descriptions inspected before complete selected-skill read

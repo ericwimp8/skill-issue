@@ -1,0 +1,1 @@
+Evaluate the exact candidate in `showcase-skills/release-readiness-checker/evaluation/release-readiness-checker/fixtures/behavior/case-1/` against its own release contract. Run only safe local checks, avoid every release side effect, and write a complete report to `showcase-skills/release-readiness-checker/evaluation/release-readiness-checker/behavior/cycle-1/case-1/report.md`.

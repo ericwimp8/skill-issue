@@ -1,0 +1,31 @@
+case: repository-onboarding-guide behavior cycle-1 case-2
+
+target read before output:
+- path: showcase-skills/repository-onboarding-guide/skill/repository-onboarding-guide/SKILL.md
+- sha256: be3a2843bf0a1a5bb0e415bcd12b723edfccba80aacccd20921a92a631730506
+- line count: 63
+
+inspected fixture production and authority paths:
+- showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/package-repo/CONTRIBUTING.md
+- showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/package-repo/Makefile
+- showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/package-repo/go.mod
+- showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/package-repo/cmd/catalog/main.go
+- showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/package-repo/internal/catalog/run.go
+- showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/package-repo/internal/schema/encode.go
+- showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/package-repo/generated/catalog.json
+
+commands executed from the repository root unless stated otherwise:
+- `rg --files --hidden <fixture>` -> exit 0; seven fixture files found, with no nested `AGENTS.md` or ignore file.
+- `git ls-files <fixture>` -> exit 0; no fixture paths are tracked by the containing repository.
+- `git check-ignore -v <fixture>/generated/catalog.json <fixture>/.skill-issue` -> exit 1; neither path has a matching ignore rule.
+- fixture file SHA-256 inventory before and after validation -> exit 0; all seven file hashes remained identical.
+- `(cd <fixture> && go version)` -> exit 0; Go 1.26.5 available for the module declaring Go 1.24.
+- `(cd <fixture> && go run ./cmd/catalog alpha 'two words')` -> exit 1; blocked by sandbox access to the host Go build cache, so this run is environment-inconclusive.
+- `(cd <fixture> && make check)` -> exit 2; same host-cache sandbox failure, so this run is environment-inconclusive.
+- `(cd <fixture> && make generate)` -> exit 2; same host-cache sandbox failure, so this run is environment-inconclusive.
+- `(cd <fixture> && GOCACHE=<temporary-isolated-cache> go run ./cmd/catalog alpha 'two words')` -> exit 0; stdout was `["alpha","two words"]` with no trailing newline.
+- `(cd <fixture> && GOCACHE=<temporary-isolated-cache> make check)` -> exit 0; `go test ./...` and `go vet ./...` passed, and all three packages reported no test files.
+- `(cd <fixture> && GOCACHE=<temporary-isolated-cache> make generate)` -> exit 2; `go generate ./internal/schema` failed because `internal/schema/generator` does not exist.
+- `git status --short -- <fixture>` -> exit 0; the fixture directory is untracked in the containing repository, with no validation-created fixture changes distinguishable from that pre-existing state.
+- `npm run format:check` -> exit 0; all repository-configured Prettier targets matched.
+- `git diff --check -- showcase-skills/repository-onboarding-guide` -> exit 0.

@@ -1,0 +1,23 @@
+# Dependency Upgrade Planner Campaign Status
+
+- **Target:** `showcase-skills/dependency-upgrade-planner/skill/dependency-upgrade-planner/`
+- **Target version:** `SKILL.md` SHA-256 `42b99ec21c5dee1e081b7cab161fbad01f91d9b55b4d0513aa298bb0e8588096`.
+- **Environment qualification:** `showcase-skills/dependency-upgrade-planner/evaluation/environment-qualification.md` qualifies fresh `gpt-5.6-sol` medium-reasoning candidate-selection agents on 2026-07-21.
+- **Refinement mode:** automatic within the showcase workspace.
+- **Description state:** passed with four retained records:
+  - `showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/description/round-1/trial-1/record.md`
+  - `showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/description/round-1/trial-2/record.md`
+  - `showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/description/round-1/trial-3/record.md`
+  - `showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/description/round-1/trial-4/record.md`
+- **Reference state:** not-applicable; the target has no `references/` directory.
+- **Body state:** passed with three retained records:
+  - `showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/behavior/cycle-1/case-1/record.md`
+  - `showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/behavior/cycle-1/case-2/record.md`
+  - `showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/behavior/cycle-1/case-3/record.md`
+- **Current loop:** concluded after behavior cycle 1.
+- **Description failure count:** 0 of 5.
+- **Body failure count:** 0 of 5.
+- **Total campaign allowance:** five unsuccessful rounds or cycles per governed loop before user direction.
+- **Last completed trial:** behavior cycle 1 case 2 replacement — PASS; body total 3/3.
+- **Next action:** none; retain the target, qualification, description, body, audit, and interruption evidence.
+- **Campaign state:** passed. The earlier capacity stop and artifact-free interrupted case-2 execution remain retained as environment evidence and do not indicate a target failure.

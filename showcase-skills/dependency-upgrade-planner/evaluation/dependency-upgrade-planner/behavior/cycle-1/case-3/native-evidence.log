@@ -1,0 +1,22 @@
+Evaluation case: behavior/cycle-1/case-3
+Target: showcase-skills/dependency-upgrade-planner/skill/dependency-upgrade-planner/SKILL.md
+Target complete-read status before output: COMPLETE (59/59 lines)
+Target SHA-256 before output: 42b99ec21c5dee1e081b7cab161fbad01f91d9b55b4d0513aa298bb0e8588096
+
+Inspected repository evidence (complete reads):
+- showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/contract.md
+- showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/fixtures/authoritative-sources.md
+- showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/fixtures/pydantic-service/pyproject.toml
+- showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/fixtures/pydantic-service/poetry.lock
+- showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/fixtures/pydantic-service/service/models.py
+- showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/fixtures/pydantic-service/service/api.py
+
+Inspected live authoritative sources:
+- https://docs.pydantic.dev/latest/migration/ (redirected live to https://pydantic.dev/docs/validation/latest/get-started/migration/); applicable to the requested Pydantic V1-to-V2 span. Inspected the install, compatibility namespace, BaseModel method, from_orm, configuration, and validation-behavior guidance.
+- https://fastapi.tiangolo.com/how-to/migrate-from-pydantic-v1-to-pydantic-v2/; applicable because FastAPI directly consumes the fixture's Pydantic request/response model. Inspected documented support boundaries for FastAPI 0.100.0, 0.119.0, 0.126.0, and 0.128.0, plus testing and mixed-model limitations.
+
+Native inspection actions:
+- Read the target skill and all scoped fixture production/dependency files with `cat`/`sed`.
+- Listed fixture/evaluation files with `rg --files`; did not read `behavior/ground-truth.md` or description trial outputs.
+- Verified target hash with `shasum -a 256` before creating output.
+- Checked scoped Git status before output; no dependency mutation, install, lock refresh, codemod, or fixture edit was performed.

@@ -1,0 +1,11 @@
+{
+  "name": "sample-service",
+  "private": true,
+  "scripts": {
+    "start": "node dist/cli.js",
+    "build": "tsc -p tsconfig.json",
+    "validate": "npm run build && npm test",
+    "test": "node --test"
+  }
+}
+

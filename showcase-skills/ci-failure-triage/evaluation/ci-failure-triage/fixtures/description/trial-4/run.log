@@ -1,0 +1,3 @@
+2026-07-21T04:00:00Z integration / wait-for-api
+2026-07-21T04:00:30Z curl: (7) Failed to connect to 127.0.0.1 port 8080: Connection refused
+2026-07-21T04:00:30Z remaining step output unavailable: log retention expired

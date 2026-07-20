@@ -1,0 +1,6 @@
+candidate showcase-skills/repository-onboarding-guide/skill/repository-onboarding-guide/SKILL.md sha256=be3a2843bf0a1a5bb0e415bcd12b723edfccba80aacccd20921a92a631730506
+candidate skills/skill-generation/SKILL.md sha256=baf74bd4af0586f62d49a0d5540728a11e0f8a1afce82fe075690d4b0aed3051
+candidate skills/skill-evaluation-and-refinement/SKILL.md sha256=624180edde5773253d039193050f25bc8d5c670660a3afbb090a4915c2bd825a
+candidate supporting-skills/prompt-writing/SKILL.md sha256=c6b7ff268497e3174cdf572ad6b1902d447c00ca4d5f02e43157a89fabe3e05f
+selection rationale=The task asks for a source-backed map of authority, runtime flow, generation, validation evidence, and unresolved ownership questions in an unfamiliar repository fixture. That directly matches repository-onboarding-guide; the other candidates concern building a skill, refining a skill, or writing agent prompts.
+selected showcase-skills/repository-onboarding-guide/skill/repository-onboarding-guide/SKILL.md sha256=be3a2843bf0a1a5bb0e415bcd12b723edfccba80aacccd20921a92a631730506 lines=63 read_before_output=true

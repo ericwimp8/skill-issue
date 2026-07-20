@@ -1,0 +1,24 @@
+openapi: 3.0.3
+paths:
+  /accounts/{id}:
+    get:
+      responses:
+        '200':
+          {
+            description: Account,
+            content:
+              {
+                application/json:
+                  { schema: { $ref: '#/components/schemas/Account' } },
+              },
+          }
+        '404': { description: Missing }
+components:
+  schemas:
+    Account:
+      type: object
+      required: [id, display_name, status]
+      properties:
+        id: { type: string }
+        display_name: { type: string }
+        status: { type: string, enum: [active, suspended, closed] }

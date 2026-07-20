@@ -1,0 +1,3 @@
+# Request
+
+Investigate a setup report that a required command is absent and a version declaration may be stale. Work read-only against the synthetic root at `showcase-skills/environment-doctor/fixtures/script/root/`. For the diagnostic child process only, prepend that root's `toolchain-primary/bin` and `toolchain-secondary/bin` to the existing PATH in that order and leave `INTENTIONALLY_UNSET` unset. Check `absent-tool`, the selected variable state, whether `toolchain-secondary/bin` incorrectly precedes `toolchain-primary/bin`, and compare Node with `mismatch.node-version`. Create a concise diagnostic package in this trial's `output/` directory while preserving unavailable states, sensitive values, and the exact tested platform boundary.

@@ -1,0 +1,4 @@
+diagnostic_exit_code=1
+temporary_output_cleaned=true
+initial_wrapper_exit_code=1
+initial_wrapper_message=zsh:1: read-only variable: status

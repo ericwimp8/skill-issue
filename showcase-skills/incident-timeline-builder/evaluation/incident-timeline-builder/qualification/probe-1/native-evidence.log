@@ -1,0 +1,13 @@
+Commands run before output creation to read the request and candidate:
+
+printf '%s\n' '=== MEMORY HITS ==='; rg -n "incident-timeline|qualification probe|skill evaluation" ~/.codex/memories/MEMORY.md || true; printf '%s\n' '=== REQUEST ==='; cat showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/description/round-1/trial-1/request.md; printf '%s\n' '=== CANDIDATE FRONTMATTER ==='; sed -n '1,/^---$/p' showcase-skills/incident-timeline-builder/skill/incident-timeline-builder/SKILL.md
+
+printf '%s\n' '=== CANDIDATE COMPLETE ==='; cat showcase-skills/incident-timeline-builder/skill/incident-timeline-builder/SKILL.md; printf '%s\n' '=== APPLICABLE AGENTS ==='; find showcase-skills/incident-timeline-builder -name AGENTS.md -print; printf '%s\n' '=== FIXTURE FILES ==='; find showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/description/round-1/trial-1/fixtures/description/trial-1 -type f -print | sort
+
+Target discovery command:
+
+find showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder -type d -path '*/fixtures/description/trial-1' -print; find showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder -type f | sort
+
+Source read and preservation-baseline command:
+
+fixture='showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/description/trial-1'; printf '%s\n' '=== SOURCE HASHES BEFORE ==='; shasum -a 256 "$fixture"/*; for file in "$fixture"/*; do printf '\n=== %s ===\n' "$file"; nl -ba "$file"; done; printf '%s\n' '=== TIMELINE SCRIPT HELP ==='; python3 showcase-skills/incident-timeline-builder/skill/incident-timeline-builder/scripts/build_timeline.py --help

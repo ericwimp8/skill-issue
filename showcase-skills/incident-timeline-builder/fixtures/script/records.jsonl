@@ -1,0 +1,6 @@
+{"source_id":"alert-1","source_path":"fixtures/alert.json","locator":"alert[0]","classification":"observed","summary":"Error-rate alert opened","raw_timestamp":"2026-04-05T01:40:00+09:30"}
+{"source_id":"deploy-1","source_path":"fixtures/deploy.json","locator":"deployment d-17","classification":"observed","summary":"Release completed","raw_timestamp":"2026-04-04T15:55:00Z"}
+{"source_id":"note-1","source_path":"fixtures/notes.md","locator":"line 8","classification":"reported","summary":"Operator reported degraded responses","raw_timestamp":"2026-04-05T01:25:00","source_timezone":"Australia/Adelaide"}
+{"source_id":"note-2","source_path":"fixtures/notes.md","locator":"line 11","classification":"gap","summary":"Cache restart time was not recorded","raw_timestamp":null}
+{"source_id":"note-3","source_path":"fixtures/notes.md","locator":"line 14","classification":"reported","summary":"Operator recalled an action during the repeated hour","raw_timestamp":"2026-11-01T01:30:00","source_timezone":"America/New_York"}
+{"source_id":"log-1","source_path":"fixtures/service.log","locator":"line 42","classification":"observed","summary":"First request failure","raw_timestamp":"2026-04-04T15:55:00Z"}

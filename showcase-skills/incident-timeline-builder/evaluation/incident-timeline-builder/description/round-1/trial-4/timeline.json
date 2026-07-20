@@ -1,0 +1,74 @@
+{
+  "input_sha256": "31ec92d11f35748274144b63591dfc519cc9fb1da0e96ca3934245dc1bd36bb3",
+  "resolved_events": [
+    {
+      "classification": "observed",
+      "input_order": 1,
+      "locator": "line 2",
+      "normalized_utc": "2026-09-14T19:00:00Z",
+      "precision": "seconds",
+      "raw_timestamp": "2026-09-14T19:00:00Z",
+      "source_id": "METRIC",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/description/trial-4/metric.csv",
+      "source_timezone": "UTC",
+      "summary": "The metric record reports an error rate of 0.31.",
+      "timestamp_status": "resolved"
+    },
+    {
+      "classification": "observed",
+      "input_order": 2,
+      "locator": "line 1",
+      "normalized_utc": "2026-09-14T19:02:00Z",
+      "precision": "seconds",
+      "raw_timestamp": "2026-09-14T19:02:00Z",
+      "source_id": "AUDIT",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/description/trial-4/audit.log",
+      "source_timezone": "UTC",
+      "summary": "The automation audit record reports feature_disable with result=success.",
+      "timestamp_status": "resolved"
+    },
+    {
+      "classification": "observed",
+      "input_order": 3,
+      "locator": "line 3",
+      "normalized_utc": "2026-09-14T19:03:00Z",
+      "precision": "seconds",
+      "raw_timestamp": "2026-09-14T19:03:00Z",
+      "source_id": "METRIC",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/description/trial-4/metric.csv",
+      "source_timezone": "UTC",
+      "summary": "The metric record reports an error rate of 0.02.",
+      "timestamp_status": "resolved"
+    }
+  ],
+  "schema_version": 1,
+  "unresolved_events": [
+    {
+      "classification": "reported",
+      "input_order": 4,
+      "locator": "line 3",
+      "normalized_utc": null,
+      "precision": "minutes",
+      "raw_timestamp": "19:04 UTC",
+      "source_id": "CHAT",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/description/trial-4/chat.md",
+      "source_timezone": "UTC",
+      "summary": "Operator A reports manually disabling the feature before the errors stopped.",
+      "time_limitation": "The displayed time has no event date; the export date does not establish the statement date.",
+      "timestamp_issue": "raw_timestamp is not an ISO 8601 date-time",
+      "timestamp_status": "invalid"
+    },
+    {
+      "classification": "reported",
+      "input_order": 5,
+      "locator": "lines 4-5",
+      "normalized_utc": null,
+      "raw_timestamp": null,
+      "source_id": "CHAT",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/description/trial-4/chat.md",
+      "summary": "Operator B reports believing automation had already disabled the feature.",
+      "time_limitation": "The statement has no message timestamp.",
+      "timestamp_status": "missing"
+    }
+  ]
+}

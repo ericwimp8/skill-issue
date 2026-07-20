@@ -1,0 +1,1 @@
+Map the dependency and platform work needed before the synthetic widget library at showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/fixtures/vite-library/ can adopt Vite 6. Emphasize evidence gates, stop conditions, and rollback.

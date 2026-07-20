@@ -1,0 +1,40 @@
+CASE: repository-onboarding-guide behavior cycle-1 case-3
+
+TARGET READ BEFORE OUTPUT
+path: showcase-skills/repository-onboarding-guide/skill/repository-onboarding-guide/SKILL.md
+sha256: be3a2843bf0a1a5bb0e415bcd12b723edfccba80aacccd20921a92a631730506
+line-count: 63
+
+INSPECTED AUTHORITY AND PRODUCTION PATHS
+showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/service-repo/.gitignore
+showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/service-repo/AGENTS.md
+showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/service-repo/README.md
+showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/service-repo/package.json
+showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/service-repo/src/application.ts
+showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/service-repo/src/cli.ts
+showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/service-repo/src/config.ts
+showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/service-repo/src/http/requestHandler.ts
+showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/service-repo/src/storage/AGENTS.md
+showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/service-repo/src/storage/fileRequestStore.ts
+showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/service-repo/src/storage/requestStore.ts
+
+TEST CONSULTED AFTER PRODUCTION TRACE
+showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/service-repo/test/requestHandler.test.ts
+
+EXECUTED COMMANDS AND OBSERVATIONS
+- `shasum -a 256 showcase-skills/repository-onboarding-guide/skill/repository-onboarding-guide/SKILL.md` -> exit 0; hash recorded above.
+- `wc -l showcase-skills/repository-onboarding-guide/skill/repository-onboarding-guide/SKILL.md` -> exit 0; 63 lines.
+- `rg --files -uu showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/service-repo | sort` from the fixture root -> exit 2; the root-relative operand was invalid from that working directory. Re-run below corrected the inventory.
+- `rg --files -uu . | sort` from the fixture root -> exit 0; found 12 fixture paths including `.gitignore`.
+- `npm run validate` from the fixture root -> exit 1; `tsc -p tsconfig.json` reported the configuration path absent.
+- `npm test -- storage` from the fixture root -> exit 1; Node reported no `storage` target.
+- `npm test` from the fixture root -> exit 0; one test file loaded, with no behavioral assertion in its source.
+- `npm run start` from the fixture root -> exit 1; `dist/cli.js` was absent.
+- `command -v bun` from the fixture root -> exit 0; Bun was available. Host path intentionally omitted.
+- `command -v node` from the fixture root -> exit 0; Node was available. Host path intentionally omitted.
+- Ad hoc diagnostic: `PORT=18083 DATA_PATH=<temporary-path> bun src/cli.ts`, then `curl --request POST --data case-3-payload http://127.0.0.1:18083/` -> curl exit 0, HTTP 202, response `Accepted`; persisted content was `case-3-payload` plus newline. Server exit 143 after intentional SIGTERM. Temporary-state cleanup exit 0.
+- `mkdir -p showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/behavior/cycle-1/case-3` -> exit 0.
+
+FINAL VALIDATION
+- `npm run format:check` from the repository root -> exit 0; all configured files matched Prettier style.
+- `git diff --check -- showcase-skills/repository-onboarding-guide` from the repository root -> exit 0.

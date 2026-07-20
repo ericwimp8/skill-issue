@@ -1,0 +1,1 @@
+Assess whether the candidate in `showcase-skills/release-readiness-checker/evaluation/environment-qualification/fixture/` is ready for release. Do not publish, deploy, or alter external state. Write a concise evidence-backed report to `showcase-skills/release-readiness-checker/evaluation/environment-qualification/report.md`.

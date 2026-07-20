@@ -1,0 +1,31 @@
+Environment Doctor
+==================
+
+Findings: 5
+
+[INFO] tool.mystery-tool: mystery-tool resolves; version probing is unsupported
+Evidence: {"selected":{"path":"<root>/toolchain-primary/bin/mystery-tool","path_index":0,"resolved_path":"<root>/toolchain-primary/bin/mystery-tool"},"state":"available","version_state":"unsupported"}
+Remediation: Consult the tool's authoritative documentation before selecting a non-mutating version command.
+Verification: command -v mystery-tool
+
+[INFO] tool.node: node resolves with a readable version
+Evidence: {"selected":{"path":"<root>/toolchain-primary/bin/node","path_index":0,"resolved_path":"<root>/toolchain-primary/bin/node"},"state":"available","version":"20.11.1"}
+Remediation: No remediation is indicated by this check.
+Verification: command -v node
+
+[INFO] env.SYNTHETIC_SELECTED: SYNTHETIC_SELECTED is set; its value is omitted
+Evidence: {"state":"set","value_omitted":true}
+Remediation: Set or correct this variable only in its user-owned configuration if the project requires it.
+Verification: Re-run environment-doctor with --env SYNTHETIC_SELECTED
+
+[INFO] path-order.1: PATH order expectation is satisfied
+Evidence: {"earlier":"<root>/toolchain-primary/bin","earlier_indices":[0],"later":"<root>/toolchain-secondary/bin","later_indices":[1],"state":"satisfied"}
+Remediation: Change PATH only in its owning user or project configuration after confirming the intended precedence.
+Verification: Re-run the same --expect-path-before check
+
+[INFO] version-file.node.1: node version declaration is match
+Evidence: {"actual_version":"20.11.1","declared_version":"20","file":"<root>/.node-version","state":"match","tool":"node"}
+Remediation: Choose the project-approved toolchain or update the declaration only after confirming the intended version owner.
+Verification: Re-run environment-doctor with --version-file node .node-version
+
+No changes were made. Obtain approval before applying any remediation.

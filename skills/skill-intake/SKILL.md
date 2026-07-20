@@ -57,7 +57,7 @@ Provide:
 - unresolved implementation-time matters that do not alter intent;
 - user-owned decisions that still require a stop;
 - the generation-viability assessment, selected execution preference, and authority boundary;
-- the intended destination and supported harness surfaces when known.
+- the intended destination, target harness surface when known, and whether Codex metadata is required.
 
 Do not create or refine the requested skill during intake. Invoke or route explicitly to `skill-generation` when the harness supports skill handoff; otherwise give the user the exact skill name and plan path needed to continue.
 

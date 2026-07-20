@@ -15,7 +15,7 @@ skill-issue evaluate cleanup --output <path> --run <id>
 
 Ordinary install and uninstall operations retain project and user scopes. Evaluation runs are always project-local: their interface has no scope argument, `--workspace` is required, and temporary skills use the selected harness's researched native project skill directory. Every evaluation also requires `--output`; the CLI stores its two default result artifacts under a unique `<output>/<harness>-<UTC-timestamp>-<run-prefix>/` directory and rejects an output root inside the evaluated workspace.
 
-The product targets `claude-code`, `codex`, `cursor`, `opencode`, `kilo-code`, and `pi`. Installation and evaluation currently support `claude-code`, `codex`, `cursor`, and `pi`; OpenCode and Kilo Code remain in progress.
+Installation and evaluation support `claude-code`, `codex`, `cursor`, `opencode`, `kilo-code`, and `pi`.
 
 ### Effective evaluation configuration
 
@@ -26,11 +26,13 @@ Every evaluation resolves one model and reasoning value before installing tempor
 | `codex`       | `gpt-5.6-sol`              | `medium`  | `--model`, `--config model_reasoning_effort=...`                           |
 | `cursor`      | native Auto-select         | `medium`  | explicit `--model`; default omits the flag because Cursor owns Auto-select |
 | `claude-code` | `opus`                     | `medium`  | `--model`, `--effort`                                                      |
+| `opencode`    | `openai/gpt-5.6-sol`       | `medium`  | `--model`, `--variant`                                                     |
+| `kilo-code`   | `openai/gpt-5.6-sol`       | `medium`  | `--model`, `--variant`                                                     |
 | `pi`          | `openai-codex/gpt-5.6-sol` | `medium`  | `--model`, `--thinking`                                                    |
 
 Model identifiers and supported reasoning values are passed to the selected native harness. Skill Issue does not maintain a model catalogue or prevalidate compatibility; a native harness owns rejection of an unsupported value. Cursor uses its native Auto-select model and model-native reasoning when no model override is supplied. An explicit Cursor `--reasoning` override is rejected before evaluation side effects because the CLI exposes no independent reasoning control.
 
-Use `--executable` when the required harness command is intentionally absent from `PATH`. The pre-run summary displays the selected executable or launcher. The local qualification environment uses this for the project-local Cursor agent, the Claude Code launcher that owns its local Codex proxy, and Pi's installed runtime entrypoint.
+Use `--executable` when the required harness command is intentionally absent from `PATH`. The pre-run summary displays the selected executable or launcher. The local qualification environments use this for the project-local Cursor agent, the Claude Code launcher that owns its local Codex proxy, the qualified OpenCode and Kilo executables, and Pi's installed runtime entrypoint.
 
 If a harness rejects a model, reasoning value, session, permission, or protocol step, the CLI reports a tooling error and retains the useful native stderr or structured error text.
 
@@ -44,7 +46,7 @@ Custom evaluation results are caller-selected local evidence. `result.json`, `we
 
 The executable embeds the complete canonical `skills/` and `supporting-skills/` trees and validates referenced-file closure before installing. Installation creates or reuses the selected harness's researched native project or user skill root, then replaces only the known Skill Issue payload directories with the current embedded copies. Portable skill files are shared across harnesses, and each harness specification owns the installed metadata it supports. Codex installations include each skill's `agents/openai.yaml`; Claude Code, Cursor, and Pi add `disable-model-invocation: true` to the installed `skill-intake` frontmatter. The canonical source remains portable, and custom evaluation skills retain their supplied frontmatter. Unrelated files and skill directories are not inspected or changed.
 
-Run `skill-issue install` in an interactive terminal for guided installation. Use the up and down arrow keys to select Claude Code, OpenAI Codex, Cursor, or Pi and then select project or user scope. OpenCode and Kilo Code appear as disabled in-progress targets. Project scope uses the current working directory. Before writing anything, the CLI previews the harness, scope, native destination, and seven embedded skills and asks for confirmation. It does not detect or automatically choose a harness.
+Run `skill-issue install` in an interactive terminal for guided installation. Use the up and down arrow keys to select Claude Code, OpenAI Codex, Cursor, OpenCode, Kilo Code, or Pi and then select project or user scope. Project scope uses the current working directory. Before writing anything, the CLI previews the harness, scope, native destination, and seven embedded skills and asks for confirmation. It does not detect or automatically choose a harness.
 
 After confirmation, installation verifies that every expected harness-specific payload file exists. The CLI then directs the user to open the selected harness and explicitly invoke `skill-intake`. Its canonical description says, "Use only when the user explicitly requests this skill." Codex enforces that boundary through `allow_implicit_invocation: false`; Claude Code, Cursor, and Pi enforce it through `disable-model-invocation: true`. The argument-driven form remains available for scripted installation and does not prompt.
 
@@ -147,6 +149,26 @@ Codex runs with `approval_policy=on-request` and `approvals_reviewer=auto_review
 
 Skill Issue does not edit, move, or copy the user's Codex configuration, credentials, skills, plugins, rules, or instruction files. `--ignore-user-config` continues to use the user's normal Codex authentication. The resumable evaluation session is created and retained in Codex's normal session store. Organization-managed requirements and system-level configuration remain authoritative and may make a Codex environment unsuitable for the campaign.
 
+### OpenCode runtime isolation
+
+OpenCode evaluation support is qualified against OpenCode `1.18.4`. The CLI requires that exact version, a pre-existing native provider login, and availability of the selected `provider/model` before temporary skills are installed. The default route uses OpenCode's native OpenAI ChatGPT OAuth provider with `openai/gpt-5.6-sol` and the `medium` variant.
+
+Each run creates private XDG configuration, state, cache, and temporary roots while retaining the operator-owned XDG data root that contains native authentication. The generated OpenCode configuration disables sharing, updates, snapshots, formatters, LSP, external plugins, MCP configuration, added instructions, project configuration, Claude compatibility, external skill discovery, and the file watcher. Compiled internal plugins remain available because OpenCode's native OpenAI OAuth provider depends on them.
+
+The deny-first permission policy permits workspace reads and edits, the selected evaluation skills, and only the exact Skill Issue signal command through Bash. OpenCode receives every prompt through `run --pure --format json` with the selected model and variant. Later turns resume the captured camel-case `sessionID`; each turn must finish with `step_finish` and `reason: "stop"`. A failed instrumentation marker is a tooling failure, while an unrelated denied tool request can remain structured model behavior.
+
+On completion, cancellation, or timeout, the adapter terminates only its owned process group and deletes the native OpenCode session before removing run-owned configuration and temporary skill material. The operator-owned OAuth credential remains available to OpenCode and may refresh through OpenCode's normal native behavior.
+
+### Kilo runtime isolation
+
+Kilo evaluation support is qualified against Kilo `7.4.11`. The CLI requires that exact version, a pre-existing native provider login, and availability of the selected `provider/model` before temporary skills are installed. The default route uses Kilo's native OpenAI ChatGPT OAuth provider with `openai/gpt-5.6-sol` and the `medium` variant.
+
+Each run creates private XDG configuration, state, cache, and temporary roots while retaining `HOME` and the operator-owned XDG data root that contains native authentication. The generated Kilo configuration selects the `code` agent, supplies only the run-owned skill path, and disables sharing, remote control, updates, snapshots, formatters, LSP, indexing, added remote skills, project configuration, Claude compatibility, external skill discovery, session ingest, presence, and the file watcher. Pure mode excludes external plugins while preserving the compiled internal OAuth provider. Daemon use is disabled.
+
+The deny-first permission policy permits workspace reads and edits, the selected evaluation skills, and only the exact Skill Issue signal command through Bash. It repeats semantic-search and codebase-search denials at the `code` agent layer and denies Kilo memory tools. Kilo receives every prompt through `run --pure --format json` with the selected model, variant, `code` agent, and workspace. Later turns resume the captured camel-case `sessionID`; each turn must finish with `step_finish` and `reason: "stop"`.
+
+Kilo `7.4.11` emits exact adjacent duplicate JSON event lines. The adapter removes only those adjacent byte-identical duplicates before protocol validation and scoring. It preserves distinct repeated events, rejects conflicting session identifiers and failed signal commands, and deletes the exact captured native session directly by ID during completion, cancellation, recovery, or timeout cleanup.
+
 ### Evaluation artifacts
 
 Every tooling-complete evaluation stores these files under `<output>/<harness>-<UTC-timestamp>-<run-prefix>/`, where `<output>` is the mandatory directory selected by the caller:
@@ -192,21 +214,27 @@ Every evaluation stores its outputs beneath the mandatory output root:
 
 - `<output>/<harness>-<UTC-timestamp>-<run-prefix>/` always contains `result.json` and `website.json`; it contains `events.jsonl` or `transcript.json` only when their corresponding flags are enabled.
 - `<output>/.skill-issue/` temporarily contains private run state, opaque-token mappings, internal events, and the names of Skill Issue paths that existed before instrumentation.
-- Harness session state used during replay remains in the harness's normal history.
+- Harness session state follows each adapter's native contract. OpenCode and Kilo sessions are deleted during cleanup; other supported harness sessions follow the retained behavior documented above.
 
 Private run state and token mappings use restrictive permissions. A successful run removes its private recovery state after cleanup. If a run is interrupted, use the same output root with `skill-issue evaluate cleanup --output <path> --run <id>` to rematerialize previously present canonical Skill Issue paths, remove temporary evaluation paths, and delete that run's private state. Completed result artifacts remain in the caller-selected output directory. Evaluation does not write run state to the platform application-state location.
 
 ## Harness Boundary
 
-The runner uses headless resumable commands for Codex and Cursor, Claude streaming JSON, and Pi RPC mode. Model access and the underlying harness login remain user-provided prerequisites. Codex, Cursor, Claude Code, and Pi have CLI-owned runtime preparation. A launch, required permission, session, marker, timeout, cancellation, or protocol failure is a tooling failure rather than a model result.
+The runner uses headless resumable commands for Codex, Cursor, OpenCode, and Kilo, Claude streaming JSON, and Pi RPC mode. Model access and the underlying harness login remain user-provided prerequisites. Every supported harness has CLI-owned runtime preparation. A launch, required permission, session, marker, timeout, cancellation, or protocol failure is a tooling failure rather than a model result.
 
-OpenCode and local Kilo Code remain product targets, but their installation and evaluation routes are not yet implemented. Kilo Cloud remains outside the product boundary.
+Kilo Cloud remains outside the product boundary.
 
 ## Local Smoke Qualification
 
 On 2026-07-20, the standalone CLI completed two-turn built-in and custom-skill smokes through Codex `0.144.1`, Cursor Agent `2026.07.16-899851b`, Claude Code `2.1.205` through the project-local Codex proxy, and Pi `0.80.10`. The runs exercised defaults, explicit model and reasoning values where supported, executable overrides, supplied skills, scenarios, answer sheets, output selection, one continuous session, result generation, selected-workspace writes, and cleanup. Cursor correctly rejects an explicit reasoning override because its CLI exposes no independent reasoning flag. Missing expected skill calls remain evaluation data rather than tooling failures.
 
 The final Cursor and Claude runs left no detached Cursor worker, Claude proxy, or private runtime. Pi reused its existing authenticated `PI_CODING_AGENT_DIR` without Skill Issue copying or overwriting it while keeping evaluation sessions and supplied skills temporary. Qualification results, observed calls, cleanup evidence, and useful native errors are recorded in `evaluations/skill-calling/smoke/real-harness-smoke-report.md`.
+
+On 2026-07-21, OpenCode `1.18.4` passed the bounded local configuration qualification with native OpenAI ChatGPT OAuth, `openai/gpt-5.6-sol`, the `medium` variant, exclusive supplied-skill discovery apart from one compiled built-in skill, two-turn continuation, marker attribution, permission denial, interruption cleanup, and explicit session deletion. The retained evidence is recorded in `research/harness-portability-qualification/opencode-local-configuration-qualification.md`; governed 30-turn and additional-platform qualification remain separate work.
+
+On 2026-07-21, Kilo `7.4.11` passed the bounded local configuration qualification with native OpenAI ChatGPT OAuth, `openai/gpt-5.6-sol`, the `medium` variant, controlled supplied-skill discovery, two-turn continuation, marker attribution, permission denial, adjacent exact-event normalization, interruption cleanup, daemon suppression, and direct session deletion. The retained evidence is recorded in `research/harness-portability-qualification/kilo-local-configuration-qualification.md`; governed 30-turn and additional-platform qualification remain separate work.
+
+The development CLI then completed both a custom two-turn route and the first two turns of `gardening-web-application`. The custom route observed `smoke-skill` on both turns with no misses. The built-in route observed its expected `document-update-discipline` call plus one additional valid skill call. Both captures used one stable session ID, retained zero adjacent exact duplicates in their normalized structured event arrays, removed temporary skills and private runtime state, deleted their native Kilo sessions directly, left the daemon stopped, and left no Kilo process. The retained smoke summary is in `evaluations/skill-calling/smoke/real-harness-smoke-report.md`.
 
 ## Development
 

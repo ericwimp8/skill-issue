@@ -1,0 +1,28 @@
+agent_path=/root/api_change_impact_mapper/api_body_case_3
+model=GPT-5.6 Sol
+reasoning=medium
+
+target_path=showcase-skills/api-change-impact-mapper/skill/api-change-impact-mapper/SKILL.md
+target_sha256=7b5dfd09fae4349f467f13aa4d7a85ddae21b831eef6dee0f93421d03cd4876e
+
+request_path=showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/behavior/cycle-1/case-3/request.md
+request_sha256=13efe8e32cb1beeee81cba3eb95e92adc91b835cfd13f662e2ac9b183267e7b9
+
+fixture_root=showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/fixtures/library-contract
+fixture_file_sha256=d7d5105bf3ccaa140e6cdef6d91f438f614871cbab3a09ca6781764b43fce34d  showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/fixtures/library-contract/cli/run.ts
+fixture_file_sha256=a9c8dcf12da9da2168455905a9ae00f374607c0220212cf9d5568a2110c41511  showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/fixtures/library-contract/config/backends.env
+fixture_file_sha256=44deb0c1084820b5af86c2f50c6e862c63a7ac5a928c712e69756248a2ff1c09  showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/fixtures/library-contract/contracts/new.d.ts
+fixture_file_sha256=4f8e074a6f62f6368b501d8de5481002aa814093fb59bafd85826a7a8648f2b5  showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/fixtures/library-contract/contracts/old.d.ts
+fixture_file_sha256=abca6fcaee477d63fbcc9efd8cca6b895655b77d0011717fc3bfaf3acd45cbf3  showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/fixtures/library-contract/package.json
+fixture_file_sha256=a2d5853a03615a34b2189cc3fc5ee6c015fc79f12ba7fe34675fac3fb3c50ee3  showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/fixtures/library-contract/plugins/legacy_adapter.ts
+fixture_file_sha256=299df0c9f699d86b1a0fbdd6c55d64ac351607d02f10e9492aef13dfc5287439  showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/fixtures/library-contract/service/route_service.ts
+fixture_file_sha256=e5c216212cfb805113c0d4e43c305d290474cb72a08048bdadd501debfc0147e  showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/fixtures/library-contract/src/index.ts
+fixture_file_sha256=02273f098ff04729c5be226ca4cb217834e059c9455befb93a27fd8579d4a249  showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/fixtures/library-contract/src/router.ts
+
+fixture_tree_hash_algorithm=SHA-256 of the sorted manifest lines "<file_sha256><two spaces><repository-relative path><newline>" for every regular fixture file
+fixture_tree_sha256_before=91b7e73f05a0062d2e91dadba11097a51fda8f7296d3036b973070b40922a268
+fixture_tree_sha256_after=91b7e73f05a0062d2e91dadba11097a51fda8f7296d3036b973070b40922a268
+fixture_unchanged=true
+
+output_path=showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/behavior/cycle-1/case-3/output.md
+output_sha256=781d89ac2f72a77bfbf1b6c87b7fb4c66f73894723d3e0a6eeac87e3715e5589

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repository Onboarding Guide"
+  short_description: "Create source-backed repository onboarding guides"
+

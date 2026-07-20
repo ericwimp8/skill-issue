@@ -1,0 +1,143 @@
+{
+  "environment": [],
+  "findings": [
+    {
+      "evidence": {
+        "selected": {
+          "path": "<root>/toolchain-primary/bin/node",
+          "path_index": 0,
+          "resolved_path": "<root>/toolchain-primary/bin/node"
+        },
+        "state": "available",
+        "version": "20.11.1"
+      },
+      "id": "tool.node",
+      "remediation": "No remediation is indicated by this check.",
+      "severity": "info",
+      "summary": "node resolves with a readable version",
+      "verification": "command -v node"
+    },
+    {
+      "evidence": {
+        "earlier": "<root>/toolchain-primary/bin",
+        "earlier_indices": [
+          0
+        ],
+        "later": "<root>/toolchain-secondary/bin",
+        "later_indices": [
+          1
+        ],
+        "state": "satisfied"
+      },
+      "id": "path-order.1",
+      "remediation": "Change PATH only in its owning user or project configuration after confirming the intended precedence.",
+      "severity": "info",
+      "summary": "PATH order expectation is satisfied",
+      "verification": "Re-run the same --expect-path-before check"
+    },
+    {
+      "evidence": {
+        "actual_version": "20.11.1",
+        "declared_version": "20",
+        "file": "<root>/.node-version",
+        "state": "match",
+        "tool": "node"
+      },
+      "id": "version-file.node.1",
+      "remediation": "Choose the project-approved toolchain or update the declaration only after confirming the intended version owner.",
+      "severity": "info",
+      "summary": "node version declaration is match",
+      "verification": "Re-run environment-doctor with --version-file node .node-version"
+    }
+  ],
+  "inspection": {
+    "changed_environment": false,
+    "platform": "posix",
+    "root": "<root>"
+  },
+  "path_order": [
+    {
+      "earlier": "<root>/toolchain-primary/bin",
+      "earlier_indices": [
+        0
+      ],
+      "later": "<root>/toolchain-secondary/bin",
+      "later_indices": [
+        1
+      ],
+      "state": "satisfied"
+    }
+  ],
+  "schema_version": 1,
+  "tools": [
+    {
+      "candidates": [
+        {
+          "path": "<root>/toolchain-primary/bin/node",
+          "path_index": 0,
+          "resolved_path": "<root>/toolchain-primary/bin/node"
+        },
+        {
+          "path": "<root>/toolchain-secondary/bin/node",
+          "path_index": 1,
+          "resolved_path": "<root>/toolchain-secondary/bin/node"
+        },
+        {
+          "path": "~/.volta/bin/volta-shim",
+          "path_index": 3,
+          "resolved_path": "~/.volta/bin/volta-shim"
+        },
+        {
+          "path": "~/.volta/bin/volta-shim",
+          "path_index": 5,
+          "resolved_path": "~/.volta/bin/volta-shim"
+        },
+        {
+          "path": "~/.volta/bin/volta-shim",
+          "path_index": 10,
+          "resolved_path": "~/.volta/bin/volta-shim"
+        },
+        {
+          "path": "~/.nvm/versions/node/v22.22.0/bin/node",
+          "path_index": 16,
+          "resolved_path": "~/.nvm/versions/node/v22.22.0/bin/node"
+        },
+        {
+          "path": "/usr/local/bin/node",
+          "path_index": 22,
+          "resolved_path": "/usr/local/bin/node"
+        },
+        {
+          "path": "~/.volta/bin/volta-shim",
+          "path_index": 33,
+          "resolved_path": "~/.volta/bin/volta-shim"
+        }
+      ],
+      "name": "node",
+      "selected": {
+        "path": "<root>/toolchain-primary/bin/node",
+        "path_index": 0,
+        "resolved_path": "<root>/toolchain-primary/bin/node"
+      },
+      "state": "available",
+      "version": {
+        "arguments": [
+          "--version"
+        ],
+        "exit_code": 0,
+        "output": "v20.11.1",
+        "state": "available",
+        "version": "20.11.1"
+      }
+    }
+  ],
+  "version_files": [
+    {
+      "actual_version": "20.11.1",
+      "declared_version": "20",
+      "file": "<root>/.node-version",
+      "state": "match",
+      "tool": "node"
+    }
+  ]
+}

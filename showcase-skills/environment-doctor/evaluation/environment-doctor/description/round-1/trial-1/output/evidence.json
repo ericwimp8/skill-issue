@@ -1,0 +1,415 @@
+{
+  "environment": [
+    {
+      "name": "DIAGNOSTIC_SECRET",
+      "state": "set",
+      "value": null
+    },
+    {
+      "entries": [
+        {
+          "exists": true,
+          "index": 0,
+          "path": "<root>/toolchain-primary/bin"
+        },
+        {
+          "exists": true,
+          "index": 1,
+          "path": "<root>/toolchain-secondary/bin"
+        },
+        {
+          "exists": true,
+          "index": 2,
+          "path": "~/<external-toolchain>/flutter/bin"
+        },
+        {
+          "exists": true,
+          "index": 3,
+          "path": "~/.volta/bin"
+        },
+        {
+          "exists": true,
+          "index": 4,
+          "path": "~/<external-toolchain>/flutter/bin"
+        },
+        {
+          "exists": true,
+          "index": 5,
+          "path": "~/.volta/bin"
+        },
+        {
+          "exists": true,
+          "index": 6,
+          "path": "~/.codex/tmp/arg0/codex-arg09ApXoX"
+        },
+        {
+          "exists": true,
+          "index": 7,
+          "path": "~/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/override"
+        },
+        {
+          "exists": true,
+          "index": 8,
+          "path": "~/.antigravity/antigravity/bin"
+        },
+        {
+          "exists": true,
+          "index": 9,
+          "path": "~/.antigravity/antigravity/bin"
+        },
+        {
+          "exists": true,
+          "index": 10,
+          "path": "~/.volta/bin"
+        },
+        {
+          "exists": true,
+          "index": 11,
+          "path": "~/.rbenv/shims"
+        },
+        {
+          "exists": true,
+          "index": 12,
+          "path": "/opt/homebrew/bin"
+        },
+        {
+          "exists": true,
+          "index": 13,
+          "path": "/opt/homebrew/sbin"
+        },
+        {
+          "exists": true,
+          "index": 14,
+          "path": "~/.bun/bin"
+        },
+        {
+          "exists": true,
+          "index": 15,
+          "path": "~/.local/bin"
+        },
+        {
+          "exists": true,
+          "index": 16,
+          "path": "~/.nvm/versions/node/v22.22.0/bin"
+        },
+        {
+          "exists": true,
+          "index": 17,
+          "path": "~/.amplify/bin"
+        },
+        {
+          "exists": true,
+          "index": 18,
+          "path": "~/google-cloud-sdk/bin"
+        },
+        {
+          "exists": true,
+          "index": 19,
+          "path": "~/<external-toolchain>/flutter/bin"
+        },
+        {
+          "exists": true,
+          "index": 20,
+          "path": "~/.rbenv/shims"
+        },
+        {
+          "exists": true,
+          "index": 21,
+          "path": "/Library/Frameworks/Python.framework/Versions/3.9/bin"
+        },
+        {
+          "exists": true,
+          "index": 22,
+          "path": "/usr/local/bin"
+        },
+        {
+          "exists": true,
+          "index": 23,
+          "path": "/System/Cryptexes/App/usr/bin"
+        },
+        {
+          "exists": true,
+          "index": 24,
+          "path": "/usr/bin"
+        },
+        {
+          "exists": true,
+          "index": 25,
+          "path": "/bin"
+        },
+        {
+          "exists": true,
+          "index": 26,
+          "path": "/usr/sbin"
+        },
+        {
+          "exists": true,
+          "index": 27,
+          "path": "/sbin"
+        },
+        {
+          "exists": false,
+          "index": 28,
+          "path": "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin"
+        },
+        {
+          "exists": false,
+          "index": 29,
+          "path": "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin"
+        },
+        {
+          "exists": false,
+          "index": 30,
+          "path": "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin"
+        },
+        {
+          "exists": false,
+          "index": 31,
+          "path": "/opt/pmk/env/global/bin"
+        },
+        {
+          "exists": true,
+          "index": 32,
+          "path": "/Library/Apple/usr/bin"
+        },
+        {
+          "exists": true,
+          "index": 33,
+          "path": "~/.volta/bin"
+        },
+        {
+          "exists": true,
+          "index": 34,
+          "path": "~/.pub-cache/bin"
+        },
+        {
+          "exists": true,
+          "index": 35,
+          "path": "~/Library/Android/sdk/platform-tools"
+        },
+        {
+          "exists": true,
+          "index": 36,
+          "path": "~/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/fallback"
+        },
+        {
+          "exists": true,
+          "index": 37,
+          "path": "/Applications/ChatGPT.app/Contents/Resources"
+        },
+        {
+          "exists": true,
+          "index": 38,
+          "path": "~/.pub-cache/bin"
+        },
+        {
+          "exists": true,
+          "index": 39,
+          "path": "~/.pub-cache/bin"
+        }
+      ],
+      "name": "PATH",
+      "state": "set",
+      "value": null
+    }
+  ],
+  "findings": [
+    {
+      "evidence": {
+        "selected": {
+          "path": "<root>/toolchain-primary/bin/mystery-tool",
+          "path_index": 0,
+          "resolved_path": "<root>/toolchain-primary/bin/mystery-tool"
+        },
+        "state": "available",
+        "version_state": "unsupported"
+      },
+      "id": "tool.mystery-tool",
+      "remediation": "Consult the tool's authoritative documentation before selecting a non-mutating version command.",
+      "severity": "info",
+      "summary": "mystery-tool resolves; version probing is unsupported",
+      "verification": "command -v mystery-tool"
+    },
+    {
+      "evidence": {
+        "selected": {
+          "path": "<root>/toolchain-primary/bin/node",
+          "path_index": 0,
+          "resolved_path": "<root>/toolchain-primary/bin/node"
+        },
+        "state": "available",
+        "version": "20.11.1"
+      },
+      "id": "tool.node",
+      "remediation": "No remediation is indicated by this check.",
+      "severity": "info",
+      "summary": "node resolves with a readable version",
+      "verification": "command -v node"
+    },
+    {
+      "evidence": {
+        "state": "set",
+        "value_omitted": true
+      },
+      "id": "env.DIAGNOSTIC_SECRET",
+      "remediation": "Set or correct this variable only in its user-owned configuration if the project requires it.",
+      "severity": "info",
+      "summary": "DIAGNOSTIC_SECRET is set; its value is omitted",
+      "verification": "Re-run environment-doctor with --env DIAGNOSTIC_SECRET"
+    },
+    {
+      "evidence": {
+        "state": "set",
+        "value_omitted": true
+      },
+      "id": "env.PATH",
+      "remediation": "Set or correct this variable only in its user-owned configuration if the project requires it.",
+      "severity": "info",
+      "summary": "PATH is set; its value is omitted",
+      "verification": "Re-run environment-doctor with --env PATH"
+    },
+    {
+      "evidence": {
+        "earlier": "<root>/toolchain-primary/bin",
+        "earlier_indices": [
+          0
+        ],
+        "later": "<root>/toolchain-secondary/bin",
+        "later_indices": [
+          1
+        ],
+        "state": "satisfied"
+      },
+      "id": "path-order.1",
+      "remediation": "Change PATH only in its owning user or project configuration after confirming the intended precedence.",
+      "severity": "info",
+      "summary": "PATH order expectation is satisfied",
+      "verification": "Re-run the same --expect-path-before check"
+    },
+    {
+      "evidence": {
+        "actual_version": "20.11.1",
+        "declared_version": "20",
+        "file": "<root>/.node-version",
+        "state": "match",
+        "tool": "node"
+      },
+      "id": "version-file.node.1",
+      "remediation": "Choose the project-approved toolchain or update the declaration only after confirming the intended version owner.",
+      "severity": "info",
+      "summary": "node version declaration is match",
+      "verification": "Re-run environment-doctor with --version-file node .node-version"
+    }
+  ],
+  "inspection": {
+    "changed_environment": false,
+    "platform": "posix",
+    "root": "<root>"
+  },
+  "path_order": [
+    {
+      "earlier": "<root>/toolchain-primary/bin",
+      "earlier_indices": [
+        0
+      ],
+      "later": "<root>/toolchain-secondary/bin",
+      "later_indices": [
+        1
+      ],
+      "state": "satisfied"
+    }
+  ],
+  "schema_version": 1,
+  "tools": [
+    {
+      "candidates": [
+        {
+          "path": "<root>/toolchain-primary/bin/mystery-tool",
+          "path_index": 0,
+          "resolved_path": "<root>/toolchain-primary/bin/mystery-tool"
+        }
+      ],
+      "name": "mystery-tool",
+      "selected": {
+        "path": "<root>/toolchain-primary/bin/mystery-tool",
+        "path_index": 0,
+        "resolved_path": "<root>/toolchain-primary/bin/mystery-tool"
+      },
+      "state": "available",
+      "version": {
+        "output": null,
+        "state": "unsupported",
+        "version": null
+      }
+    },
+    {
+      "candidates": [
+        {
+          "path": "<root>/toolchain-primary/bin/node",
+          "path_index": 0,
+          "resolved_path": "<root>/toolchain-primary/bin/node"
+        },
+        {
+          "path": "<root>/toolchain-secondary/bin/node",
+          "path_index": 1,
+          "resolved_path": "<root>/toolchain-secondary/bin/node"
+        },
+        {
+          "path": "~/.volta/bin/volta-shim",
+          "path_index": 3,
+          "resolved_path": "~/.volta/bin/volta-shim"
+        },
+        {
+          "path": "~/.volta/bin/volta-shim",
+          "path_index": 5,
+          "resolved_path": "~/.volta/bin/volta-shim"
+        },
+        {
+          "path": "~/.volta/bin/volta-shim",
+          "path_index": 10,
+          "resolved_path": "~/.volta/bin/volta-shim"
+        },
+        {
+          "path": "~/.nvm/versions/node/v22.22.0/bin/node",
+          "path_index": 16,
+          "resolved_path": "~/.nvm/versions/node/v22.22.0/bin/node"
+        },
+        {
+          "path": "/usr/local/bin/node",
+          "path_index": 22,
+          "resolved_path": "/usr/local/bin/node"
+        },
+        {
+          "path": "~/.volta/bin/volta-shim",
+          "path_index": 33,
+          "resolved_path": "~/.volta/bin/volta-shim"
+        }
+      ],
+      "name": "node",
+      "selected": {
+        "path": "<root>/toolchain-primary/bin/node",
+        "path_index": 0,
+        "resolved_path": "<root>/toolchain-primary/bin/node"
+      },
+      "state": "available",
+      "version": {
+        "arguments": [
+          "--version"
+        ],
+        "exit_code": 0,
+        "output": "v20.11.1",
+        "state": "available",
+        "version": "20.11.1"
+      }
+    }
+  ],
+  "version_files": [
+    {
+      "actual_version": "20.11.1",
+      "declared_version": "20",
+      "file": "<root>/.node-version",
+      "state": "match",
+      "tool": "node"
+    }
+  ]
+}

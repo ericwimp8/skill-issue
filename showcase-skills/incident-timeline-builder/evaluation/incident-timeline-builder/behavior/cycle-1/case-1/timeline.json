@@ -1,0 +1,96 @@
+{
+  "input_sha256": "47f15cfe2a43384b9c136ac7b3b1613c66d9e19ae002d06968844f80e808616d",
+  "resolved_events": [
+    {
+      "classification": "observed",
+      "input_order": 3,
+      "locator": "row 2",
+      "normalized_utc": "2026-03-18T22:38:00Z",
+      "raw_timestamp": "2026-03-19T09:08:00+10:30",
+      "source_id": "SRC-DEPLOYMENTS",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/behavior/case-1/deployments.csv",
+      "summary": "The deployment system recorded completion of deployment p-88 for the payments service.",
+      "timestamp_status": "resolved"
+    },
+    {
+      "classification": "observed",
+      "input_order": 4,
+      "locator": "line 1",
+      "normalized_utc": "2026-03-18T22:40:30Z",
+      "raw_timestamp": "2026-03-19T09:10:30+10:30",
+      "source_id": "SRC-SERVICE",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/behavior/case-1/service.log",
+      "summary": "The payments service recorded a timeout to upstream ledger with correlation_id c-4.",
+      "timestamp_status": "resolved"
+    },
+    {
+      "classification": "observed",
+      "input_order": 5,
+      "locator": "line 2",
+      "normalized_utc": "2026-03-18T22:42:00Z",
+      "raw_timestamp": "2026-03-19T09:12:00+10:30",
+      "source_id": "SRC-SERVICE",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/behavior/case-1/service.log",
+      "summary": "The payments service recorded a timeout to upstream ledger with correlation_id c-5.",
+      "timestamp_status": "resolved"
+    },
+    {
+      "classification": "observed",
+      "input_order": 1,
+      "locator": "$[0]",
+      "normalized_utc": "2026-03-18T23:12:00Z",
+      "raw_timestamp": "2026-03-18T23:12:00Z",
+      "source_id": "SRC-ALERTS",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/behavior/case-1/alerts.json",
+      "summary": "The alert system recorded payments_latency_high.",
+      "timestamp_status": "resolved"
+    },
+    {
+      "classification": "observed",
+      "input_order": 2,
+      "locator": "$[1]",
+      "normalized_utc": "2026-03-18T23:25:00Z",
+      "raw_timestamp": "2026-03-18T23:25:00Z",
+      "source_id": "SRC-ALERTS",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/behavior/case-1/alerts.json",
+      "summary": "The alert system recorded payments_latency_recovered.",
+      "timestamp_status": "resolved"
+    }
+  ],
+  "schema_version": 1,
+  "unresolved_events": [
+    {
+      "classification": "reported",
+      "input_order": 6,
+      "locator": "line 3",
+      "normalized_utc": null,
+      "raw_timestamp": "09:16",
+      "source_id": "SRC-NOTES",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/behavior/case-1/notes.md",
+      "source_timezone": "Australia/Adelaide",
+      "summary": "An operator reported rolling back deployment p-88 at 09:16 local Adelaide time; the note supplies no date.",
+      "timestamp_issue": "raw_timestamp is not an ISO 8601 date-time",
+      "timestamp_status": "invalid"
+    },
+    {
+      "classification": "gap",
+      "input_order": 7,
+      "locator": "line 4",
+      "normalized_utc": null,
+      "source_id": "SRC-NOTES",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/behavior/case-1/notes.md",
+      "summary": "The note states that the deployment system has no rollback-completion record.",
+      "timestamp_status": "missing"
+    },
+    {
+      "classification": "reported",
+      "input_order": 8,
+      "locator": "line 5",
+      "normalized_utc": null,
+      "source_id": "SRC-NOTES",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/behavior/case-1/notes.md",
+      "summary": "The operator suspected deployment p-88 caused the latency; the note states that no comparison or trace proves the relationship.",
+      "timestamp_status": "missing"
+    }
+  ]
+}

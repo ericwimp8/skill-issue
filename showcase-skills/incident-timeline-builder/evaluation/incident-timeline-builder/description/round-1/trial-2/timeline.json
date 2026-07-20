@@ -1,0 +1,52 @@
+{
+  "input_sha256": "d0691f5610ac952aafa266e22c201b64a6e716b0f083d591aaaf370fc9c1f161",
+  "resolved_events": [
+    {
+      "classification": "observed",
+      "input_order": 1,
+      "locator": "line 3",
+      "normalized_utc": "2026-08-12T08:10:00Z",
+      "raw_timestamp": "2026-08-12 17:10:00",
+      "source_id": "SRC-01",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/description/trial-2/deploy.md",
+      "source_timezone": "Asia/Tokyo",
+      "summary": "Deployment record states worker revision w42 completed.",
+      "timestamp_status": "resolved"
+    },
+    {
+      "classification": "observed",
+      "input_order": 2,
+      "locator": "line 1",
+      "normalized_utc": "2026-08-12T08:15:00Z",
+      "raw_timestamp": "2026-08-12T08:15:00Z",
+      "source_id": "SRC-02",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/description/trial-2/monitor.jsonl",
+      "summary": "Monitor recorded queue_depth_high.",
+      "timestamp_status": "resolved"
+    },
+    {
+      "classification": "observed",
+      "input_order": 3,
+      "locator": "line 2",
+      "normalized_utc": "2026-08-12T08:15:00Z",
+      "raw_timestamp": "2026-08-12T08:15:00Z",
+      "source_id": "SRC-02",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/description/trial-2/monitor.jsonl",
+      "summary": "Monitor recorded worker_errors_high.",
+      "timestamp_status": "resolved"
+    },
+    {
+      "classification": "reported",
+      "input_order": 4,
+      "locator": "line 3",
+      "normalized_utc": "2026-08-12T08:20:00Z",
+      "raw_timestamp": "2026-08-12T17:20:00+09:00",
+      "source_id": "SRC-03",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/description/trial-2/operator.md",
+      "summary": "Operator reported that queue depth looked normal again; the note does not establish the cause of recovery.",
+      "timestamp_status": "resolved"
+    }
+  ],
+  "schema_version": 1,
+  "unresolved_events": []
+}

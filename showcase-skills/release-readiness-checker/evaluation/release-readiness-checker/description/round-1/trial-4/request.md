@@ -1,0 +1,1 @@
+Audit the candidate under `showcase-skills/release-readiness-checker/evaluation/release-readiness-checker/fixtures/description/trial-4/` for release readiness and provide exact next actions. Do not execute a migration or release operation. Write the report to `showcase-skills/release-readiness-checker/evaluation/release-readiness-checker/description/round-1/trial-4/report.md`.

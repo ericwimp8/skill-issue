@@ -1,0 +1,1 @@
+Produce a reviewable migration plan for moving the service in showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/fixtures/pydantic-service/ from Pydantic 1.10 to Pydantic 2.x without modifying it.

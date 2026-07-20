@@ -1,0 +1,3 @@
+COMMAND: fixture_root="$(cd showcase-skills/environment-doctor/fixtures/script/root && pwd -P)"
+COMMAND: DIAGNOSTIC_SECRET=trial-only-value PATH="$fixture_root/toolchain-primary/bin:$fixture_root/toolchain-secondary/bin:$fixture_root/toolchain-primary/bin:$PATH" python3 showcase-skills/environment-doctor/skill/environment-doctor/scripts/diagnose.py --root "$fixture_root" --output-dir showcase-skills/environment-doctor/evaluation/environment-doctor/description/round-1/trial-4/output --tool node --env DIAGNOSTIC_SECRET --expect-path-before toolchain-primary/bin toolchain-secondary/bin
+EXIT: 1

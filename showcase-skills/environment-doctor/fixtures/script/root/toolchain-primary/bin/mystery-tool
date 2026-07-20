@@ -1,0 +1,3 @@
+#!/bin/sh
+touch "$(dirname "$0")/../../executed-if-run"
+printf '%s\n' 'secret-version'

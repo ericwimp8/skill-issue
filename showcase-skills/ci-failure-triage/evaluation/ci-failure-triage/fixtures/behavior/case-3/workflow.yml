@@ -1,0 +1,6 @@
+name: preview
+jobs:
+  preview:
+    steps:
+      - run: ./authenticate.sh
+      - run: ./publish-preview.sh

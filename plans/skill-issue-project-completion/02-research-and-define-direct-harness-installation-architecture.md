@@ -4,7 +4,7 @@
 
 - Skill Issue has selected six harness targets: Claude Code, OpenAI Codex, Cursor, OpenCode, Kilo Code, and Pi.
 - The product direction is fixed: Skill Issue will use its own CLI to install and remove canonical skills directly rather than shipping and maintaining a separate native plugin for every harness.
-- The pure-Go CLI foundation is complete under `cli/`. Work Block 2 has populated its canonical payload, implemented project and user installation for Claude Code, OpenAI Codex, Cursor, and Pi, added direct disposable materialization, built the evaluation runner, and added guided harness and scope selection with preview and confirmation. OpenCode and Kilo Code installation and evaluation remain in progress; final qualification remains unfinished.
+- The pure-Go CLI foundation is complete under `cli/`. Work Block 2 has populated its canonical payload, implemented project and user installation for all six selected harnesses, added direct disposable materialization, built the evaluation runner, and added guided harness and scope selection with preview and confirmation. Final complete-workflow, governed-campaign, and native-platform qualification remain unfinished.
 - The internet-only direct-installation research is complete in `research/deep-research/harness-direct-installation-architecture/harness-direct-installation-architecture-deep-research.md`, supported by the ten reports under `research/deep-research/harness-direct-installation-architecture/assignments/`.
 - That research establishes a portable Agent Skill payload and host-specific adapters for paths, activation, verification, trust, policy, configuration, and unsupported surfaces. The implemented ordinary lifecycle is intentionally narrower than the research proposal: repeated installation replaces the known payload paths, and uninstallation removes them.
 
@@ -32,7 +32,7 @@ The completed research remains the path and support-boundary evidence for retain
 ### 3. Adopt the direct lifecycle and adapter contract
 
 - Implement keyboard selection, scope enumeration, preview, install, and uninstall through the existing command, harness, and installer owners.
-- Present the retained harnesses for explicit user selection rather than detecting or silently choosing a target. Keep unfinished OpenCode and Kilo Code routes visible but disabled until implemented.
+- Present every retained harness for explicit user selection rather than detecting or silently choosing a target.
 - Build preview from the same payload, native-path, executable-helper, and blocker facts used by installation.
 - Make each adapter own exact path resolution and only the concrete blockers or restart information required by that installation route.
 - Treat successful materialization as an installation result without implying that the host discovered or activated the skill. Work Block 3 records discovery and activation evidence.
@@ -63,7 +63,7 @@ The completed research remains the path and support-boundary evidence for retain
 ## C: Observable Completion Criteria
 
 - The research synthesis and its assignments are named as the authoritative source material for direct-install implementation.
-- One strict portable payload contract and one direct disposable lifecycle are defined for the six selected targets, with OpenCode and Kilo Code explicitly in progress.
+- One strict portable payload contract and one direct disposable lifecycle are implemented for the six selected targets.
 - Every selected local harness surface has a documented native project or user route, adapter classification, and limitation boundary.
 - Installation reports direct materialization without claiming discovery or activation; Work Block 3 owns that live evidence.
 - Reinstallation and uninstallation replace or remove only the known Skill Issue payload paths and preserve unrelated user state.

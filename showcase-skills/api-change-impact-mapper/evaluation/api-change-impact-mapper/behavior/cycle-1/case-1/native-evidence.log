@@ -1,0 +1,19 @@
+fresh_agent_path: /root/api_change_impact_mapper/api_body_case_1
+model: gpt-5.6-sol
+reasoning_effort: medium
+target_skill_path: showcase-skills/api-change-impact-mapper/skill/api-change-impact-mapper/SKILL.md
+target_skill_sha256: 7b5dfd09fae4349f467f13aa4d7a85ddae21b831eef6dee0f93421d03cd4876e
+request_path: showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/behavior/cycle-1/case-1/request.md
+fixture_root: showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/fixtures/http-contract
+fixture_file_sha256:
+  99f001066f28f2c9fcebf886901c65dc05a41b228d08543f243e8e9e30851446  showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/fixtures/http-contract/config/routes.yaml
+  be5b9607b8665887a9d914cf0d7563cc8fb05427c1e7baf2e8fc5233addb4650  showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/fixtures/http-contract/contracts/openapi-new.yaml
+  768dfc2ea1a1e6b30982aa8b8d61292adf026c6c6f392f833df256b30385be06  showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/fixtures/http-contract/contracts/openapi-old.yaml
+  36f399224dcc0d528f029e4ba459d6516521a3d7490c1c337f7310f3e3c89139  showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/fixtures/http-contract/generated/account_client.ts
+  ef3339ca6c3ea2e7c444e2cd59a0618a9fc1d410a42e11475d0394fc932a7c8e  showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/fixtures/http-contract/mobile/account_decoder.kt
+  35ba8136fe427c9c82e07f2d9ace3e384ebd619a3d9919f64018599056dfa445  showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/fixtures/http-contract/server/account_handler.ts
+  2502b5d2bc07138f796aaed7f42edb3a3bbe09414570edbb6db581c6fdb06879  showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/fixtures/http-contract/storage/account_store.ts
+fixture_tree_hash_algorithm: sha256 over sorted lines "<file sha256><two spaces><repository-relative path>"
+fixture_tree_sha256_before: 3354c05dffb6aa15259fe0aa276283c0cb152b131641857dd1e9b4f6d2e21c4c
+fixture_tree_sha256_after: 3354c05dffb6aa15259fe0aa276283c0cb152b131641857dd1e9b4f6d2e21c4c
+fixture_unchanged: true

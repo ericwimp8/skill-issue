@@ -1,0 +1,22 @@
+agent=/root/environment_doctor/env_desc_1
+selection=selected: request concerns executable resolution, PATH precedence, environment state, and version mismatch
+command=fixture_root="$(cd showcase-skills/environment-doctor/fixtures/script/root && pwd -P)"; DIAGNOSTIC_SECRET=<synthetic-set-value> PATH="<root>/toolchain-primary/bin:<root>/toolchain-secondary/bin:<existing-PATH>" python3 showcase-skills/environment-doctor/skill/environment-doctor/scripts/diagnose.py --root "$fixture_root" --output-dir showcase-skills/environment-doctor/evaluation/environment-doctor/description/round-1/trial-1/output --tool node --tool mystery-tool --env DIAGNOSTIC_SECRET --env PATH --expect-path-before toolchain-primary/bin toolchain-secondary/bin --version-file node .node-version
+source_hashes_before:
+2dbbedaa46f1005676c4b423e1cdfcb5562d9d0f4b62b1fa9ff445ac3b94f370  showcase-skills/environment-doctor/evaluation/environment-doctor/description/round-1/trial-1/request.md
+502a690ae603b8f0399fb6e98d66753acc0813f83dc1b769ce85732df261a203  showcase-skills/environment-doctor/skill/environment-doctor/SKILL.md
+d3f235daeec5c1a90b3696619e4249a8018583a6fa3a6f0761c3c7c26fcab430  showcase-skills/environment-doctor/skill/environment-doctor/scripts/diagnose.py
+5378796307535df3ec8d8b15a2e2dc5641419c3d3060cfe32238c0fa973f7aa3  showcase-skills/environment-doctor/fixtures/script/root/.node-version
+f14b4987904bcb5814e4459a057ed4d20f58a633152288a761214dcd28780b56  showcase-skills/environment-doctor/fixtures/script/root/mismatch.node-version
+626efabe18f06a84cadd6e991752b189b0a2738e72efea358122e3e4b86aeaff  showcase-skills/environment-doctor/fixtures/script/root/toolchain-primary/bin/mystery-tool
+20ccc0498ef0b7960d0fe68b521d2c0da36f1931c8f12b0ebc22421b39b01879  showcase-skills/environment-doctor/fixtures/script/root/toolchain-primary/bin/node
+2e042e73b2d6e214aa4e90c7e4c8300fab299658b2352ee5e27d665364045e61  showcase-skills/environment-doctor/fixtures/script/root/toolchain-secondary/bin/node
+diagnostic_exit_status=0
+source_hashes_after:
+2dbbedaa46f1005676c4b423e1cdfcb5562d9d0f4b62b1fa9ff445ac3b94f370  showcase-skills/environment-doctor/evaluation/environment-doctor/description/round-1/trial-1/request.md
+502a690ae603b8f0399fb6e98d66753acc0813f83dc1b769ce85732df261a203  showcase-skills/environment-doctor/skill/environment-doctor/SKILL.md
+d3f235daeec5c1a90b3696619e4249a8018583a6fa3a6f0761c3c7c26fcab430  showcase-skills/environment-doctor/skill/environment-doctor/scripts/diagnose.py
+5378796307535df3ec8d8b15a2e2dc5641419c3d3060cfe32238c0fa973f7aa3  showcase-skills/environment-doctor/fixtures/script/root/.node-version
+f14b4987904bcb5814e4459a057ed4d20f58a633152288a761214dcd28780b56  showcase-skills/environment-doctor/fixtures/script/root/mismatch.node-version
+626efabe18f06a84cadd6e991752b189b0a2738e72efea358122e3e4b86aeaff  showcase-skills/environment-doctor/fixtures/script/root/toolchain-primary/bin/mystery-tool
+20ccc0498ef0b7960d0fe68b521d2c0da36f1931c8f12b0ebc22421b39b01879  showcase-skills/environment-doctor/fixtures/script/root/toolchain-primary/bin/node
+2e042e73b2d6e214aa4e90c7e4c8300fab299658b2352ee5e27d665364045e61  showcase-skills/environment-doctor/fixtures/script/root/toolchain-secondary/bin/node

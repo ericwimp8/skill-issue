@@ -182,6 +182,12 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 	if err != nil {
 		return Result{}, err
 	}
+	if request.Harness == harness.OpenCode || request.Harness == harness.KiloCode {
+		request.Executable, err = runtimeExecutable(request.Harness, request.Executable)
+		if err != nil {
+			return Result{}, err
+		}
+	}
 	tokens, err := skillTokens(inputs.skills)
 	if err != nil {
 		return Result{}, err
@@ -196,17 +202,18 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 		return Result{}, fmt.Errorf("create evaluation output directory: %w", err)
 	}
 	run := runstate.Run{
-		SchemaVersion: 1,
-		ID:            runID,
-		Workspace:     workspace,
-		Harness:       string(request.Harness),
-		Model:         request.Model,
-		Reasoning:     request.Reasoning,
-		EvaluationID:  evaluationIdentity(request, scenario),
-		Scenario:      scenario.ID,
-		Scope:         string(harness.ScopeProject),
-		Status:        "preparing",
-		Tokens:        tokens,
+		SchemaVersion:     1,
+		ID:                runID,
+		Workspace:         workspace,
+		Harness:           string(request.Harness),
+		Model:             request.Model,
+		Reasoning:         request.Reasoning,
+		EvaluationID:      evaluationIdentity(request, scenario),
+		Scenario:          scenario.ID,
+		Scope:             string(harness.ScopeProject),
+		Status:            "preparing",
+		HarnessExecutable: request.Executable,
+		Tokens:            tokens,
 	}
 	if err := service.runs.Create(run); err != nil {
 		return Result{}, err
@@ -222,12 +229,16 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 			err = fmt.Errorf("evaluation run %s: %w", runID, err)
 		}
 	}()
-	runtime, err := service.prepareRuntime(request.Harness, request.Reasoning, runID, workspace, request.Executable, cliPath)
+	skillNames := make([]string, 0, len(inputs.skills))
+	for _, skill := range inputs.skills {
+		skillNames = append(skillNames, skill.Name)
+	}
+	runtime, err := service.prepareRuntime(request.Harness, request.Model, request.Reasoning, runID, workspace, request.Executable, cliPath, skillNames)
 	if err != nil {
 		return Result{}, err
 	}
 	defer os.RemoveAll(privateRuntimeRunRoot(runID))
-	if err := replay.CheckAuthentication(ctx, replay.HarnessID(request.Harness), request.Executable, runtime.environment, request.Harness == harness.Cursor || request.Harness == harness.Pi); err != nil {
+	if err := replay.CheckAuthentication(ctx, replay.HarnessID(request.Harness), request.Executable, request.Model, runtime.environment, request.Harness == harness.Cursor || request.Harness == harness.OpenCode || request.Harness == harness.KiloCode || request.Harness == harness.Pi); err != nil {
 		return Result{}, fmt.Errorf("evaluation encountered a tooling error: %w", err)
 	}
 	installationState, _, err := service.installer.PrepareEvaluation(installer.Request{
@@ -271,7 +282,7 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 		Executable:            request.Executable,
 		Directory:             runtime.workingDirectory,
 		Environment:           runtime.environment,
-		CleanEnvironment:      request.Harness == harness.Cursor || request.Harness == harness.Pi,
+		CleanEnvironment:      request.Harness == harness.Cursor || request.Harness == harness.KiloCode || request.Harness == harness.Pi,
 		Model:                 request.Model,
 		ModelOverride:         request.ModelOverride,
 		Reasoning:             request.Reasoning,
@@ -415,6 +426,9 @@ func (service Service) Cleanup(runID string) error {
 		return err
 	}
 	if run.InstallationState == "" {
+		if err := service.cleanupNativeSession(run); err != nil {
+			return err
+		}
 		return service.finishCleanup(run)
 	}
 	data, err := os.ReadFile(run.InstallationState)
@@ -425,7 +439,36 @@ func (service Service) Cleanup(runID string) error {
 	if err != nil {
 		return fmt.Errorf("decode evaluation installation state: %w", err)
 	}
+	if err := service.cleanupNativeSession(run); err != nil {
+		return err
+	}
 	return service.cleanupWithInstallation(runID, installationState)
+}
+
+func (service Service) cleanupNativeSession(run runstate.Run) error {
+	if run.HarnessSession == "" {
+		return nil
+	}
+	switch run.Harness {
+	case string(harness.KiloCode):
+		environment, err := kiloEnvironment(privateRuntimeRunRoot(run.ID), run.HarnessExecutable)
+		if err != nil {
+			return err
+		}
+		if err := replay.DeleteKiloSession(context.Background(), run.HarnessExecutable, run.Workspace, environment, true, run.HarnessSession); err != nil {
+			return fmt.Errorf("delete recovered Kilo session: %w", err)
+		}
+		return nil
+	case string(harness.OpenCode):
+		environment, err := openCodeEnvironment(privateRuntimeRunRoot(run.ID), run.HarnessExecutable)
+		if err != nil {
+			return err
+		}
+		if err := replay.DeleteOpenCodeSession(context.Background(), run.HarnessExecutable, run.Workspace, environment, true, run.HarnessSession); err != nil {
+			return fmt.Errorf("delete recovered OpenCode session: %w", err)
+		}
+	}
+	return nil
 }
 
 func (service Service) cleanupWithInstallation(runID string, installationState installer.EvaluationInstallation) error {

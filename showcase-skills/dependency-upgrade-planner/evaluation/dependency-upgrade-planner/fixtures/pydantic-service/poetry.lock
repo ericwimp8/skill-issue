@@ -1,0 +1,8 @@
+[[package]]
+name = "pydantic"
+version = "1.10.15"
+
+[[package]]
+name = "fastapi"
+version = "0.95.2"
+dependencies = { pydantic = ">=1.6.2,<2.0.0" }

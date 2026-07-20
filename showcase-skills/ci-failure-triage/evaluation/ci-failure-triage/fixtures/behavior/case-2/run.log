@@ -1,0 +1,6 @@
+2026-07-21T06:00:00Z build / restore cache
+2026-07-21T06:00:01Z Cache restored from key objects-main
+2026-07-21T06:00:01Z build / compile
+2026-07-21T06:00:02Z packet.c:1:1: error: unknown type name 'uint32_t'
+2026-07-21T06:00:02Z packet.c:2:11: error: use of undeclared identifier 'uint32_t'
+2026-07-21T06:00:02Z Process completed with exit code 1

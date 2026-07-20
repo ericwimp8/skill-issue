@@ -29,7 +29,7 @@ func TestInjectedInstructionIsNeutral(t *testing.T) {
 }
 
 func TestEvaluationPreparationRejectsUserScope(t *testing.T) {
-	_, _, err := New(t.TempDir()).PrepareEvaluation(Request{Scope: "user"}, t.TempDir())
+	_, _, err := New().PrepareEvaluation(Request{Scope: "user"})
 	if err == nil {
 		t.Fatal("user-scope evaluation installation was accepted")
 	}

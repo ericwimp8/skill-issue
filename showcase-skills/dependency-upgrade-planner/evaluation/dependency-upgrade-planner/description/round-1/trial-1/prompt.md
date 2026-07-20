@@ -1,0 +1,1 @@
+Plan the upgrade of the synthetic React application in showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/fixtures/react-app/ from React 18.2 to the stable React 19 line. Give the team an evidence-backed sequence they can review before anyone changes dependencies.

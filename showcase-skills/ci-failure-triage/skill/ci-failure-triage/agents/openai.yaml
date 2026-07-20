@@ -1,0 +1,3 @@
+interface:
+  display_name: "CI Failure Triage"
+  short_description: "Diagnose primary CI failures and cascade noise"

@@ -1,0 +1,83 @@
+{
+  "input_sha256": "78e6ee59bf20b5aa8ae91203965aec7b693eb3c815d5e74e16d0f5a878228b0e",
+  "resolved_events": [
+    {
+      "classification": "observed",
+      "input_order": 1,
+      "locator": "line 2",
+      "normalized_utc": "2026-06-01T09:58:00Z",
+      "raw_timestamp": "2026-06-01T11:58:00+02:00",
+      "source_id": "S2",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/description/trial-1/deploy.csv",
+      "summary": "Deployment d-17 of checkout revision r17 recorded as completed.",
+      "timestamp_status": "resolved"
+    },
+    {
+      "classification": "observed",
+      "input_order": 2,
+      "locator": "line 1",
+      "normalized_utc": "2026-06-01T10:00:05Z",
+      "raw_timestamp": "2026-06-01T12:00:05+02:00",
+      "source_id": "S4",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/description/trial-1/service.log",
+      "summary": "Checkout service recorded request req-1 with status 500.",
+      "timestamp_status": "resolved"
+    },
+    {
+      "classification": "observed",
+      "input_order": 3,
+      "locator": "line 2",
+      "normalized_utc": "2026-06-01T10:01:10Z",
+      "raw_timestamp": "2026-06-01T12:01:10+02:00",
+      "source_id": "S4",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/description/trial-1/service.log",
+      "summary": "Checkout service recorded request req-2 with status 500.",
+      "timestamp_status": "resolved"
+    },
+    {
+      "classification": "observed",
+      "input_order": 4,
+      "locator": "line 1, opened_at",
+      "normalized_utc": "2026-06-01T10:03:00Z",
+      "raw_timestamp": "2026-06-01T10:03:00Z",
+      "source_id": "S1",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/description/trial-1/alert.json",
+      "summary": "Alert error-rate-high for checkout recorded as opened.",
+      "timestamp_status": "resolved"
+    },
+    {
+      "classification": "reported",
+      "input_order": 5,
+      "locator": "line 5",
+      "normalized_utc": "2026-06-01T10:12:00Z",
+      "raw_timestamp": "2026-06-01T10:12:00Z",
+      "source_id": "S3",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/description/trial-1/notes.md",
+      "summary": "Operator notes report that the alert cleared.",
+      "timestamp_status": "resolved"
+    }
+  ],
+  "schema_version": 1,
+  "unresolved_events": [
+    {
+      "classification": "reported",
+      "input_order": 6,
+      "locator": "line 3",
+      "normalized_utc": null,
+      "source_id": "S3",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/description/trial-1/notes.md",
+      "summary": "During the alert, an operator said the deployment might be involved.",
+      "timestamp_status": "missing"
+    },
+    {
+      "classification": "reported",
+      "input_order": 7,
+      "locator": "line 4",
+      "normalized_utc": null,
+      "source_id": "S3",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/description/trial-1/notes.md",
+      "summary": "Operator notes report that the cache was restarted, with no exact time recorded.",
+      "timestamp_status": "missing"
+    }
+  ]
+}

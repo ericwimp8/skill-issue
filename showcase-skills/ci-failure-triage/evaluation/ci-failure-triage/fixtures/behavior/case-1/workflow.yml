@@ -1,0 +1,7 @@
+name: tool-check
+jobs:
+  verify:
+    steps:
+      - run: TOOL_VERSION=v2.4.0 ./scripts/check-tool.sh
+      - run: ./scripts/build.sh
+      - run: ./scripts/archive.sh

@@ -1,0 +1,3 @@
+2026-07-21T03:00:00Z linux-build / make build
+2026-07-21T03:00:07Z ld: undefined reference to `encode_packet`
+2026-07-21T03:00:07Z make: *** [app] Error 1

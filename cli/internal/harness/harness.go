@@ -53,6 +53,8 @@ var evaluationDefaults = map[ID]EvaluationDefaults{
 	ClaudeCode: {Model: "opus", Reasoning: "medium"},
 	Codex:      {Model: "gpt-5.6-sol", Reasoning: "medium"},
 	Cursor:     {Model: "auto", Reasoning: "medium"},
+	OpenCode:   {Model: "openai/gpt-5.6-sol", Reasoning: "medium"},
+	KiloCode:   {Model: "openai/gpt-5.6-sol", Reasoning: "medium"},
 	Pi:         {Model: "openai-codex/gpt-5.6-sol", Reasoning: "medium"},
 }
 
@@ -69,7 +71,7 @@ func SupportedIDs() []ID {
 
 func InstallationAvailable(id ID) bool {
 	switch id {
-	case ClaudeCode, Codex, Cursor, Pi:
+	case ClaudeCode, Codex, Cursor, OpenCode, KiloCode, Pi:
 		return true
 	default:
 		return false

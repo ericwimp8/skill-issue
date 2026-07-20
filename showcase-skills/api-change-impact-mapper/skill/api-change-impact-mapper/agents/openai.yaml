@@ -1,0 +1,3 @@
+interface:
+  display_name: 'API Change Impact Mapper'
+  short_description: 'Map contract compatibility and migration impacts'

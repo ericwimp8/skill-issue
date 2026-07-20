@@ -1,0 +1,21 @@
+# Incident Timeline Builder Target Status
+
+- Target: `showcase-skills/incident-timeline-builder/skill/incident-timeline-builder/SKILL.md`
+- Content hash: `34813535ad5650140c50836528d9a62f767d9c26e0e389ab9ae7a890586a9bf1`
+- Environment qualification: `environment-qualification.md` — qualified GPT-5.6 Sol medium fresh-agent surface
+- Refinement mode: automatic
+- Description state: `passed`
+- Description evidence:
+  - `description/round-1/trial-1/record.md`
+  - `description/round-1/trial-2/record.md`
+  - `description/round-1/trial-3/record.md`
+  - `description/round-1/trial-4/record.md`
+- Reference state: `not-applicable` because the target has no `references/` files
+- Current loop: concluded
+- Description failures: 0
+- Body failures: 0
+- Total campaign allowance: 40
+- Remaining campaign iterations: 32
+- Last completed trial: behavior cycle 1 case 3 audit
+- Next action: none
+- State: passed

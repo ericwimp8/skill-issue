@@ -1,0 +1,3 @@
+# Request
+
+Prepare read-only follow-up evidence for a local tool-resolution question using `showcase-skills/environment-doctor/fixtures/script/root/`. For the diagnostic child process only, prepend that root's `toolchain-primary/bin` and `toolchain-secondary/bin` to the existing PATH in that order. Determine every PATH candidate for `node`, which candidate wins, its reported version, whether the primary toolchain precedes the secondary toolchain, and whether `.node-version` agrees. Write fresh artifacts under this trial only. Keep observations separate from proposed remediation and do not edit, install, source, or export anything.

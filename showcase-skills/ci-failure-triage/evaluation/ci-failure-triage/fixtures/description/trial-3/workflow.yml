@@ -1,0 +1,10 @@
+name: matrix-check
+jobs:
+  linux-build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: make build
+  windows-test:
+    runs-on: windows-latest
+    steps:
+      - run: dotnet test

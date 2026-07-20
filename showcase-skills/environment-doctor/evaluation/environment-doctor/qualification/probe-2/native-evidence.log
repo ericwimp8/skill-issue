@@ -1,0 +1,4 @@
+cat showcase-skills/environment-doctor/evaluation/environment-doctor/description/round-1/trial-1/request.md
+awk 'NR==1 {print; next} /^---$/ {print; exit} {print}' showcase-skills/environment-doctor/skill/environment-doctor/SKILL.md
+cat showcase-skills/environment-doctor/skill/environment-doctor/SKILL.md
+shasum -a 256 showcase-skills/environment-doctor/skill/environment-doctor/SKILL.md

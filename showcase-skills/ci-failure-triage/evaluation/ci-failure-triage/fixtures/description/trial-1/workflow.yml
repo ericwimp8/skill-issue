@@ -1,0 +1,6 @@
+name: generated-client
+jobs:
+  verify:
+    steps:
+      - run: ./tools/generate-client schema.json generated/client.ts
+      - run: npm test

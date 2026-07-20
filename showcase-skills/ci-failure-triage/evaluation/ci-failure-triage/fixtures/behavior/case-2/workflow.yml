@@ -1,0 +1,8 @@
+name: cached-compile
+jobs:
+  build:
+    steps:
+      - uses: cache/restore@v1
+        with:
+          key: objects-main
+      - run: cc -Wall -Werror packet.c -o packet

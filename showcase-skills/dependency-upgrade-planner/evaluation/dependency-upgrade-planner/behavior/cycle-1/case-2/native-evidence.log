@@ -1,0 +1,31 @@
+identity=dep_body_2_retry
+model=gpt-5.6-sol
+reasoning=medium
+target=showcase-skills/dependency-upgrade-planner/skill/dependency-upgrade-planner/SKILL.md
+target_complete_read=true
+target_sha256=42b99ec21c5dee1e081b7cab161fbad01f91d9b55b4d0513aa298bb0e8588096
+
+inspected_file=showcase-skills/dependency-upgrade-planner/skill/dependency-upgrade-planner/SKILL.md
+inspected_file=showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/fixtures/authoritative-sources.md
+inspected_file=showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/fixtures/vite-library/package-consumer.json
+inspected_file=showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/fixtures/vite-library/package-lock.json
+inspected_file=showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/fixtures/vite-library/package.json
+inspected_file=showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/fixtures/vite-library/src/index.ts
+inspected_file=showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/fixtures/vite-library/src/theme.scss
+inspected_file=showcase-skills/dependency-upgrade-planner/evaluation/dependency-upgrade-planner/fixtures/vite-library/vite.config.ts
+
+inspected_url=https://v6.vite.dev/guide/migration.html
+url_applicability=Vite 5 to Vite 6 breaking changes for custom resolve conditions, Sass API defaults, library-mode CSS naming, and the minimum Terser version
+inspected_url=https://v6.vite.dev/blog/announcing-vite6
+url_applicability=Vite 6 release identity and supported Node.js release lines
+
+fixture_sha256.package-consumer.json=90d750269e0942a462f8b5b9ab5a091e46d83b48d254ae9401107410b87c7459
+fixture_sha256.package-lock.json=951d4ee682c2f297cbc9c5c35315b5c20e2e8c821c2689ebaf76c61101914e81
+fixture_sha256.package.json=2fba1201d18087fddeb3ad2fe83776bba025bb982476d21dfb58d15b3d8577ef
+fixture_sha256.src/index.ts=9e436fd8ec0224ac0d92dd0a9e0e20cb79f2b3067817486533b9a3fff233f35b
+fixture_sha256.src/theme.scss=b18fa2edc93feddfd5530766d44480e00adea48c9598d5788ae43793924a0066
+fixture_sha256.vite.config.ts=d780694ffb418f29d929c68fd60896eb8c8972032c65a78f078a123b557b859d
+
+fixture_mutated=false
+dependency_state_mutated=false
+broad_validation_run=false

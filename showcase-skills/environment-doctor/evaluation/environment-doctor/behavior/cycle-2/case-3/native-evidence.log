@@ -1,0 +1,61 @@
+BODY CYCLE 2 CASE 3 NATIVE EVIDENCE
+
+Harness executions: 1
+
+BEFORE HASHES
+502a690ae603b8f0399fb6e98d66753acc0813f83dc1b769ce85732df261a203  showcase-skills/environment-doctor/skill/environment-doctor/SKILL.md
+d3f235daeec5c1a90b3696619e4249a8018583a6fa3a6f0761c3c7c26fcab430  showcase-skills/environment-doctor/skill/environment-doctor/scripts/diagnose.py
+89108ef5cda87a68a1050d742a2f51d6f4287b05db1bb3d3964cfc81bd545a72  showcase-skills/environment-doctor/script-validation/validate_diagnose.py
+
+COMMAND
+python3 showcase-skills/environment-doctor/script-validation/validate_diagnose.py
+
+HARNESS OUTPUT BEGIN
+environment-doctor script validation passed
+HARNESS OUTPUT END
+
+HARNESS EXIT
+0
+
+HARNESS STDERR
+empty
+
+CAPTURE WRAPPER
+The surrounding zsh evidence-capture command attempted to assign the harness exit to `status` after the harness completed. zsh rejected that assignment because `status` is read-only and exited the wrapper with `1`.
+
+Exact wrapper diagnostic:
+zsh:8: read-only variable: status
+
+The harness was not rerun. Its success line is emitted only after all validation assertions complete, and normal completion of `main()` exits `0`.
+
+AFTER HASHES
+502a690ae603b8f0399fb6e98d66753acc0813f83dc1b769ce85732df261a203  showcase-skills/environment-doctor/skill/environment-doctor/SKILL.md
+d3f235daeec5c1a90b3696619e4249a8018583a6fa3a6f0761c3c7c26fcab430  showcase-skills/environment-doctor/skill/environment-doctor/scripts/diagnose.py
+89108ef5cda87a68a1050d742a2f51d6f4287b05db1bb3d3964cfc81bd545a72  showcase-skills/environment-doctor/script-validation/validate_diagnose.py
+
+ASSERTION RESULTS ESTABLISHED BY SUCCESSFUL HARNESS COMPLETION
+- deterministic evidence.json: pass
+- deterministic report.txt: pass
+- fixture tree preserved after success and failure cases: pass
+- caller-supplied environment mapping preserved exactly: pass
+- existing-output collision rejected: pass
+- inside-root output rejected without output creation: pass
+- version-file traversal rejected without output creation: pass
+- malformed tool selector rejected without output creation: pass
+- malformed environment selector rejected without output creation: pass
+- unsupported tool not executed and retained as unsupported: pass
+- literal home absent from evidence.json: pass
+- literal home absent from report.txt: pass
+- temporary root absent from both output types: pass
+- synthetic selected value absent from both output types: pass
+- selected environment value omitted structurally: pass
+
+PLATFORM
+Darwin 25.2.0 arm64
+macOS 26.2
+build 25C56
+Python 3.14.2
+
+CLEANUP
+TemporaryDirectory cleanup residue count for environment-doctor-validation-* directories: 0
+Retained case files: request.md, audit.md, native-evidence.log

@@ -1,0 +1,7 @@
+2026-07-21T01:00:00Z verify / generate-client
+2026-07-21T01:00:01Z generator: schema version 3 unsupported; maximum is 2
+2026-07-21T01:00:01Z Process completed with exit code 64
+2026-07-21T01:00:02Z verify / npm test
+2026-07-21T01:00:03Z Error: Cannot find module './generated/client'
+2026-07-21T01:00:03Z 18 test suites failed
+2026-07-21T01:00:03Z Process completed with exit code 1

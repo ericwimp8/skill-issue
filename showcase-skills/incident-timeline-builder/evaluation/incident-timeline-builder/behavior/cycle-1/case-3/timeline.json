@@ -1,0 +1,69 @@
+{
+  "input_sha256": "9157d738e344551e62efdc14d3c83b062456f2c020fd8c08781f517f15ab669a",
+  "resolved_events": [
+    {
+      "classification": "observed",
+      "input_order": 1,
+      "locator": "line 1",
+      "normalized_utc": "2026-02-02T04:00:00Z",
+      "raw_timestamp": "2026-02-02T04:00:00Z",
+      "source_id": "gateway-log",
+      "source_path": "fixtures/behavior/case-3/gateway.log",
+      "source_timezone": "UTC",
+      "summary": "Gateway recorded trace t-1 with HTTP status 503.",
+      "timestamp_status": "resolved"
+    },
+    {
+      "classification": "observed",
+      "input_order": 3,
+      "locator": "line 2",
+      "normalized_utc": "2026-02-02T04:06:00Z",
+      "raw_timestamp": "2026-02-02T04:06:00Z",
+      "source_id": "gateway-log",
+      "source_path": "fixtures/behavior/case-3/gateway.log",
+      "source_timezone": "UTC",
+      "summary": "Gateway recorded trace t-2 with HTTP status 200.",
+      "timestamp_status": "resolved"
+    }
+  ],
+  "schema_version": 1,
+  "unresolved_events": [
+    {
+      "classification": "reported",
+      "input_order": 2,
+      "locator": "line 3",
+      "normalized_utc": null,
+      "raw_timestamp": "04:01 UTC",
+      "source_id": "status-page-draft",
+      "source_path": "fixtures/behavior/case-3/status-page.md",
+      "source_timezone": "UTC",
+      "summary": "Status page draft states that elevated errors were under investigation.",
+      "timestamp_issue": "raw_timestamp is not an ISO 8601 date-time",
+      "timestamp_status": "invalid"
+    },
+    {
+      "classification": "reported",
+      "input_order": 4,
+      "locator": "line 4",
+      "normalized_utc": null,
+      "raw_timestamp": "04:08 UTC",
+      "source_id": "status-page-draft",
+      "source_path": "fixtures/behavior/case-3/status-page.md",
+      "source_timezone": "UTC",
+      "summary": "Status page draft states that the service was recovering.",
+      "timestamp_issue": "raw_timestamp is not an ISO 8601 date-time",
+      "timestamp_status": "invalid"
+    },
+    {
+      "classification": "reported",
+      "input_order": 5,
+      "locator": "line 3",
+      "normalized_utc": null,
+      "raw_timestamp": null,
+      "source_id": "internal-note",
+      "source_path": "fixtures/behavior/case-3/private-note.md",
+      "summary": "An engineer reported rotating a credential during the incident; the action time is not recorded.",
+      "timestamp_status": "missing"
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+Repository onboarding guide native evidence
+
+Target read before output
+- path: showcase-skills/repository-onboarding-guide/skill/repository-onboarding-guide/SKILL.md
+- sha256: be3a2843bf0a1a5bb0e415bcd12b723edfccba80aacccd20921a92a631730506
+- line count: 63
+
+Fixture scope
+- showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/service-repo/
+
+Instruction and project metadata inspected
+- showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/service-repo/AGENTS.md
+- showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/service-repo/src/storage/AGENTS.md
+- showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/service-repo/README.md
+- showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/service-repo/package.json
+- showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/service-repo/.gitignore
+
+Production paths inspected
+- showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/service-repo/src/cli.ts
+- showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/service-repo/src/application.ts
+- showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/service-repo/src/config.ts
+- showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/service-repo/src/http/requestHandler.ts
+- showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/service-repo/src/storage/requestStore.ts
+- showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/service-repo/src/storage/fileRequestStore.ts
+
+Validation-support path inspected after production tracing
+- showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/service-repo/test/requestHandler.test.ts
+
+Commands executed
+- command: shasum -a 256 showcase-skills/repository-onboarding-guide/skill/repository-onboarding-guide/SKILL.md
+  exit status: 0
+  result: be3a2843bf0a1a5bb0e415bcd12b723edfccba80aacccd20921a92a631730506
+- command: wc -l showcase-skills/repository-onboarding-guide/skill/repository-onboarding-guide/SKILL.md
+  exit status: 0
+  result: 63
+- command: npm test -- storage
+  working directory: showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/service-repo/
+  exit status: 1
+  result: node --test storage reported "Could not find 'storage'".
+- command: npm run validate
+  working directory: showcase-skills/repository-onboarding-guide/evaluation/repository-onboarding-guide/fixtures/service-repo/
+  exit status: 1
+  result: build stopped with TS5058 because tsconfig.json does not exist; npm test was not reached.
+
+Required repository-level output checks are recorded after execution below.
+- command: npm run format:check
+  working directory: repository root
+  exit status: 0
+  result: all configured files matched Prettier style.
+- command: git diff --check -- showcase-skills/repository-onboarding-guide
+  working directory: repository root
+  exit status: 0
+  result: no diff whitespace errors reported.

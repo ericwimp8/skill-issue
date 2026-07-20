@@ -1,0 +1,2 @@
+version=2.4.0
+revision=rc-240-a

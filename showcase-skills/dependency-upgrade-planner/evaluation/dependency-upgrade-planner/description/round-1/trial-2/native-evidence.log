@@ -1,0 +1,21 @@
+candidate: showcase-skills/dependency-upgrade-planner/skill/dependency-upgrade-planner/SKILL.md
+sha256: 42b99ec21c5dee1e081b7cab161fbad01f91d9b55b4d0513aa298bb0e8588096
+description: Source-backed, dependency-ordered migration planning for requested dependency upgrades. Use when assessing or planning a dependency version change in an existing project without changing dependency state.
+
+candidate: skills/skill-generation/SKILL.md
+sha256: baf74bd4af0586f62d49a0d5540728a11e0f8a1afce82fe075690d4b0aed3051
+description: Execution of a build-ready skill-intake plan into an idiomatic agent skill. Use when a completed intake contract is ready under its recorded viability, execution preference, and authority boundary.
+
+candidate: supporting-skills/document-update-discipline/SKILL.md
+sha256: db8a2dc5853554082362bba63a0e22c247be0d4630a932f43530639550e6eb3d
+description: Document-update discipline that prevents proximal patching and keeps whole-document meaning coherent. Use whenever planning an update to or updating any document.
+
+candidate: supporting-skills/prompt-writing/SKILL.md
+sha256: c6b7ff268497e3174cdf572ad6b1902d447c00ca4d5f02e43157a89fabe3e05f
+description: Prompt-writing discipline for agents and sub-agents. Use when writing prompts for agents, sub-agents, invoked skills, or authoritative plans.
+
+selection: showcase-skills/dependency-upgrade-planner/skill/dependency-upgrade-planner/SKILL.md
+rationale: The task asks for a source-backed assessment and ordered plan for a concrete Vite major-version migration before dependency state changes, directly matching this candidate's stated purpose.
+
+complete-read: showcase-skills/dependency-upgrade-planner/skill/dependency-upgrade-planner/SKILL.md
+sha256: 42b99ec21c5dee1e081b7cab161fbad01f91d9b55b4d0513aa298bb0e8588096

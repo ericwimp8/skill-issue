@@ -1,0 +1,51 @@
+$ cat showcase-skills/incident-timeline-builder/skill/incident-timeline-builder/SKILL.md
+---
+name: incident-timeline-builder
+description: Evidence-first workflow for building chronological incident timelines from heterogeneous operational records. Use when logs, alerts, deployments, or operator notes must be reconciled into a sourced incident chronology.
+---
+
+# Incident Timeline Builder
+
+## Establish the Evidence Ledger
+
+- Inventory every supplied source before synthesizing it. Preserve source files unchanged and work from copies or extracted records.
+- Assign each source a stable identifier and record its repository-relative path or supplied external identifier, source type, relevant locator convention, and stated time-zone context.
+- Keep direct observations, reported statements, evidence-supported inferences, contradictions, and gaps distinct. A person's statement is a report even when credible; an automated record is an observation of what that system recorded.
+- Redact secrets or personal data only in derived shareable artifacts. Retain a provenance note that identifies the source and locator without embedding sensitive values unnecessarily.
+
+## Normalize Explicit Time Evidence
+
+1. Extract the raw timestamp exactly as supplied, with its source identifier and locator.
+2. Normalize a timestamp only when the evidence provides a complete instant through an explicit UTC offset, `Z`, or an explicit named time zone with an unambiguous local time.
+3. Convert resolved instants to UTC while retaining the raw timestamp, stated zone, and original precision. Never add seconds, a date, a zone, or a clock time that the evidence omitted.
+4. Mark missing, invalid, ambiguous daylight-saving, or insufficient-precision values as unresolved. Describe any relative ordering separately when the source establishes it.
+5. Use `python3 scripts/build_timeline.py <records.jsonl> --output <timeline.json>` for repeated parsing and ordering. Prepare one JSON object per line using the script's `--help` contract; do not overwrite the record input or any source file.
+
+Treat host time zone, file modification time, ingestion time, and neighboring entries as separate evidence. They may clarify provenance but cannot silently supply a missing event time.
+
+## Build the Chronology
+
+- Order resolved events by normalized UTC instant, then by input record order for exact ties. Preserve the tie explicitly; do not imply a finer sequence than the evidence supports.
+- Place unresolved records in a separate unplaced-evidence section unless an explicit relative relationship supports a bounded placement such as “after event A, time unknown.”
+- For every timeline row retain: normalized time or unresolved state, raw timestamp, classification, concise event statement, source identifier, locator, and confidence or limitation where needed.
+- Consolidate duplicate observations only when they describe the same recorded occurrence; retain all contributing provenance and material differences.
+- Express inferred relationships as hypotheses linked to their supporting events. Sequence, proximity, shared identifiers, and correlation can support investigation without proving causation.
+- Preserve contradictory accounts together. State the exact field or relationship in dispute, the supporting provenance for each account, and the evidence needed to resolve it.
+
+## Deliver the Incident Record
+
+Use these sections:
+
+- **Scope and Evidence:** incident boundary, included sources, excluded or unavailable sources, and preservation or redaction notes.
+- **Time Normalization:** display zone, normalization rules, unresolved timestamp conditions, and precision limits.
+- **Chronological Timeline:** resolved events in deterministic order with classification and provenance.
+- **Unplaced Evidence:** missing, ambiguous, invalid, or partial times plus any supported relative order.
+- **Inferences and Contradictions:** bounded hypotheses, alternative explanations, exact disagreements, and their supporting sources.
+- **Unresolved Evidence:** gaps that materially limit sequence, impact, or explanation.
+- **Follow-up Actions:** prioritized evidence-gathering actions, each tied to a gap or contradiction and the decision it can clarify.
+
+Before handoff, verify that every material statement is traceable, every normalized instant is reproducible from explicit evidence, tied and unresolved events are not over-ordered, and causal language does not exceed the evidence.
+$ cat showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/behavior/cycle-1/case-2/request.md
+# Request
+
+Reconcile `fixtures/behavior/case-2/` into a source-preserving chronology. Handle simultaneous machine events, the local civil time, and the untimed second restart without adding precision or causation. Write `behavior/cycle-1/case-2/package.md` and retain derived records beside it.

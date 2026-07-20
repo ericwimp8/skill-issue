@@ -56,6 +56,9 @@ type processAdapter struct {
 	cleanup               func() error
 }
 
+const qualifiedOpenCodeVersion = "1.18.4"
+const qualifiedKiloVersion = "7.4.11"
+
 func NewAdapter(harnessID HarnessID, options Options) (Adapter, error) {
 	if harnessID == HarnessPi {
 		return newPiAdapter(options)
@@ -148,10 +151,16 @@ func (session *processSession) SendPrompt(ctx context.Context, prompt string) er
 		} else {
 			args = claudeArgs(session.adapter, session.sessionID, prompt, false)
 		}
+	} else if session.adapter.harnessID == HarnessOpenCode || session.adapter.harnessID == HarnessKilo {
+		if session.adapter.harnessID == HarnessKilo {
+			args = kiloArgs(session.adapter, session.sessionID, prompt)
+		} else {
+			args = openCodeArgs(session.adapter, session.sessionID, prompt)
+		}
 	} else if session.sessionID != "" {
 		args = session.adapter.spec.resume(session.sessionID, prompt)
 	}
-	if session.adapter.model != "" && session.adapter.harnessID != HarnessCodex && session.adapter.harnessID != HarnessCursor && session.adapter.harnessID != HarnessClaude {
+	if session.adapter.model != "" && session.adapter.harnessID != HarnessCodex && session.adapter.harnessID != HarnessCursor && session.adapter.harnessID != HarnessClaude && session.adapter.harnessID != HarnessOpenCode && session.adapter.harnessID != HarnessKilo {
 		args = append(args, "--model", session.adapter.model)
 	}
 	if session.adapter.harnessID == HarnessCodex {
@@ -199,6 +208,9 @@ func (session *processSession) Wait(context.Context) (Capture, error) {
 	events, err := parseEvents(session.stdout.Bytes())
 	if err != nil {
 		return Capture{}, fmt.Errorf("%s harness produced invalid structured output: %w: %s", session.adapter.harnessID, err, strings.TrimSpace(session.stderr.String()))
+	}
+	if session.adapter.harnessID == HarnessKilo {
+		events = collapseAdjacentExactDuplicateEvents(events)
 	}
 	requireSessionStart := session.sessionID == ""
 	if err := validateHarnessOutput(session.adapter.harnessID, events, session.stderr.String(), requireSessionStart); err != nil {
@@ -250,8 +262,37 @@ func validateHarnessOutput(harnessID HarnessID, events []json.RawMessage, stderr
 		if !types["system\x00init"] || !types["result\x00"] {
 			return fmt.Errorf("%w: Claude Code output missing successful system/init and result events: %s", ErrProtocol, strings.TrimSpace(stderr))
 		}
+	case HarnessOpenCode, HarnessKilo:
+		if markerFailure, failed := failedSignalMarker(events); failed {
+			return fmt.Errorf("%s marker command failed: %s", harnessID, markerFailure)
+		}
+		if !structuredRunStopped(events) {
+			return fmt.Errorf("%w: %s output missing terminal step_finish with reason stop: %s", ErrProtocol, harnessID, strings.TrimSpace(stderr))
+		}
 	}
 	return nil
+}
+
+func failedSignalMarker(events []json.RawMessage) (string, bool) {
+	for _, event := range events {
+		var value struct {
+			Type string `json:"type"`
+			Part struct {
+				Tool  string `json:"tool"`
+				State struct {
+					Status string `json:"status"`
+					Error  string `json:"error"`
+					Input  struct {
+						Command string `json:"command"`
+					} `json:"input"`
+				} `json:"state"`
+			} `json:"part"`
+		}
+		if json.Unmarshal(event, &value) == nil && value.Type == "tool_use" && value.Part.Tool == "bash" && value.Part.State.Status == "error" && strings.Contains(value.Part.State.Input.Command, " signal ") {
+			return value.Part.State.Input.Command + ": " + value.Part.State.Error, true
+		}
+	}
+	return "", false
 }
 
 func validateSessionID(harnessID HarnessID, sessionID string, events []json.RawMessage) error {
@@ -262,7 +303,32 @@ func validateSessionID(harnessID HarnessID, sessionID string, events []json.RawM
 	if found != "" && found != sessionID {
 		return fmt.Errorf("%w: %s session ID changed from %s to %s", ErrProtocol, harnessID, sessionID, found)
 	}
+	if harnessID == HarnessOpenCode || harnessID == HarnessKilo {
+		for _, event := range events {
+			var value struct {
+				SessionID string `json:"sessionID"`
+			}
+			if json.Unmarshal(event, &value) == nil && value.SessionID != "" && value.SessionID != sessionID {
+				return fmt.Errorf("%w: %s session ID changed from %s to %s", ErrProtocol, harnessID, sessionID, value.SessionID)
+			}
+		}
+	}
 	return nil
+}
+
+func structuredRunStopped(events []json.RawMessage) bool {
+	for _, event := range events {
+		var value struct {
+			Type string `json:"type"`
+			Part struct {
+				Reason string `json:"reason"`
+			} `json:"part"`
+		}
+		if json.Unmarshal(event, &value) == nil && value.Type == "step_finish" && value.Part.Reason == "stop" {
+			return true
+		}
+	}
+	return false
 }
 
 func (session *processSession) Close() error {
@@ -279,7 +345,143 @@ func (session *processSession) Close() error {
 			closeErr = cleanupErr
 		}
 	}
+	if session.adapter.harnessID == HarnessOpenCode {
+		if session.sessionID == "" {
+			session.sessionID = findSessionIDFromPartialOutput(session.stdout.Bytes())
+		}
+		if session.sessionID != "" {
+			cleanupErr := DeleteOpenCodeSession(context.Background(), session.adapter.path, session.adapter.directory, session.adapter.environ, session.adapter.cleanEnvironment, session.sessionID)
+			if closeErr == nil {
+				closeErr = cleanupErr
+			}
+		}
+	}
+	if session.adapter.harnessID == HarnessKilo {
+		if session.sessionID == "" {
+			session.sessionID = findSessionIDFromPartialOutput(session.stdout.Bytes())
+		}
+		if session.sessionID != "" {
+			cleanupErr := DeleteKiloSession(context.Background(), session.adapter.path, session.adapter.directory, session.adapter.environ, session.adapter.cleanEnvironment, session.sessionID)
+			if closeErr == nil {
+				closeErr = cleanupErr
+			}
+		}
+	}
 	return closeErr
+}
+
+func openCodeArgs(adapter *processAdapter, sessionID, prompt string) []string {
+	args := []string{"run", "--pure", "--format", "json", "--model", adapter.model, "--variant", adapter.reasoning}
+	if sessionID != "" {
+		args = append(args, "--session", sessionID)
+	}
+	return append(args, prompt)
+}
+
+func kiloArgs(adapter *processAdapter, sessionID, prompt string) []string {
+	args := []string{"run", "--pure", "--format", "json", "--model", adapter.model, "--variant", adapter.reasoning, "--agent", "code", "--dir", adapter.directory}
+	if sessionID != "" {
+		args = append(args, "--session", sessionID)
+	}
+	return append(args, prompt)
+}
+
+func findSessionIDFromPartialOutput(output []byte) string {
+	for _, line := range bytes.Split(output, []byte{'\n'}) {
+		var value any
+		if json.Unmarshal(bytes.TrimSpace(line), &value) == nil {
+			if id := findStringField(value, []string{"sessionID"}); id != "" {
+				return id
+			}
+		}
+	}
+	return ""
+}
+
+func collapseAdjacentExactDuplicateEvents(events []json.RawMessage) []json.RawMessage {
+	result := make([]json.RawMessage, 0, len(events))
+	for _, event := range events {
+		if len(result) > 0 && bytes.Equal(result[len(result)-1], event) {
+			continue
+		}
+		result = append(result, event)
+	}
+	return result
+}
+
+func DeleteKiloSession(ctx context.Context, executable, directory string, env []string, clean bool, sessionID string) error {
+	path, err := resolveExecutable("kilo", executable)
+	if err != nil {
+		return fmt.Errorf("Kilo session executable: %w", err)
+	}
+	command := exec.CommandContext(ctx, path, "session", "delete", sessionID)
+	configureOwnedProcess(command)
+	command.Dir = directory
+	command.Env = environment(env, clean)
+	var output bytes.Buffer
+	command.Stdout = &output
+	command.Stderr = &output
+	err = command.Run()
+	stopOwnedProcessGroup(command)
+	if err != nil && !strings.Contains(strings.ToLower(output.String()), "not found") {
+		return fmt.Errorf("Kilo session deletion failed: %w: %s", err, strings.TrimSpace(output.String()))
+	}
+	return nil
+}
+
+func DeleteOpenCodeSession(ctx context.Context, executable, directory string, env []string, clean bool, sessionID string) error {
+	path, err := resolveExecutable("opencode", executable)
+	if err != nil {
+		return fmt.Errorf("OpenCode session executable: %w", err)
+	}
+	listed, err := runStatusCommand(ctx, path, env, clean, "session", "list", "--pure", "--format", "json")
+	if err != nil {
+		return fmt.Errorf("OpenCode session listing failed: %w", err)
+	}
+	if !jsonContainsString([]byte(listed), sessionID) {
+		return nil
+	}
+	command := exec.CommandContext(ctx, path, "session", "delete", sessionID, "--pure")
+	configureOwnedProcess(command)
+	command.Dir = directory
+	command.Env = environment(env, clean)
+	var output bytes.Buffer
+	command.Stdout = &output
+	command.Stderr = &output
+	err = command.Run()
+	stopOwnedProcessGroup(command)
+	if err != nil {
+		return fmt.Errorf("OpenCode session deletion failed: %w: %s", err, strings.TrimSpace(output.String()))
+	}
+	return nil
+}
+
+func jsonContainsString(data []byte, wanted string) bool {
+	var value any
+	if json.Unmarshal(data, &value) != nil {
+		return false
+	}
+	return valueContainsString(value, wanted)
+}
+
+func valueContainsString(value any, wanted string) bool {
+	switch typed := value.(type) {
+	case string:
+		return typed == wanted
+	case []any:
+		for _, child := range typed {
+			if valueContainsString(child, wanted) {
+				return true
+			}
+		}
+	case map[string]any:
+		for _, child := range typed {
+			if valueContainsString(child, wanted) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func cursorArgs(adapter *processAdapter, sessionID, prompt string) []string {
@@ -322,8 +524,8 @@ func resolveCursorExecutable() (string, error) {
 	return "", errors.New("Cursor executable: neither agent nor cursor-agent was found")
 }
 
-func CheckAuthentication(ctx context.Context, harnessID HarnessID, override string, env []string, clean bool) error {
-	if harnessID != HarnessCodex && harnessID != HarnessCursor {
+func CheckAuthentication(ctx context.Context, harnessID HarnessID, override, model string, env []string, clean bool) error {
+	if harnessID != HarnessCodex && harnessID != HarnessCursor && harnessID != HarnessOpenCode && harnessID != HarnessKilo {
 		return nil
 	}
 	var path string
@@ -334,11 +536,21 @@ func CheckAuthentication(ctx context.Context, harnessID HarnessID, override stri
 		name := "codex"
 		if harnessID == HarnessCursor {
 			name = "cursor-agent"
+		} else if harnessID == HarnessOpenCode {
+			name = "opencode"
+		} else if harnessID == HarnessKilo {
+			name = "kilo"
 		}
 		path, err = resolveExecutable(name, override)
 	}
 	if err != nil {
 		return fmt.Errorf("%s authentication executable: %w", harnessID, err)
+	}
+	if harnessID == HarnessOpenCode {
+		return checkOpenCodeAuthentication(ctx, path, model, env, clean)
+	}
+	if harnessID == HarnessKilo {
+		return checkKiloAuthentication(ctx, path, model, env, clean)
 	}
 	command := exec.CommandContext(ctx, path, "login", "status")
 	if harnessID == HarnessCursor {
@@ -352,6 +564,85 @@ func CheckAuthentication(ctx context.Context, harnessID HarnessID, override stri
 		return fmt.Errorf("%s authentication status failed: %w: %s", harnessID, err, strings.TrimSpace(output.String()))
 	}
 	return nil
+}
+
+func checkKiloAuthentication(ctx context.Context, path, model string, env []string, clean bool) error {
+	version, err := runStatusCommand(ctx, path, env, clean, "--version")
+	if err != nil {
+		return fmt.Errorf("Kilo version check failed: %w", err)
+	}
+	if strings.TrimSpace(version) != qualifiedKiloVersion {
+		return fmt.Errorf("Kilo version %q is unsupported; install qualified version %s", strings.TrimSpace(version), qualifiedKiloVersion)
+	}
+	provider, _, found := strings.Cut(model, "/")
+	if !found || provider == "" {
+		return errors.New("Kilo model must use provider/model format")
+	}
+	auth, err := runStatusCommand(ctx, path, env, clean, "auth", "list")
+	if err != nil {
+		return fmt.Errorf("Kilo authentication status failed: %w", err)
+	}
+	if !strings.Contains(strings.ToLower(auth), strings.ToLower(provider)) {
+		return fmt.Errorf("Kilo provider %q is not authenticated; run kilo auth login", provider)
+	}
+	models, err := runStatusCommand(ctx, path, env, clean, "models", provider)
+	if err != nil {
+		return fmt.Errorf("Kilo model availability failed: %w", err)
+	}
+	if !containsLine(models, model) {
+		return fmt.Errorf("Kilo model %q is unavailable for provider %q", model, provider)
+	}
+	return nil
+}
+
+func checkOpenCodeAuthentication(ctx context.Context, path, model string, env []string, clean bool) error {
+	version, err := runStatusCommand(ctx, path, env, clean, "--version")
+	if err != nil {
+		return fmt.Errorf("OpenCode version check failed: %w", err)
+	}
+	if strings.TrimSpace(version) != qualifiedOpenCodeVersion {
+		return fmt.Errorf("OpenCode version %q is unsupported; install qualified version %s", strings.TrimSpace(version), qualifiedOpenCodeVersion)
+	}
+	provider, _, found := strings.Cut(model, "/")
+	if !found || provider == "" {
+		return errors.New("OpenCode model must use provider/model format")
+	}
+	auth, err := runStatusCommand(ctx, path, env, clean, "auth", "list", "--pure")
+	if err != nil {
+		return fmt.Errorf("OpenCode authentication status failed: %w", err)
+	}
+	if !strings.Contains(strings.ToLower(auth), strings.ToLower(provider)) {
+		return fmt.Errorf("OpenCode provider %q is not authenticated; run opencode auth login", provider)
+	}
+	models, err := runStatusCommand(ctx, path, env, clean, "models", provider, "--pure")
+	if err != nil {
+		return fmt.Errorf("OpenCode model availability failed: %w", err)
+	}
+	if !containsLine(models, model) {
+		return fmt.Errorf("OpenCode model %q is unavailable for provider %q", model, provider)
+	}
+	return nil
+}
+
+func runStatusCommand(ctx context.Context, path string, env []string, clean bool, args ...string) (string, error) {
+	command := exec.CommandContext(ctx, path, args...)
+	command.Env = environment(env, clean)
+	var output bytes.Buffer
+	command.Stdout = &output
+	command.Stderr = &output
+	if err := command.Run(); err != nil {
+		return "", fmt.Errorf("%w: %s", err, strings.TrimSpace(output.String()))
+	}
+	return output.String(), nil
+}
+
+func containsLine(output, wanted string) bool {
+	for _, line := range strings.Split(output, "\n") {
+		if strings.TrimSpace(line) == wanted {
+			return true
+		}
+	}
+	return false
 }
 
 func resolveExecutable(defaultName, override string) (string, error) {
@@ -445,7 +736,7 @@ func isJSONObject(event []byte) bool {
 }
 
 func findSessionID(events []json.RawMessage) string {
-	keys := []string{"session_id", "sessionId", "thread_id", "threadId"}
+	keys := []string{"session_id", "sessionId", "sessionID", "thread_id", "threadId"}
 	for _, event := range events {
 		var value any
 		if json.Unmarshal(event, &value) == nil {

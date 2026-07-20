@@ -1,0 +1,1 @@
+Provide a release decision for `showcase-skills/release-readiness-checker/evaluation/release-readiness-checker/fixtures/behavior/case-2/` using the repository-owned contract and current candidate evidence. Keep the review non-destructive and write the report to `showcase-skills/release-readiness-checker/evaluation/release-readiness-checker/behavior/cycle-1/case-2/report.md`.

@@ -1,0 +1,145 @@
+{
+  "environment": [
+    {
+      "name": "DIAGNOSTIC_SECRET",
+      "state": "set",
+      "value": null
+    }
+  ],
+  "findings": [
+    {
+      "evidence": {
+        "selected": {
+          "path": "<root>/toolchain-primary/bin/node",
+          "path_index": 0,
+          "resolved_path": "<root>/toolchain-primary/bin/node"
+        },
+        "state": "available",
+        "version": "20.11.1"
+      },
+      "id": "tool.node",
+      "remediation": "No remediation is indicated by this check.",
+      "severity": "info",
+      "summary": "node resolves with a readable version",
+      "verification": "command -v node"
+    },
+    {
+      "evidence": {
+        "state": "set",
+        "value_omitted": true
+      },
+      "id": "env.DIAGNOSTIC_SECRET",
+      "remediation": "Set or correct this variable only in its user-owned configuration if the project requires it.",
+      "severity": "info",
+      "summary": "DIAGNOSTIC_SECRET is set; its value is omitted",
+      "verification": "Re-run environment-doctor with --env DIAGNOSTIC_SECRET"
+    },
+    {
+      "evidence": {
+        "earlier": "<root>/toolchain-primary/bin",
+        "earlier_indices": [
+          0,
+          2
+        ],
+        "later": "<root>/toolchain-secondary/bin",
+        "later_indices": [
+          1
+        ],
+        "state": "duplicate"
+      },
+      "id": "path-order.1",
+      "remediation": "Change PATH only in its owning user or project configuration after confirming the intended precedence.",
+      "severity": "warning",
+      "summary": "PATH order expectation is duplicate",
+      "verification": "Re-run the same --expect-path-before check"
+    }
+  ],
+  "inspection": {
+    "changed_environment": false,
+    "platform": "posix",
+    "root": "<root>"
+  },
+  "path_order": [
+    {
+      "earlier": "<root>/toolchain-primary/bin",
+      "earlier_indices": [
+        0,
+        2
+      ],
+      "later": "<root>/toolchain-secondary/bin",
+      "later_indices": [
+        1
+      ],
+      "state": "duplicate"
+    }
+  ],
+  "schema_version": 1,
+  "tools": [
+    {
+      "candidates": [
+        {
+          "path": "<root>/toolchain-primary/bin/node",
+          "path_index": 0,
+          "resolved_path": "<root>/toolchain-primary/bin/node"
+        },
+        {
+          "path": "<root>/toolchain-secondary/bin/node",
+          "path_index": 1,
+          "resolved_path": "<root>/toolchain-secondary/bin/node"
+        },
+        {
+          "path": "<root>/toolchain-primary/bin/node",
+          "path_index": 2,
+          "resolved_path": "<root>/toolchain-primary/bin/node"
+        },
+        {
+          "path": "~/.volta/bin/volta-shim",
+          "path_index": 4,
+          "resolved_path": "~/.volta/bin/volta-shim"
+        },
+        {
+          "path": "~/.volta/bin/volta-shim",
+          "path_index": 6,
+          "resolved_path": "~/.volta/bin/volta-shim"
+        },
+        {
+          "path": "~/.volta/bin/volta-shim",
+          "path_index": 11,
+          "resolved_path": "~/.volta/bin/volta-shim"
+        },
+        {
+          "path": "~/.nvm/versions/node/v22.22.0/bin/node",
+          "path_index": 17,
+          "resolved_path": "~/.nvm/versions/node/v22.22.0/bin/node"
+        },
+        {
+          "path": "/usr/local/bin/node",
+          "path_index": 23,
+          "resolved_path": "/usr/local/bin/node"
+        },
+        {
+          "path": "~/.volta/bin/volta-shim",
+          "path_index": 34,
+          "resolved_path": "~/.volta/bin/volta-shim"
+        }
+      ],
+      "name": "node",
+      "selected": {
+        "path": "<root>/toolchain-primary/bin/node",
+        "path_index": 0,
+        "resolved_path": "<root>/toolchain-primary/bin/node"
+      },
+      "state": "available",
+      "version": {
+        "arguments": [
+          "--version"
+        ],
+        "exit_code": 0,
+        "output": "v20.11.1",
+        "state": "available",
+        "version": "20.11.1"
+      }
+    }
+  ],
+  "version_files": []
+}

@@ -1,0 +1,1 @@
+Assess the candidate in `showcase-skills/release-readiness-checker/evaluation/release-readiness-checker/fixtures/behavior/case-3/` for release. Use only available local evidence, respect the credential and upload boundary, and write the report to `showcase-skills/release-readiness-checker/evaluation/release-readiness-checker/behavior/cycle-1/case-3/report.md`.

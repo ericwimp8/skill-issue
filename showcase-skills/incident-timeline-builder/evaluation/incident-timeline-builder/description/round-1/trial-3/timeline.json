@@ -1,0 +1,63 @@
+{
+  "input_sha256": "4513514a851817a14bf09f1ca5e5b3aa9ac9adf93ec46e36c743c5ab272af757",
+  "resolved_events": [
+    {
+      "classification": "observed",
+      "input_order": 1,
+      "locator": "line 1",
+      "normalized_utc": "2026-11-01T05:20:00Z",
+      "raw_timestamp": "2026-11-01T05:20:00Z",
+      "source_id": "SYS",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/description/trial-3/system.log",
+      "summary": "The API recorded latency_ms=920.",
+      "timestamp_status": "resolved"
+    },
+    {
+      "classification": "observed",
+      "input_order": 5,
+      "locator": "line 2",
+      "normalized_utc": "2026-11-01T06:40:00Z",
+      "raw_timestamp": "2026-11-01T06:40:00Z",
+      "source_id": "SYS",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/description/trial-3/system.log",
+      "summary": "The API recorded latency_ms=110.",
+      "timestamp_status": "resolved"
+    }
+  ],
+  "schema_version": 1,
+  "unresolved_events": [
+    {
+      "classification": "reported",
+      "input_order": 2,
+      "locator": "line 3",
+      "normalized_utc": null,
+      "raw_timestamp": "2026-11-01 01:30:00",
+      "source_id": "NOTE",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/description/trial-3/on-call.md",
+      "source_timezone": "America/New_York",
+      "summary": "The on-call operator reported changing the pool size.",
+      "timestamp_issue": "local time is ambiguous in source_timezone",
+      "timestamp_status": "ambiguous"
+    },
+    {
+      "classification": "reported",
+      "input_order": 3,
+      "locator": "line 4",
+      "normalized_utc": null,
+      "source_id": "NOTE",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/description/trial-3/on-call.md",
+      "summary": "The on-call operator reported that latency looked normal later.",
+      "timestamp_status": "missing"
+    },
+    {
+      "classification": "gap",
+      "input_order": 4,
+      "locator": "line 5",
+      "normalized_utc": null,
+      "source_id": "NOTE",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/description/trial-3/on-call.md",
+      "summary": "The on-call operator did not record which occurrence of 01:30 applied to the pool-size change.",
+      "timestamp_status": "missing"
+    }
+  ]
+}

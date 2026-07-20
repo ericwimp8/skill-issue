@@ -1,0 +1,25 @@
+Candidate-selection qualification probe
+
+Inspected YAML frontmatter descriptions:
+
+supporting-skills/document-update-discipline/SKILL.md
+description: Document-update discipline that prevents proximal patching and keeps whole-document meaning coherent. Use whenever planning an update to or updating any document.
+description_sha256: 29825004b48368b6976840670d1719efca3e2189edf2d91cac3c6e81eaa48b5f
+
+supporting-skills/prompt-writing/SKILL.md
+description: Prompt-writing discipline for agents and sub-agents. Use when writing prompts for agents, sub-agents, invoked skills, or authoritative plans.
+description_sha256: 8545b0c6a6077cdb3456c51d3f7682034065ccf46104291247e014fa55d14692
+
+skills/skill-intake/SKILL.md
+description: Conversational intake and build-ready planning for a new or revised agent skill. Use only when the user explicitly requests this skill.
+description_sha256: ea7201d930983280b3fdb06e0a5d0b5c8bc6274c426ac551f47c3f1d6c7775c0
+
+skills/skill-generation/SKILL.md
+description: Execution of a build-ready skill-intake plan into an idiomatic agent skill. Use when a completed intake contract is ready under its recorded viability, execution preference, and authority boundary.
+description_sha256: 385750f1efedf5373a9515c3fbaa2251b2a4dc3ea908ff62a2db120f948bdb9b
+
+Selected skill: supporting-skills/prompt-writing/SKILL.md
+Selection basis: Its description directly covers writing prompts for agents and sub-agents.
+Complete selected skill read before output: yes
+selected_skill_sha256: c6b7ff268497e3174cdf572ad6b1902d447c00ca4d5f02e43157a89fabe3e05f
+Native injection claim: none

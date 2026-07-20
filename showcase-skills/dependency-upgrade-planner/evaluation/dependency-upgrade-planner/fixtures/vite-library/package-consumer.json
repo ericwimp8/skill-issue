@@ -1,0 +1,4 @@
+{
+  "exports": { "./style.css": "./dist/style.css" },
+  "deploymentNode": "21.7.3"
+}

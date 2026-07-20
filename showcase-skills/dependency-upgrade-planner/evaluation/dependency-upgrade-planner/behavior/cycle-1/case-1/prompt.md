@@ -1,0 +1,3 @@
+Create a source-backed, dependency-ordered migration plan for upgrading the synthetic React app fixture from React 18.2 to stable React 19, without changing any fixture or dependency state. Inspect fixture production manifests, lockfile, config, usages, and live authoritative sources. Do not read `behavior/ground-truth.md` or any description trial output.
+
+Create `prompt.md`, `native-evidence.log` with the target pre-output complete-read hash and inspected fixture/source list, `output.md`, and `record.md` containing fresh identity/model/reasoning, target hash, audit against all eight evaluation criteria, cleanup ownership, and PASS/FAIL. Use repository-relative paths. Bound work to the supplied fixture and `authoritative-sources.md` routes; finish promptly.

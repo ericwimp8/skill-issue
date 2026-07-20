@@ -1,0 +1,3 @@
+interface:
+  display_name: 'Release Readiness Checker'
+  short_description: 'Audit release gates without publishing'

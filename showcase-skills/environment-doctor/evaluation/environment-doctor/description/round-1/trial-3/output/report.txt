@@ -1,0 +1,21 @@
+Environment Doctor
+==================
+
+Findings: 3
+
+[INFO] tool.node: node resolves with a readable version
+Evidence: {"selected":{"path":"<root>/toolchain-primary/bin/node","path_index":0,"resolved_path":"<root>/toolchain-primary/bin/node"},"state":"available","version":"20.11.1"}
+Remediation: No remediation is indicated by this check.
+Verification: command -v node
+
+[INFO] path-order.1: PATH order expectation is satisfied
+Evidence: {"earlier":"<root>/toolchain-primary/bin","earlier_indices":[0],"later":"<root>/toolchain-secondary/bin","later_indices":[1],"state":"satisfied"}
+Remediation: Change PATH only in its owning user or project configuration after confirming the intended precedence.
+Verification: Re-run the same --expect-path-before check
+
+[INFO] version-file.node.1: node version declaration is match
+Evidence: {"actual_version":"20.11.1","declared_version":"20","file":"<root>/.node-version","state":"match","tool":"node"}
+Remediation: Choose the project-approved toolchain or update the declaration only after confirming the intended version owner.
+Verification: Re-run environment-doctor with --version-file node .node-version
+
+No changes were made. Obtain approval before applying any remediation.

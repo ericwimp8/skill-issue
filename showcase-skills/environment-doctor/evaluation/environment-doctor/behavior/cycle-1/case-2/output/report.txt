@@ -1,0 +1,31 @@
+Environment Doctor
+==================
+
+Findings: 5
+
+[ERROR] tool.absent-tool: absent-tool is unavailable on PATH
+Evidence: {"state":"unavailable"}
+Remediation: Install or expose the tool through the platform's user-approved toolchain workflow.
+Verification: command -v absent-tool && absent-tool --version
+
+[INFO] tool.node: node resolves with a readable version
+Evidence: {"selected":{"path":"<root>/toolchain-primary/bin/node","path_index":0,"resolved_path":"<root>/toolchain-primary/bin/node"},"state":"available","version":"20.11.1"}
+Remediation: No remediation is indicated by this check.
+Verification: command -v node
+
+[WARNING] env.INTENTIONALLY_UNSET: INTENTIONALLY_UNSET is unset; its value is omitted
+Evidence: {"state":"unset","value_omitted":true}
+Remediation: Set or correct this variable only in its user-owned configuration if the project requires it.
+Verification: Re-run environment-doctor with --env INTENTIONALLY_UNSET
+
+[WARNING] path-order.1: PATH order expectation is reversed
+Evidence: {"earlier":"<root>/toolchain-secondary/bin","earlier_indices":[1],"later":"<root>/toolchain-primary/bin","later_indices":[0],"state":"reversed"}
+Remediation: Change PATH only in its owning user or project configuration after confirming the intended precedence.
+Verification: Re-run the same --expect-path-before check
+
+[WARNING] version-file.node.1: node version declaration is mismatch
+Evidence: {"actual_version":"20.11.1","declared_version":"22","file":"<root>/mismatch.node-version","state":"mismatch","tool":"node"}
+Remediation: Choose the project-approved toolchain or update the declaration only after confirming the intended version owner.
+Verification: Re-run environment-doctor with --version-file node mismatch.node-version
+
+No changes were made. Obtain approval before applying any remediation.

@@ -1,0 +1,181 @@
+{
+  "environment": [
+    {
+      "name": "INTENTIONALLY_UNSET",
+      "state": "unset",
+      "value": null
+    }
+  ],
+  "findings": [
+    {
+      "evidence": {
+        "state": "unavailable"
+      },
+      "id": "tool.absent-tool",
+      "remediation": "Install or expose the tool through the platform's user-approved toolchain workflow.",
+      "severity": "error",
+      "summary": "absent-tool is unavailable on PATH",
+      "verification": "command -v absent-tool && absent-tool --version"
+    },
+    {
+      "evidence": {
+        "selected": {
+          "path": "<root>/toolchain-primary/bin/node",
+          "path_index": 0,
+          "resolved_path": "<root>/toolchain-primary/bin/node"
+        },
+        "state": "available",
+        "version": "20.11.1"
+      },
+      "id": "tool.node",
+      "remediation": "No remediation is indicated by this check.",
+      "severity": "info",
+      "summary": "node resolves with a readable version",
+      "verification": "command -v node"
+    },
+    {
+      "evidence": {
+        "state": "unset",
+        "value_omitted": true
+      },
+      "id": "env.INTENTIONALLY_UNSET",
+      "remediation": "Set or correct this variable only in its user-owned configuration if the project requires it.",
+      "severity": "warning",
+      "summary": "INTENTIONALLY_UNSET is unset; its value is omitted",
+      "verification": "Re-run environment-doctor with --env INTENTIONALLY_UNSET"
+    },
+    {
+      "evidence": {
+        "earlier": "<root>/toolchain-primary/bin",
+        "earlier_indices": [
+          0
+        ],
+        "later": "<root>/toolchain-secondary/bin",
+        "later_indices": [
+          1
+        ],
+        "state": "satisfied"
+      },
+      "id": "path-order.1",
+      "remediation": "Change PATH only in its owning user or project configuration after confirming the intended precedence.",
+      "severity": "info",
+      "summary": "PATH order expectation is satisfied",
+      "verification": "Re-run the same --expect-path-before check"
+    },
+    {
+      "evidence": {
+        "actual_version": "20.11.1",
+        "declared_version": "22",
+        "file": "<root>/mismatch.node-version",
+        "state": "mismatch",
+        "tool": "node"
+      },
+      "id": "version-file.node.1",
+      "remediation": "Choose the project-approved toolchain or update the declaration only after confirming the intended version owner.",
+      "severity": "warning",
+      "summary": "node version declaration is mismatch",
+      "verification": "Re-run environment-doctor with --version-file node mismatch.node-version"
+    }
+  ],
+  "inspection": {
+    "changed_environment": false,
+    "platform": "posix",
+    "root": "<root>"
+  },
+  "path_order": [
+    {
+      "earlier": "<root>/toolchain-primary/bin",
+      "earlier_indices": [
+        0
+      ],
+      "later": "<root>/toolchain-secondary/bin",
+      "later_indices": [
+        1
+      ],
+      "state": "satisfied"
+    }
+  ],
+  "schema_version": 1,
+  "tools": [
+    {
+      "candidates": [],
+      "name": "absent-tool",
+      "selected": null,
+      "state": "unavailable",
+      "version": {
+        "output": null,
+        "state": "unavailable",
+        "version": null
+      }
+    },
+    {
+      "candidates": [
+        {
+          "path": "<root>/toolchain-primary/bin/node",
+          "path_index": 0,
+          "resolved_path": "<root>/toolchain-primary/bin/node"
+        },
+        {
+          "path": "<root>/toolchain-secondary/bin/node",
+          "path_index": 1,
+          "resolved_path": "<root>/toolchain-secondary/bin/node"
+        },
+        {
+          "path": "~/.volta/bin/volta-shim",
+          "path_index": 3,
+          "resolved_path": "~/.volta/bin/volta-shim"
+        },
+        {
+          "path": "~/.volta/bin/volta-shim",
+          "path_index": 5,
+          "resolved_path": "~/.volta/bin/volta-shim"
+        },
+        {
+          "path": "~/.volta/bin/volta-shim",
+          "path_index": 10,
+          "resolved_path": "~/.volta/bin/volta-shim"
+        },
+        {
+          "path": "~/.nvm/versions/node/v22.22.0/bin/node",
+          "path_index": 16,
+          "resolved_path": "~/.nvm/versions/node/v22.22.0/bin/node"
+        },
+        {
+          "path": "/usr/local/bin/node",
+          "path_index": 22,
+          "resolved_path": "/usr/local/bin/node"
+        },
+        {
+          "path": "~/.volta/bin/volta-shim",
+          "path_index": 33,
+          "resolved_path": "~/.volta/bin/volta-shim"
+        }
+      ],
+      "name": "node",
+      "selected": {
+        "path": "<root>/toolchain-primary/bin/node",
+        "path_index": 0,
+        "resolved_path": "<root>/toolchain-primary/bin/node"
+      },
+      "state": "available",
+      "version": {
+        "arguments": [
+          "--version"
+        ],
+        "exit_code": 0,
+        "output": "v20.11.1",
+        "state": "available",
+        "version": "20.11.1"
+      }
+    }
+  ],
+  "version_files": [
+    {
+      "actual_version": "20.11.1",
+      "declared_version": "22",
+      "file": "<root>/mismatch.node-version",
+      "state": "mismatch",
+      "tool": "node"
+    }
+  ]
+}

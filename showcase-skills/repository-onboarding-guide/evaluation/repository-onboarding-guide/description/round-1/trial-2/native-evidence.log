@@ -1,0 +1,21 @@
+Candidate description evidence (SHA-256 of candidate SKILL.md)
+
+- showcase-skills/repository-onboarding-guide/skill/repository-onboarding-guide/SKILL.md
+  be3a2843bf0a1a5bb0e415bcd12b723edfccba80aacccd20921a92a631730506
+- skills/skill-intake/SKILL.md
+  d8d3869bcf45127e63285857b530649e5644f9be30c85a64b890dec9134c4744
+- supporting-skills/system-change-ownership/SKILL.md
+  28659276d4de61422a233f6e909c075a611bab29c9c6fe5357db3fcd22fc3c82
+- supporting-skills/prompt-writing/SKILL.md
+  c6b7ff268497e3174cdf572ad6b1902d447c00ca4d5f02e43157a89fabe3e05f
+
+Selection
+
+Selected repository-onboarding-guide because its description explicitly covers source-backed orientation for repository instructions, architecture, runtime behavior, validation workflows, state, and unknowns. The other descriptions concern explicit skill intake, ownership placement, or prompt writing rather than contributor onboarding.
+
+Complete selected skill read before output
+
+- Path: showcase-skills/repository-onboarding-guide/skill/repository-onboarding-guide/SKILL.md
+- SHA-256: be3a2843bf0a1a5bb0e415bcd12b723edfccba80aacccd20921a92a631730506
+- Line count: 63
+

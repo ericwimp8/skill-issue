@@ -1,0 +1,16 @@
+fresh_agent_path: /root/api_change_impact_mapper/api_body_case_2
+model: GPT-5.6 Sol
+reasoning_effort: medium
+target_skill_path: showcase-skills/api-change-impact-mapper/skill/api-change-impact-mapper/SKILL.md
+target_skill_sha256: 7b5dfd09fae4349f467f13aa4d7a85ddae21b831eef6dee0f93421d03cd4876e
+fixture_root: showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/fixtures/event-contract
+fixture_file_sha256: c820a81bfb7f183596ffc40165b3b89f529452e1ac9cc3a1b39052f7e5259447  showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/fixtures/event-contract/analytics/consume.sql
+fixture_file_sha256: 804e9270c792952ffd28101a3bb43c1f0ee7875befb438b06a55f228b827679e  showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/fixtures/event-contract/billing/consume.ts
+fixture_file_sha256: 01855a6df710da4c98b683335be20b23d0a967b5feb4b8dddbc5e0bd7f75bb8e  showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/fixtures/event-contract/checkout/publish.ts
+fixture_file_sha256: 9377a3c4fa81503723fd949278f2fc5ddc6bce08edea19bad87560681b2e2e55  showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/fixtures/event-contract/config/features.yaml
+fixture_file_sha256: 44c33e00afe34fddfe1f94940d195a0c1ca601f2bf9e6d3575446fb76ae39efb  showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/fixtures/event-contract/contracts/order-new.proto
+fixture_file_sha256: a2f0c5c46f37ddd8a7091c9d0487c7c5d5158ec9e0db9849874eb9e0e14213df  showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/fixtures/event-contract/contracts/order-old.proto
+fixture_file_sha256: 1cd7a3daf1bfa7e7eab708cd71d4919df882b75e597282c033db1f7d406d9283  showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/fixtures/event-contract/replay/replay.ts
+fixture_file_sha256: c4f47e2eb23443cfdaea82b9d668320cf8da1c6e1a0192c8f1ecfcd7e8220ade  showcase-skills/api-change-impact-mapper/evaluation/api-change-impact-mapper/fixtures/event-contract/webhook/forward.ts
+fixture_tree_sha256_before: 2252998ec9ad3f53799df7b5ee4737919f17fe77a2b4b079a80a2be088bc1309
+fixture_tree_sha256_after: 2252998ec9ad3f53799df7b5ee4737919f17fe77a2b4b079a80a2be088bc1309

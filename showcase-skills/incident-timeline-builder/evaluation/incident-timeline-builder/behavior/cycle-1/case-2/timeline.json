@@ -1,0 +1,64 @@
+{
+  "input_sha256": "eb225e181ecfbec3c6e626cc1b7131ba366d0ea11c7711621d6b820cae6b41cb",
+  "resolved_events": [
+    {
+      "classification": "observed",
+      "input_order": 1,
+      "locator": "line 1",
+      "normalized_utc": "2026-10-25T00:15:00Z",
+      "raw_timestamp": "2026-10-25T01:15:00+01:00",
+      "source_id": "events",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/behavior/case-2/events.jsonl",
+      "summary": "The scheduler recorded a missed run.",
+      "timestamp_status": "resolved"
+    },
+    {
+      "classification": "observed",
+      "input_order": 2,
+      "locator": "line 2",
+      "normalized_utc": "2026-10-25T00:15:00Z",
+      "raw_timestamp": "2026-10-25T01:15:00+01:00",
+      "source_id": "events",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/behavior/case-2/events.jsonl",
+      "summary": "The scheduler recorded that a retry started.",
+      "timestamp_status": "resolved"
+    }
+  ],
+  "schema_version": 1,
+  "unresolved_events": [
+    {
+      "classification": "reported",
+      "input_order": 3,
+      "locator": "line 3",
+      "normalized_utc": null,
+      "raw_timestamp": "2026-10-25 01:30:00",
+      "source_id": "operator",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/behavior/case-2/operator.md",
+      "source_timezone": "Europe/London",
+      "summary": "The operator reported restarting the scheduler at the stated local civil time.",
+      "timestamp_issue": "local time is ambiguous in source_timezone",
+      "timestamp_status": "ambiguous"
+    },
+    {
+      "classification": "reported",
+      "input_order": 4,
+      "locator": "line 4",
+      "normalized_utc": null,
+      "relative_order": "after operator line 3",
+      "source_id": "operator",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/behavior/case-2/operator.md",
+      "summary": "The operator reported a second scheduler restart after the first restart, with no clock time supplied.",
+      "timestamp_status": "missing"
+    },
+    {
+      "classification": "reported",
+      "input_order": 5,
+      "locator": "line 5",
+      "normalized_utc": null,
+      "source_id": "operator",
+      "source_path": "showcase-skills/incident-timeline-builder/evaluation/incident-timeline-builder/fixtures/behavior/case-2/operator.md",
+      "summary": "The operator believes the first restart fixed the schedule and reports that the retry log and restart share no identifier.",
+      "timestamp_status": "missing"
+    }
+  ]
+}

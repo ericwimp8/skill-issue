@@ -1,0 +1,9 @@
+name: integration
+jobs:
+  integration:
+    services:
+      api:
+        image: fixture/api:latest
+    steps:
+      - run: ./wait-for-api.sh
+      - run: ./integration-tests.sh

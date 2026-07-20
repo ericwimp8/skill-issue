@@ -1,0 +1,21 @@
+Environment Doctor
+==================
+
+Findings: 3
+
+[INFO] tool.node: node resolves with a readable version
+Evidence: {"selected":{"path":"<root>/toolchain-primary/bin/node","path_index":0,"resolved_path":"<root>/toolchain-primary/bin/node"},"state":"available","version":"20.11.1"}
+Remediation: No remediation is indicated by this check.
+Verification: command -v node
+
+[INFO] env.DIAGNOSTIC_SECRET: DIAGNOSTIC_SECRET is set; its value is omitted
+Evidence: {"state":"set","value_omitted":true}
+Remediation: Set or correct this variable only in its user-owned configuration if the project requires it.
+Verification: Re-run environment-doctor with --env DIAGNOSTIC_SECRET
+
+[WARNING] path-order.1: PATH order expectation is duplicate
+Evidence: {"earlier":"<root>/toolchain-primary/bin","earlier_indices":[0,2],"later":"<root>/toolchain-secondary/bin","later_indices":[1],"state":"duplicate"}
+Remediation: Change PATH only in its owning user or project configuration after confirming the intended precedence.
+Verification: Re-run the same --expect-path-before check
+
+No changes were made. Obtain approval before applying any remediation.

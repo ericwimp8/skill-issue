@@ -1,0 +1,7 @@
+{
+  "name": "@example/router",
+  "version": "3.4.0",
+  "scripts": {
+    "docs": "typedoc src/index.ts"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "synthetic-widget-library",
+  "private": true,
+  "type": "module",
+  "engines": { "node": "21.x" },
+  "scripts": { "build": "vite build" },
+  "devDependencies": { "sass": "1.77.8", "terser": "5.15.1", "typescript": "5.4.5", "vite": "5.4.21" }
+}

@@ -36,10 +36,10 @@ Document authority classes, consumer links, and future update routing are mainta
 
 ### CLI Foundation
 
-- `cli/` contains a pure-Go executable foundation with platform reporting, embedded payload loading, direct install and uninstall routing, evaluation replay and cleanup, a six-target cross-build script, and six locally built binaries. Codex, Cursor, Claude Code, and Pi now have configurable native evaluation routes, custom supplied-skill input, effective-configuration confirmation, bounded cleanup, and completed two-turn real-launcher smoke checks.
+- `cli/` contains a pure-Go executable foundation with platform reporting, embedded payload loading, direct install and uninstall routing, evaluation replay and cleanup, a six-target cross-build script, and six locally built binaries. All six selected harnesses now have configurable native evaluation routes, custom supplied-skill input, effective-configuration confirmation, and bounded cleanup. Codex, Cursor, Claude Code, Pi, and Kilo Code have completed two-turn development-CLI smoke checks; OpenCode retains its bounded local configuration qualification.
 - `plans/skill-issue-project-completion/06-establish-the-cross-platform-cli-foundation.md` and `cli/README.md` document that foundation.
-- `evaluations/skill-calling/smoke/real-harness-smoke-report.md` preserves the bounded runtime evidence for the completed four-harness runner implementation.
-- Work Block 2 has extended the baseline with the canonical payload, concrete lifecycle manager, retained native roots, blind evaluation runner, four native launcher routes, guided selection and preview, file verification, and ownership-backed cleanup. OpenCode and Kilo Code implementation, concrete installation-adapter preflight, final packaging, and the block audit remain open. Governed-campaign, native-platform, and release qualification remain downstream.
+- `evaluations/skill-calling/smoke/real-harness-smoke-report.md` preserves the bounded runtime evidence for the completed development-CLI smoke routes.
+- Work Block 2 has extended the baseline with the canonical payload, concrete lifecycle manager, retained native roots, blind evaluation runner, six native launcher routes, guided selection and preview, file verification, and ownership-backed cleanup. Final packaging and the block audit remain open. Governed-campaign, native-platform, and release qualification remain downstream.
 
 ### Website Mock-Up
 
@@ -74,7 +74,7 @@ Document authority classes, consumer links, and future update routing are mainta
 
 ### 2. The Installer Exists but Its User Journey and Lifecycle Semantics Remain Incomplete
 
-- `cli/internal/harness/harness.go` contains the six retained project and user roots. Guided installation presents explicit harness and scope selection, marks OpenCode and Kilo Code as in progress, previews the destination and payload, and requires confirmation.
+- `cli/internal/harness/harness.go` contains the six retained project and user roots. Guided installation presents every supported harness and scope for explicit selection, previews the destination and payload, and requires confirmation.
 - `cli/internal/payload/assets/manifest.json` contains the complete canonical component inventory, and the payload owner validates canonical frontmatter and referenced-file closure.
 - `cli/internal/installer/installer.go` stages and replaces only the known Skill Issue payload directories. It stores no ordinary receipt, digest, backup, rollback, or mutable application state. Repeated installation is the reinstall, update, and repair path; uninstallation removes those same known directories.
 - `cli/internal/lifecycle/lifecycle.go` exposes ordinary `install` and `uninstall` plus evaluation run and cleanup. The former verify, repair, and update command paths are removed.
@@ -93,7 +93,7 @@ Document authority classes, consumer links, and future update routing are mainta
 - The planned skill-calling campaign measures whether selected harness-and-model environments invoke supplied skills at predetermined points in three governed 30-turn scenarios.
 - `evaluations/skill-calling/instrumentation-contract.md` and `event.schema.json` define the opaque instruction, private token and turn state, marker behavior, cleanup, and invocation event.
 - All three governed scenarios and their embedded private answer sheets are complete and measure four canonical Skill Issue activations each. Paired external skill, scenario, and answer-sheet inputs remain supported for custom evaluations.
-- The direct primary-agent Go runner, all three governed scenarios, and result derivation are implemented. Codex, Cursor, Claude Code, and Pi completed bounded built-in and custom two-turn launcher smoke routes. Complete workflow qualification, OpenCode support, governed campaign execution, campaign aggregation, and thirteen-cell evidence remain unfinished.
+- The direct primary-agent Go runner, all three governed scenarios, and result derivation are implemented. Codex, Cursor, Claude Code, Pi, and Kilo Code completed bounded built-in and custom two-turn launcher smoke routes; OpenCode completed bounded local configuration qualification. Complete workflow qualification, governed campaign execution, campaign aggregation, and thirteen-cell evidence remain unfinished.
 - Work Block 3 executes qualification and the campaign.
 
 ### 5. Integrated Product Handoffs Are Complete but Runtime Proof Remains
@@ -119,7 +119,7 @@ Document authority classes, consumer links, and future update routing are mainta
 ### 8. External Evaluation Depends on the Finished Installer
 
 - External evaluators cannot be recruited effectively until the integrated CLI can install the normal and evaluation payloads, run the governed evaluation, export evidence, and clean up through the finished ordinary product journey.
-- The four-harness two-turn smoke campaign proves the bounded launcher interfaces but does not replace the accessible-environment complete-workflow gate. Work Block 3 begins after Work Block 2 produces the finished candidate, performs that gate before recruitment, then supports external and internal runs under one evidence contract.
+- The bounded two-turn smoke campaign proves the recorded launcher interfaces but does not replace the accessible-environment complete-workflow gate. Work Block 3 begins after Work Block 2 produces the finished candidate, performs that gate before recruitment, then supports external and internal runs under one evidence contract.
 
 ## Old Task to New Work Block Mapping
 
@@ -160,21 +160,21 @@ Research is read and any remaining authoritative gap is resolved inside the work
 
 ## Completion-Criteria Preservation
 
-| Previous completion meaning                                                            | Preserved owner                                                               |
-| -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Runtime-free macOS, Windows, and Linux CLI                                             | Work Block 2 implementation and Work Blocks 3 and 4 qualification and release |
-| Harness and scope selection, confirmation, installation verification, and safe lifecycle | Work Block 2                                                               |
-| Complete payload with primary workflows and the supporting-skills bundle               | Work Blocks 1 and 2                                                           |
-| Ordinary-language skill creation through evaluation and refinement                     | Work Block 1, proven in Work Block 3                                          |
-| Existing-skill evaluation and semantic refinement                                      | Work Block 1, proven in Work Block 3                                          |
-| Harness-agnostic independent-agent behavior and capability gates                       | Work Block 1, proven in Work Block 3                                          |
-| Five-harness complete workflow proof and thirteen-cell medium-setting campaign         | Work Block 3                                                                  |
-| External evaluator installation, execution, evidence return, and attribution consent   | Work Block 3                                                                  |
-| Adjacent-skill and configuration disclosure                                            | Work Block 3 evidence and Work Block 4 public documentation                   |
-| Qualified release binaries, integrity metadata, and working downloads                  | Work Block 4                                                                  |
-| Real deployed website results, limitations, hooks, About content, and repository route | Work Block 4                                                                  |
-| Public video, current-rule compliance, and completed hackathon submission              | Work Block 5                                                                  |
-| Fresh-user journey and final evidence-backed completion decision                       | Work Block 6                                                                  |
+| Previous completion meaning                                                              | Preserved owner                                                               |
+| ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Runtime-free macOS, Windows, and Linux CLI                                               | Work Block 2 implementation and Work Blocks 3 and 4 qualification and release |
+| Harness and scope selection, confirmation, installation verification, and safe lifecycle | Work Block 2                                                                  |
+| Complete payload with primary workflows and the supporting-skills bundle                 | Work Blocks 1 and 2                                                           |
+| Ordinary-language skill creation through evaluation and refinement                       | Work Block 1, proven in Work Block 3                                          |
+| Existing-skill evaluation and semantic refinement                                        | Work Block 1, proven in Work Block 3                                          |
+| Harness-agnostic independent-agent behavior and capability gates                         | Work Block 1, proven in Work Block 3                                          |
+| Five-harness complete workflow proof and thirteen-cell medium-setting campaign           | Work Block 3                                                                  |
+| External evaluator installation, execution, evidence return, and attribution consent     | Work Block 3                                                                  |
+| Adjacent-skill and configuration disclosure                                              | Work Block 3 evidence and Work Block 4 public documentation                   |
+| Qualified release binaries, integrity metadata, and working downloads                    | Work Block 4                                                                  |
+| Real deployed website results, limitations, hooks, About content, and repository route   | Work Block 4                                                                  |
+| Public video, current-rule compliance, and completed hackathon submission                | Work Block 5                                                                  |
+| Fresh-user journey and final evidence-backed completion decision                         | Work Block 6                                                                  |
 
 ## Audit Decision
 

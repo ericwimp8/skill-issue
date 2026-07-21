@@ -48,7 +48,7 @@ func (service Service) prepareRuntime(harnessID harness.ID, model, reasoning, ru
 			return runtimePreparation{}, err
 		}
 		configuration := []string{
-			`agents.enabled=false`,
+			`features.multi_agent=false`,
 			`features.multi_agent_v2=false`,
 			`approvals_reviewer="auto_review"`,
 			fmt.Sprintf("model_reasoning_effort=%s", strconv.Quote(reasoning)),

@@ -39,7 +39,7 @@ func TestPrepareCodexRuntimeOwnsStateAndDisablesAgents(t *testing.T) {
 	if string(authentication) != "authentication" {
 		t.Fatalf("unexpected copied authentication: %q", authentication)
 	}
-	if !slices.Contains(runtime.codexConfiguration, `agents.enabled=false`) || !slices.Contains(runtime.codexConfiguration, `features.multi_agent_v2=false`) {
+	if !slices.Contains(runtime.codexConfiguration, `features.multi_agent=false`) || !slices.Contains(runtime.codexConfiguration, `features.multi_agent_v2=false`) {
 		t.Fatalf("Codex runtime leaves agents enabled: %v", runtime.codexConfiguration)
 	}
 	if runtime.evaluationSkillRoot != filepath.Join(workspace, ".agents", "skills") {

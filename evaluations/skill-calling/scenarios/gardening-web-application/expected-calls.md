@@ -53,6 +53,8 @@ This document is the human-readable governance view. The standalone CLI embeds t
 | 29   | `document-update-discipline`     | Final plan claims must match the retained evidence.                  |
 | 30   | `prompt-writing`                 | The turn requests a concise final maintainer handoff prompt.         |
 
+The turns keep every verification step inside the workspace's Node-run checks: the user states in turn 3 that all in-browser checking happens on their side, and the implementation, accessibility, and check-running turns repeat that framing. A run that launches or automates a browser is prompt drift by the evaluated agent, not an expected step, and on macOS such launches can raise system keychain prompts on the operator's machine.
+
 Turns 13, 18, and 24 intentionally have no expected invocation because they ask for small factual reminders without requesting a skill-owned action. Repeated applicability elsewhere is scored because each later turn creates a new, independently observable decision to update a document, edit code, work with tests, debug behavior, author a skill, or place ownership.
 
 ## Comparison

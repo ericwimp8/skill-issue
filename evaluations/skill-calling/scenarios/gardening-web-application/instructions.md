@@ -12,6 +12,8 @@ Use `skill-issue evaluate run --output <path> --evaluation gardening-web-applica
 
 Do not add extra skills or prompts. Let each of the thirty turns finish fully. Turn number is the comparison axis; token counts are optional metadata.
 
+The governed turns keep all verification in Node-run checks and tell the agent the user does every in-browser check themselves, so a conforming run never opens or automates a browser and must not raise operating-system prompts on the host. If an agent still launches one, record it as scenario behavior rather than repairing it mid-run; any operator-authored macOS browser automation outside this scenario should pass `--use-mock-keychain` to keep secure-storage prompts from appearing.
+
 ## Retain
 
 - the native transcript and structured harness events when available;

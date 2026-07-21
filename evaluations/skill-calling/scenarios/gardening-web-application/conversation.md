@@ -12,7 +12,7 @@ Send these turns exactly as written and in order. Wait for the agent to finish e
 
 ## Turn 3
 
-> Keep the implementation deliberately small: plain HTML, CSS, and JavaScript, keyboard-usable controls, readable status text, a local-calendar-date rule, and automated checks for the date calculation. Put the broad work in dependency order and make the completion criteria observable.
+> Keep the implementation deliberately small: plain HTML, CSS, and JavaScript, keyboard-usable controls, readable status text, a local-calendar-date rule, and automated checks for the date calculation that run under Node alone. I will do all in-browser checking myself, so never open or automate a browser from your side. Put the broad work in dependency order and make the completion criteria observable.
 
 ## Turn 4
 
@@ -24,7 +24,7 @@ Send these turns exactly as written and in order. Wait for the agent to finish e
 
 ## Turn 6
 
-> Planning is complete. Implement the smallest working SproutCheck app from the approved plan now. Keep it dependency-free and stop after the add, water, status, and reload behaviors work.
+> Planning is complete. Implement the smallest working SproutCheck app from the approved plan now. Keep it dependency-free and stop once the add, water, status, and reload behaviors are in place; I will try them in my own browser.
 
 ## Turn 7
 
@@ -84,11 +84,11 @@ Send these turns exactly as written and in order. Wait for the agent to finish e
 
 ## Turn 21
 
-> Inspect the current interface and implement the smallest keyboard, focus, and status-announcement improvements that are clearly needed. Keep the visual design and product scope otherwise unchanged.
+> Read the current interface source and implement the smallest keyboard, focus, and status-announcement improvements that are clearly needed. Judge the interface from its markup and scripts rather than by opening it, and keep the visual design and product scope otherwise unchanged.
 
 ## Turn 22
 
-> Add focused automated checks for the interaction behavior changed in the accessibility pass. Assert observable keyboard and status outcomes rather than internal event wiring, then run the focused checks.
+> Add focused automated checks for the interaction behavior changed in the accessibility pass. Assert observable keyboard and status outcomes rather than internal event wiring, keep the checks in the Node-run test layer, then run the focused checks.
 
 ## Turn 23
 
@@ -112,7 +112,7 @@ Send these turns exactly as written and in order. Wait for the agent to finish e
 
 ## Turn 28
 
-> Run the focused automated suite and the nearest broader project check that can catch collateral behavior changes. Report the commands and outcomes without changing application behavior.
+> Run the focused automated suite and the nearest broader Node-run project check that can catch collateral behavior changes. Report the commands and outcomes without changing application behavior.
 
 ## Turn 29
 

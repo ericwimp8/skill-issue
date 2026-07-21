@@ -15,7 +15,7 @@
       },
       {
         "turn_id": "turn-3",
-        "prompt": "Keep the implementation deliberately small: plain HTML, CSS, and JavaScript, keyboard-usable controls, readable status text, a local-calendar-date rule, and automated checks for the date calculation. Put the broad work in dependency order and make the completion criteria observable."
+        "prompt": "Keep the implementation deliberately small: plain HTML, CSS, and JavaScript, keyboard-usable controls, readable status text, a local-calendar-date rule, and automated checks for the date calculation that run under Node alone. I will do all in-browser checking myself, so never open or automate a browser from your side. Put the broad work in dependency order and make the completion criteria observable."
       },
       {
         "turn_id": "turn-4",
@@ -27,7 +27,7 @@
       },
       {
         "turn_id": "turn-6",
-        "prompt": "Planning is complete. Implement the smallest working SproutCheck app from the approved plan now. Keep it dependency-free and stop after the add, water, status, and reload behaviors work."
+        "prompt": "Planning is complete. Implement the smallest working SproutCheck app from the approved plan now. Keep it dependency-free and stop once the add, water, status, and reload behaviors are in place; I will try them in my own browser."
       },
       {
         "turn_id": "turn-7",
@@ -87,11 +87,11 @@
       },
       {
         "turn_id": "turn-21",
-        "prompt": "Inspect the current interface and implement the smallest keyboard, focus, and status-announcement improvements that are clearly needed. Keep the visual design and product scope otherwise unchanged."
+        "prompt": "Read the current interface source and implement the smallest keyboard, focus, and status-announcement improvements that are clearly needed. Judge the interface from its markup and scripts rather than by opening it, and keep the visual design and product scope otherwise unchanged."
       },
       {
         "turn_id": "turn-22",
-        "prompt": "Add focused automated checks for the interaction behavior changed in the accessibility pass. Assert observable keyboard and status outcomes rather than internal event wiring, then run the focused checks."
+        "prompt": "Add focused automated checks for the interaction behavior changed in the accessibility pass. Assert observable keyboard and status outcomes rather than internal event wiring, keep the checks in the Node-run test layer, then run the focused checks."
       },
       {
         "turn_id": "turn-23",
@@ -115,7 +115,7 @@
       },
       {
         "turn_id": "turn-28",
-        "prompt": "Run the focused automated suite and the nearest broader project check that can catch collateral behavior changes. Report the commands and outcomes without changing application behavior."
+        "prompt": "Run the focused automated suite and the nearest broader Node-run project check that can catch collateral behavior changes. Report the commands and outcomes without changing application behavior."
       },
       {
         "turn_id": "turn-29",

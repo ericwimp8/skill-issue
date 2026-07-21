@@ -1,110 +1,78 @@
-# Skill-Calling Evaluation Campaign — Fail-Fast Orchestration
+# Skill-Calling Evaluation Campaign — Orchestrator Briefing
 
-You are the campaign orchestrator, starting with zero prior context. This document is self-contained: it tells you exactly what to run, how to isolate it, and when to stop. Begin work immediately after the five-minute preflight — there are no warm-up smokes. The campaign is 30 governed evaluation runs tracked in `evaluation-progress.md` (same directory): ten harness-and-model configurations, each running all three built-in scenarios once, in full, with no `--turns` limit.
+## The job
 
-Read before acting: `evaluation-progress.md` (the matrix and statuses; you are its only writer) and `cli/README.md` (result interpretation). Nothing else is required.
+Run the campaign's 30 blind skill-calling evaluations — ten harness-and-model configurations, each running the three built-in scenarios once, in full — and keep `evaluation-progress.md` (same directory) truthful as you go. Complete as many of the 30 as you can: troubleshoot what fails where you can, record with evidence what you cannot, and never let one failure stop the rest. When every run is settled, report what completed, what didn't, and why, with enough diagnosis that the operator can fix and rerun the leftovers.
 
-## Non-Negotiable Principles
+You own the whole task: scheduling, launching, monitoring, bookkeeping, and reporting. The tracker is yours alone to write.
 
-- **Fail fast.** A tooling failure stops that run instantly and permanently. Never retry a failed run, never rerun an unchanged command, never weaken a sandbox, never repair authentication, never touch user configuration to keep the queue moving.
-- **A lane that fails is closed.** A lane is one configuration (three scenario runs, executed sequentially). When any run in a lane fails on tooling, mark it `Failed`, record the failure log row, do not start the lane's remaining runs, and continue other lanes.
-- **Halt the whole campaign** — stop launching anything, report, and end — when any of these occur:
-  - two lanes have failed for any reason;
-  - any failure names the generated configuration being rejected by a harness (product defect);
-  - any failure names instrumentation integrity: "no marker was recorded", "did not discover installed evaluation skill", "not loaded", or "cannot verify";
-  - any failure names authentication, login, quota, or subscription exhaustion on more than one lane.
-- **Model behavior is never a failure.** Missing, additional, or zero observed skill calls in a tooling-complete run are evaluation data. Mark the run `Complete`. (Skill visibility is verified in-run for Claude Code, OpenCode, Kilo, and Pi, so a completed run's misses are trustworthy; note a zero-call Codex or Cursor run in the progress notes for later review, but do not fail it.)
-- **Evidence is never destroyed.** Retain every chat container, passing or failing, exactly where it is. Never reuse a container, workspace, or output directory.
+## Running one evaluation
 
-## Setup
+This is genuinely all it takes — one command per run:
 
 ```zsh
 REPO=$(git rev-parse --show-toplevel)
-CHATS="$(dirname "$REPO")/chats"   # adjacent to, never inside, the repository
+"$REPO/cli/scripts/local-cli.sh" evaluate run \
+  --workspace <fresh-empty-dir> --output <dir-outside-the-workspace> \
+  --harness codex --events --transcript --yes \
+  --evaluation gardening-web-application
 ```
 
-Every command uses the known-good CLI channel: `"$REPO/cli/scripts/local-cli.sh" <arguments>` (no channel word — known-good is the default). Do not build or use the development channel.
+`local-cli.sh` is the qualified known-good CLI (its `version` prints `known-good-*`; the development channel is not for campaign work). The run prints a pre-run summary, then per-turn progress, and takes 30–90 minutes for a full scenario. Success ends with `"status": "complete"` and leaves `result.json`, `website.json`, `events.jsonl`, and `transcript.json` in a run-named directory under the output root. Failure prints `evaluation encountered a tooling error` and names a `failure.json` holding the exact harness command, active turn, error chain, and raw native output — that file is your diagnostic starting point every time (it is unsanitized; never commit or share it). No `--turns` flag: campaign runs are always the complete scenario.
 
-### Run containers
+`skill-issue doctor --harness <id> [--executable <path>]` diagnoses a harness in seconds with zero model cost — useful before starting and whenever a lane misbehaves. If an error message ever names an `evaluate cleanup --run <id> --output <root>` command, running exactly that once restores the workspace.
 
-Allocate one fresh neutral container per run, serially, before launching it:
+## The thirty runs
 
-1. Create `$CHATS` if absent. Inspect only its immediate child names.
-2. Take the next unused positive integer after the highest existing `chat-<number>`; start at `chat-1`.
-3. Create `$CHATS/chat-<number>/workspace` and `$CHATS/chat-<number>/output`, both empty.
-4. Pass those exact paths as `--workspace` and `--output`. Do not put evaluation IDs, harness names, model names, or the words eval/test/skill in any container or workspace name.
-5. After the run, leave the whole container untouched where it is.
+Scenario IDs, in the order the campaign runs them within each configuration: `gardening-web-application`, `community-archive-desktop-application`, `neighborhood-emergency-preparedness-program` (run IDs `-01`, `-02`, `-03`).
 
-If you are running inside Codex, every command touching `$CHATS` and every `codex`-harness evaluation needs command-scoped outer-sandbox escalation (`sandbox_permissions: "require_escalated"`) — justification: the evaluator needs its adjacent neutral container, and a nested Codex needs its authenticated session state under `CODEX_HOME`. Never `danger-full-access`; the evaluator's inner sandboxes stay untouched. If escalation is denied, halt the campaign.
+| Configuration       | IDs            | `--harness`   | `--executable`                                                             | `--model`         | environment                                                     |
+| ------------------- | -------------- | ------------- | -------------------------------------------------------------------------- | ----------------- | --------------------------------------------------------------- |
+| OpenAI Codex — Sol  | COD-SOL-01..03 | `codex`       | `$(command -v codex)`                                                      | default           | —                                                               |
+| Pi — Codex          | PI-COD-01..03  | `pi`          | `$(command -v pi)`                                                         | default           | —                                                               |
+| OpenCode — Codex    | OPE-COD-01..03 | `opencode`    | `$REPO/.skill-issue/opencode/bin/opencode`                                 | default           | `XDG_DATA_HOME="$REPO/.skill-issue/opencode/home/.local/share"` |
+| Kilo — Codex        | KIL-COD-01..03 | `kilo-code`   | `$REPO/.skill-issue/kilo/node_modules/@kilocode/cli-darwin-arm64/bin/kilo` | default           | `XDG_DATA_HOME="$REPO/.skill-issue/kilo/home/.local/share"`     |
+| Cursor — Composer   | CUR-COM-01..03 | `cursor`      | `$REPO/.skill-issue/cursor/home/.local/bin/agent`                          | resolved Composer | —                                                               |
+| Cursor — Grok       | CUR-GRO-01..03 | `cursor`      | same Cursor agent                                                          | resolved Grok     | —                                                               |
+| Cursor — Codex      | CUR-COD-01..03 | `cursor`      | same Cursor agent                                                          | resolved Sol      | —                                                               |
+| Cursor — Fable      | CUR-FAB-01..03 | `cursor`      | same Cursor agent                                                          | resolved Fable    | —                                                               |
+| Claude Code — Codex | CLA-COD-01..03 | `claude-code` | `$REPO/.skill-issue/claudex/claudex`                                       | `gpt-5.6-sol`     | —                                                               |
+| Claude Code — Fable | CLA-FAB-01..03 | `claude-code` | `$(command -v claude)`                                                     | `claude-fable-5`  | —                                                               |
 
-## Preflight (five minutes, zero model cost)
+"Resolved" Cursor models: the Cursor catalog drifts daily (a `-medium` variant vanished and reappeared within one day here), so identifiers are resolved fresh from `agent --list-models` at start, never from memory. Prefer the exact `-medium` variant; the recorded fallbacks when none exists are `composer-2.5`, `cursor-grok-4.5-high`, `gpt-5.6-sol-high`, and `claude-fable-5-thinking-high`. A rejected identifier is cheap to correct — the rejection lists what the harness accepts. Record whatever you actually used.
 
-1. `"$REPO/cli/scripts/local-cli.sh" version` — confirm the known-good channel resolves.
-2. Doctor each harness with its route below, for example:
-   `XDG_DATA_HOME="$REPO/.skill-issue/opencode/home/.local/share" "$REPO/cli/scripts/local-cli.sh" doctor --harness opencode --executable "$REPO/.skill-issue/opencode/bin/opencode"`
-   A doctor failure closes that lane before it opens (record it as `Blocked`); it does not halt other lanes.
-3. Capture `"$REPO/.skill-issue/cursor/home/.local/bin/agent" --list-models` into `$REPO/output/campaign/preflight-cursor-models.txt` and resolve the four Cursor identifiers by these rules, in order: use the exact `-medium` variant if listed; otherwise use the identifier in the Model Resolution table below if listed; otherwise close that Cursor lane as `Blocked` with the listing as evidence. Record every resolved identifier in the progress notes. Model catalogs drift between days — never reuse an identifier from an earlier document without re-checking the listing.
-4. Confirm `"$REPO/.skill-issue/claudex/claudex"` exists (Claude Code — Codex launcher; its proxy is self-managed).
+## Isolation — why workspaces look the way they do
 
-## The Ten Lanes
+These are blind evaluations: the evaluated model must find no clue that it is being measured. That is why every run gets a fresh, empty, neutrally named workspace, and why results live outside it. The campaign convention: containers `chat-<n>` under `<repository-parent>/chats/`, each holding an empty `workspace/` and an `output/`, numbered serially past the highest existing number. Nothing in a container path may hint at evaluation, skills, harnesses, or models. A used container — passing or failing — is retained evidence: never reused, cleaned, or reorganized. After a run, the workspace holds whatever the model built (that's evidence too, including any skill the model itself authored); the only things that would signal trouble are leftover canonical Skill Issue skills or private `skill-issue/` state in the system temp directory, which a healthy run always removes.
 
-Scenario order inside every lane: `-01` `gardening-web-application`, `-02` `community-archive-desktop-application`, `-03` `neighborhood-emergency-preparedness-program`, sequential.
+## Constraints that are real, not stylistic
 
-Command template (fill the bracketed parts; `--model`/`--executable`/env only where the lane says so):
+- At most ten evaluations in flight; within a configuration the three scenarios run one at a time, in order.
+- At most one `claude-code`-harness run at any moment, campaign-wide — concurrent Claude sessions fight over session state.
+- **Claude Code — Fable runs last, after everything else is settled**, and only after the claudex proxy (owned by `$REPO/.skill-issue/claudex/manage`) is stopped and verifiably gone — the Codex-proxy route and the normal `claude` route must never coexist.
+- Never pass `--reasoning`: medium is already every harness's default, and Cursor rejects the flag outright.
+- Never use `$REPO/.skill-issue/kilo/bin/kilo` — that wrapper pins its own configuration home and silently discards the evaluation's generated configuration.
+- Concurrent Cursor runs share one account; if rate limits appear, fewer simultaneous Cursor runs is the fix.
 
-```zsh
-[ENV] "$REPO/cli/scripts/local-cli.sh" evaluate run \
-  --workspace "$CHATS/chat-<n>/workspace" \
-  --output "$CHATS/chat-<n>/output" \
-  --harness <harness> [--executable <route>] [--model <model>] \
-  --events --transcript --yes \
-  --evaluation <scenario-id>
-```
+## What results mean
 
-Never pass `--reasoning` (medium is every default; Cursor rejects the flag). Verify the printed pre-run summary shows the intended harness, executable, model, workspace, and output before relying on the run.
+Missing, additional, or even zero observed skill calls in a completed run are **evaluation data, never failure** — mark the run `Complete`. Skill visibility is machine-verified during the run for Claude Code, OpenCode, Kilo, and Pi, so a completed run's misses are trustworthy; Codex and Cursor lack that verification surface, so a zero-call run there deserves a note for later review, nothing more. Only "evaluation encountered a tooling error" is a failure.
 
-| Lane                | IDs            | `--harness`   | `--executable`                                                                                              | `--model`            | ENV                                                             |
-| ------------------- | -------------- | ------------- | ----------------------------------------------------------------------------------------------------------- | -------------------- | --------------------------------------------------------------- |
-| OpenAI Codex — Sol  | COD-SOL-01..03 | `codex`       | `"$(command -v codex)"`                                                                                     | omit                 | —                                                               |
-| Pi — Codex          | PI-COD-01..03  | `pi`          | `"$(command -v pi)"`                                                                                        | omit                 | —                                                               |
-| OpenCode — Codex    | OPE-COD-01..03 | `opencode`    | `"$REPO/.skill-issue/opencode/bin/opencode"`                                                                | omit                 | `XDG_DATA_HOME="$REPO/.skill-issue/opencode/home/.local/share"` |
-| Kilo — Codex        | KIL-COD-01..03 | `kilo-code`   | `"$REPO/.skill-issue/kilo/node_modules/@kilocode/cli-darwin-arm64/bin/kilo"` (never the `bin/kilo` wrapper) | omit                 | `XDG_DATA_HOME="$REPO/.skill-issue/kilo/home/.local/share"`     |
-| Cursor — Composer   | CUR-COM-01..03 | `cursor`      | `"$REPO/.skill-issue/cursor/home/.local/bin/agent"`                                                         | resolved Composer id | —                                                               |
-| Cursor — Grok       | CUR-GRO-01..03 | `cursor`      | same Cursor route                                                                                           | resolved Grok id     | —                                                               |
-| Cursor — Codex      | CUR-COD-01..03 | `cursor`      | same Cursor route                                                                                           | resolved Sol id      | —                                                               |
-| Cursor — Fable      | CUR-FAB-01..03 | `cursor`      | same Cursor route                                                                                           | resolved Fable id    | —                                                               |
-| Claude Code — Codex | CLA-COD-01..03 | `claude-code` | `"$REPO/.skill-issue/claudex/claudex"`                                                                      | `gpt-5.6-sol`        | —                                                               |
-| Claude Code — Fable | CLA-FAB-01..03 | `claude-code` | `"$(command -v claude)"`                                                                                    | `claude-fable-5`     | —                                                               |
+## What failures mean
 
-### Model Resolution (Cursor fallbacks when no `-medium` variant is listed)
+The `failure.json` error text tells you which kind of problem you have:
 
-| Label       | Fallback identifier            |
-| ----------- | ------------------------------ |
-| Composer    | `composer-2.5`                 |
-| Grok        | `cursor-grok-4.5-high`         |
-| Codex (Sol) | `gpt-5.6-sol-high`             |
-| Fable       | `claude-fable-5-thinking-high` |
+- **`signal: killed`, `signal: terminated`, `context canceled`** — especially several runs at the same instant — means the _orchestrator's environment_ died, not the runs. This has happened twice here: once because an orchestrator ran inside a Codex sandbox (each command needed an escalation a reviewer could and did deny), and once because an orchestrator's own process ended and took its child runs down with it. The lessons: this job needs a seat with direct filesystem access to the `chats/` directory, runs deserve to be launched so they survive their launcher (`nohup`-style detachment), and a successor orchestrator should trust live processes and logs over what the tracker says — adopt anything still running rather than duplicating it. Environment deaths say nothing about a lane; the affected runs are simply eligible again.
+- **Rate limits, network timeouts, one-off crashes or protocol breaks** — transient. Worth retrying in a fresh container with whatever correction the diagnosis suggests; blind identical reruns teach nothing, and past three attempts a run has had its chance.
+- **`Error loading config`** (harness rejects generated configuration), **`no marker was recorded` / `did not discover installed evaluation skill` / `not loaded` / `cannot verify`** (instrumentation integrity), **`qualified version`** (version pin) — systemic. Retrying re-proves the same defect at full price; record the evidence and move on, and once a cause has claimed two runs in a lane it has claimed the lane.
+- **Authentication or subscription failures** — the operator's to fix; `Blocked`, not worth burning attempts on.
 
-Record any fallback as a deviation from the medium target in the progress notes. One exception to no-retries: if a harness rejects a model identifier **before any turn runs** and its error lists the accepted identifiers, you may correct the identifier once per lane from that native listing and relaunch in a **new** container; a second rejection closes the lane.
+Boundaries that hold regardless of how tempting a fix looks: no weakening sandboxes or permissions, no repairing or re-logging authentication, no editing user configuration, harness installs, or product source, no destroying evidence.
 
-## Scheduling
+## Keeping the operator in the loop
 
-- At most **six** evaluation runs active at once; at most **two** Cursor runs at once; at most **one** `claude-code`-harness run at any moment campaign-wide.
-- Start immediately and in parallel: COD-SOL, PI-COD, OPE-COD, KIL-COD, CLA-COD, and two Cursor lanes; start the remaining Cursor lanes as Cursor slots free.
-- **Claude Code — Fable runs last, alone**: start CLA-FAB-01 only after every other lane is terminal (complete, failed, or blocked), then run its three scenarios sequentially. After CLA-COD-03 completes, stop the claudex-owned proxy with its own manage script and verify no proxy process or localhost listener remains before the Fable lane later uses the normal `claude` route.
-- A full 30-turn run takes roughly 30–90 minutes. Monitor each command to completion; reuse its slot only after verifying: no run-owned harness process alive, no temporary skills left in the workspace, no `skill-issue/<run-id>` residue under the system temp directory. Leftover empty `.agents/` in Codex workspaces is cosmetic.
+Post short one-line updates in the conversation as events happen — a run starting (with its container), finishing (with expected/observed counts), retrying (with the reason), failing (with the cause), a configuration finishing — plus an occasional tally like `12/30 complete, 8 running, 1 failed`. The operator watches the campaign through these lines.
 
-## Reading Outcomes And Recovering
+In the tracker, keep statuses, attempt counts, container references (always as `<chats>/chat-<n>`, never machine-absolute paths), failure-log rows, and the summary tables consistent with reality, and leave it prettier-clean after each edit. If the board you inherit shows `Failed`/`Blocked` entries but no `Complete` ones, that is the residue of the earlier environment deaths described above — those runs are all still eligible.
 
-- Exit code 0 with `"status": "complete"` plus `result.json`, `website.json`, `events.jsonl`, `transcript.json` in the run's output directory → `Complete`. Record the effective model, reasoning, and harness version from `result.json`/the summary.
-- "evaluation encountered a tooling error" → `Failed`. The named `failure.json` (unsanitized — never commit or share it) carries the exact command, active turn, error chain, and native output. Copy its error line into the failure log, close the lane, apply the halt rules.
-- If an error message ends with an `evaluate cleanup --run <id> --output <root>` instruction, run exactly that command once, verify the workspace has no temporary skills, then treat the run as `Failed` as above.
-- An operator interrupt (Ctrl-C/SIGTERM) self-cleans; verify like any failure and mark `Failed` with the reason.
-
-## Progress Document Discipline
-
-You are the only writer of `evaluation-progress.md`. Before each launch: set the run `Running`, increment `Attempts`. After each terminal outcome: set `Complete`/`Failed`/`Blocked`, link the container path (as `<chats>/chat-<n>` — never an absolute machine path), add failure-log rows, recalculate the summary tables. Serialize edits; run `npx prettier --check` on the file after editing. Never record machine-specific absolute paths in this or any tracked file.
-
-## Final Report
-
-When every lane is terminal or the campaign halts, report: runs complete/failed/blocked per lane, exact effective identifiers used, every failure with its one-line cause and container, cleanup status, and whether 30/30 was reached. Do not aggregate results into website data, commit, or delete campaign documents — the operator owns those steps.
+The final report belongs to the operator: per-configuration outcomes, the exact identifiers and versions actually used, each failure with its diagnosis and container, and whether the campaign reached 30/30. Publishing, committing, and cleanup decisions stay with the operator.

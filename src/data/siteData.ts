@@ -252,34 +252,37 @@ export const siteData = {
     scopeTitle: 'One campaign, one bounded question.',
     scope: [
       'The campaign asks whether a configured coding agent calls the supplied skill at each governed point in a thirty turn conversation. Every expected turn and skill pair produces one Boolean result: called or missed. Additional calls are retained separately and do not improve the success percentage.',
-      'The comparisons below describe accepted runs under the tested models, harnesses, reasoning settings, scenarios, skills, and evaluator. They measure skill invocation in this setup. They do not measure general coding ability or establish a permanent model or harness ranking.',
+      'The summary counts and comparisons on this page use only complete configurations: three accepted scenario runs for the same model and harness under the tested reasoning settings, skills, and evaluator. They measure skill invocation in this setup. They do not measure general coding ability or establish a permanent model or harness ranking.',
+      'One accepted Claude Code run with Codex Sol covers a single scenario so far. That partial configuration stays in the accepted evidence set, but it is excluded from the aggregates and pairing totals below until the cell is complete.',
     ],
     pairingTitle: 'The same model produced a perfect result and a low band.',
     pairing: [
       'Codex Sol called every expected skill when it ran in OpenAI Codex. The same model recorded much lower coverage in OpenCode and Pi, even though the scenarios, supplied skills, and scoring rules stayed fixed.',
+      'The incomplete Claude Code run of the same model sits in that low band as well. It is not yet a complete configuration, so it is not folded into the pairing totals.',
       'That spread is evidence of a harness associated effect inside the tested setup. The evaluation does not isolate one mechanism. System prompting, skill surfacing, invocation instructions, tools, and product behavior remain bundled together in the harness.',
     ],
     modelTitle: 'The same harness produced two different behaviors.',
     model: [
-      'Cursor held the surrounding product constant while Grok and Composer moved in opposite directions. Grok sustained skill use through the conversations. Composer engaged early, then called fewer of the recurring skills as the tasks continued.',
+      'Cursor held the surrounding product constant while Grok and Composer moved in opposite directions. Grok stayed active through the conversations and improved in the final ten turns. Composer engaged early, then called fewer of the recurring skills as the tasks continued.',
       'This matched comparison rules out a simple claim that Cursor is uniformly good or uniformly bad for skill calling. The model still matters inside the harness, just as the harness matters around the model.',
     ],
     callingStyleTitle: 'High coverage did not require one calling style.',
     callingStyle: [
       'OpenAI Codex reached full expected call coverage while also making many additional calls. Grok reached nearly the same coverage with far fewer additional calls. Both found the governed calls, but Grok was more selective in these scenarios.',
-      'Composer, Claude Fable, OpenCode, and Pi showed a different shape. Their lower totals came primarily from missed expected calls, not from uncontrolled extra calling. They did not often call the wrong supplied skill. They mostly stopped calling supplied skills at all.',
+      'Composer, Claude Fable, OpenCode, and Pi showed a different shape. Their lower totals came primarily from missed expected calls, not from many additional calls. Additional calls were rare relative to misses. They mostly stopped calling supplied skills at all.',
+      'The charts currently visualize expected call coverage only. Additional calls are retained in every accepted artifact and in the counts on this page, and a future revision will chart them alongside coverage.',
     ],
-    timeTitle:
-      'The weakest configurations became quieter as the task continued.',
+    timeTitle: 'Late conversation bands expose decay and improvement.',
     time: [
       'The turn order matters because each scenario stays inside one continuing agent session. Splitting the conversations into ten turn bands shows whether invocation survives as context and task state accumulate.',
-      'The strongest configurations remained active throughout the full conversation. Several lower scoring configurations recorded some early calls and almost none in the final ten turns. That pattern is consistent with skills being treated as setup tools rather than continuing operating instructions.',
+      'Grok in Cursor improved from the first ten turns to the last ten. Several lower scoring configurations recorded some early calls and almost none in the final ten turns. That decay pattern is consistent with skills being treated as setup tools rather than continuing operating instructions.',
     ],
     validityTitle:
       'The ceiling was reachable, and the quiet turns stayed quiet.',
     validity: [
-      'A complete 137 out of 137 result shows that the scorecard did not demand an impossible sequence. Turns 13, 18, and 24 contained no expected call by design. The highest coverage configurations made no additional calls on those decoy turns, so their result was not produced by calling indiscriminately on every message.',
-      'The Codex results were re-derived after retained evidence exposed an attribution gap. The first matcher recognized echo-form instrumentation but missed equivalent printf-form signals and direct governed skill reads. The matcher was corrected, the accepted artifacts were reconciled from the raw transcripts, and the website now publishes those corrected counts.',
+      'A complete 137 out of 137 result shows that the scorecard did not demand an impossible sequence. Turns 13, 18, and 24 contained no expected call by design. Across all accepted runs, those decoy turns recorded no additional calls, so high coverage was not produced by calling indiscriminately on every message.',
+      'For Codex, an expected call counts when that turn’s capture shows either an echo or printf marker for the skill’s opaque token, or a direct read of that skill’s project SKILL.md entrypoint.',
+      'The Codex results were re-derived after retained evidence exposed an attribution gap. The first matcher recognized echo-form instrumentation but missed equivalent printf-form signals and those direct governed skill reads. The matcher was corrected, the two affected accepted artifacts keep reconciliation receipts, and the website now publishes those corrected counts with the receipts intact.',
     ],
     meaningTitle: 'The result changes where diagnosis should begin.',
     meaning: [
@@ -289,8 +292,9 @@ export const siteData = {
     limitationsTitle: 'These are descriptive results, not universal rates.',
     limitations: [
       'Each complete configuration currently contributes one run for each of three authored scenarios. That is enough to describe the recorded campaign and expose large differences. It is not enough to estimate statistical reliability, persistence across repeated attempts, or behavior across the wider population of coding tasks.',
+      'Two comparison cells are still unpublished: Cursor with Codex Sol and Cursor with Claude Fable. Those runs were blocked by plan access limits before a complete scenario set could be accepted, so this page does not treat them as scored pairings.',
       'The campaign covers one machine, one time window, one supplied skill set, one scenario suite, and the recorded product versions. Harness controls are similar rather than identical. Codex attribution is capture based, while other harnesses execute instrumentation markers, so the observation paths also have different failure modes.',
-      'Every conclusion on this page should be read as a statement about the accepted evidence. Broader claims require repeated runs, additional scenario families, more skills, and explicit tests of the mechanisms that remain bundled inside each configuration.',
+      'Every conclusion on this page should be read as a statement about the accepted evidence shown here. Broader claims require repeated runs, additional scenario families, more skills, and explicit tests of the mechanisms that remain bundled inside each configuration.',
     ],
   },
   footer:

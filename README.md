@@ -229,7 +229,8 @@ npm run results:update
 ```
 
 This command validates every accepted artifact, rejects duplicate run IDs and
-harness-model-scenario configurations, and writes the collection to
+harness-model-scenario configurations, preserves optional reconciliation
+receipts when present, and writes the collection to
 `src/data/publishedWebsiteArtifacts.json`. Detailed results, events,
 transcripts, workspaces, and failed-run diagnostics remain outside the public
 repository. Keep downloadable binaries in GitHub Releases rather than the

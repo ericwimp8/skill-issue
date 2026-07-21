@@ -992,7 +992,11 @@
         "missed": 0,
         "unexpected": 1
       }
-    ]
+    ],
+    "reconciliation": {
+      "basis": "raw transcript",
+      "reason": "Recomputed with Codex entrypoint-read and printf marker attribution."
+    }
   },
   {
     "schema_version": 2,
@@ -1191,7 +1195,11 @@
         "missed": 0,
         "unexpected": 0
       }
-    ]
+    ],
+    "reconciliation": {
+      "basis": "raw transcript",
+      "reason": "Recomputed with Codex entrypoint-read and printf marker attribution."
+    }
   },
   {
     "schema_version": 2,

@@ -24,6 +24,17 @@ function isWebsitePoint(point, totalTurns) {
   );
 }
 
+function isReconciliation(value) {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    typeof value.basis === 'string' &&
+    value.basis.trim() !== '' &&
+    typeof value.reason === 'string' &&
+    value.reason.trim() !== ''
+  );
+}
+
 function isWebsiteArtifact(artifact) {
   return (
     artifact !== null &&
@@ -38,7 +49,9 @@ function isWebsiteArtifact(artifact) {
     Array.isArray(artifact.points) &&
     artifact.points.every((point) =>
       isWebsitePoint(point, artifact.total_turns),
-    )
+    ) &&
+    (artifact.reconciliation === undefined ||
+      isReconciliation(artifact.reconciliation))
   );
 }
 
@@ -65,7 +78,7 @@ const artifacts = await Promise.all(
       throw new Error(`${inputPath} must be named ${artifact.run_id}.json`);
     }
 
-    return {
+    const published = {
       schema_version: artifact.schema_version,
       run_id: artifact.run_id,
       scenario_id: artifact.scenario_id,
@@ -80,6 +93,15 @@ const artifacts = await Promise.all(
         unexpected: point.unexpected,
       })),
     };
+
+    if (artifact.reconciliation !== undefined) {
+      published.reconciliation = {
+        basis: artifact.reconciliation.basis,
+        reason: artifact.reconciliation.reason,
+      };
+    }
+
+    return published;
   }),
 );
 

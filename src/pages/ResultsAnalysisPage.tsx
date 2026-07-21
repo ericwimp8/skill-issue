@@ -62,7 +62,7 @@ export function ResultsAnalysisPage() {
             <p key={paragraph}>{paragraph}</p>
           ))}
           <p className="analysis-counts">
-            Across the accepted evidence, {campaignSummary.called} of{' '}
+            Across the complete configurations, {campaignSummary.called} of{' '}
             {campaignSummary.expected} expected calls were recorded and{' '}
             {campaignSummary.missed} were missed. The evaluator also recorded{' '}
             {campaignSummary.additional} additional calls outside the expected
@@ -164,6 +164,15 @@ export function ResultsAnalysisPage() {
             <p key={paragraph}>{paragraph}</p>
           ))}
           <div className="analysis-band-list">
+            <p>
+              <strong>Grok in Cursor</strong>
+              <span>
+                Turns 1 to 10: {percentage(analysisTurnBands.cursorGrok.first)}
+              </span>
+              <span>
+                Turns 21 to 30: {percentage(analysisTurnBands.cursorGrok.last)}
+              </span>
+            </p>
             <p>
               <strong>Composer in Cursor</strong>
               <span>

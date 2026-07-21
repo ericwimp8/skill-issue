@@ -966,6 +966,14 @@ button.download-option:disabled {
   background: var(--color-surface);
 }
 
+.explorer-note {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-top: 1px solid var(--color-line);
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
 .comparison-view-tabs {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

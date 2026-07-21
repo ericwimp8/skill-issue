@@ -8,6 +8,11 @@ export type WebsiteEvaluationPoint = {
   unexpected: number;
 };
 
+export type WebsiteEvaluationReconciliation = {
+  basis: string;
+  reason: string;
+};
+
 export type WebsiteEvaluationArtifact = {
   schema_version: 2;
   run_id: string;
@@ -16,6 +21,7 @@ export type WebsiteEvaluationArtifact = {
   model: string;
   total_turns: number;
   points: WebsiteEvaluationPoint[];
+  reconciliation?: WebsiteEvaluationReconciliation;
 };
 
 export type EvaluationResult = Omit<WebsiteEvaluationArtifact, 'model'> & {

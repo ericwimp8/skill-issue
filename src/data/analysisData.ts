@@ -49,17 +49,26 @@ function resultsForCell(cellId: string) {
   return evaluationResults.filter((result) => result.cellId === cellId);
 }
 
+function hasCompleteScenarioSet(cellId: string) {
+  return (
+    new Set(resultsForCell(cellId).map((result) => result.scenario_id)).size ===
+    scenarioOptions.length
+  );
+}
+
 function completeCellSummary(cellId: string) {
   const results = resultsForCell(cellId);
-  const scenarioCount = new Set(results.map((result) => result.scenario_id))
-    .size;
 
-  if (scenarioCount !== scenarioOptions.length) {
+  if (!hasCompleteScenarioSet(cellId)) {
     throw new Error(`Analysis requires a complete scenario set for ${cellId}`);
   }
 
   return summarize(results);
 }
+
+const completeConfigurationResults = evaluationResults.filter((result) =>
+  hasCompleteScenarioSet(result.cellId),
+);
 
 function summarizeTurnBand(
   cellId: string,
@@ -76,7 +85,9 @@ function summarizeTurnBand(
   return summarize(results);
 }
 
-export const campaignSummary = summarize(evaluationResults);
+// Analysis aggregates use only configurations with all three scenarios so the
+// headline counts match the complete-cell comparisons on the page.
+export const campaignSummary = summarize(completeConfigurationResults);
 
 export const analysisConfigurations = {
   claudeCodeFable: completeCellSummary('claude-code::claude-fable'),
@@ -88,6 +99,10 @@ export const analysisConfigurations = {
 } as const;
 
 export const analysisTurnBands = {
+  cursorGrok: {
+    first: summarizeTurnBand('cursor::grok', 1, 10),
+    last: summarizeTurnBand('cursor::grok', 21, 30),
+  },
   claudeCodeFable: {
     first: summarizeTurnBand('claude-code::claude-fable', 1, 10),
     last: summarizeTurnBand('claude-code::claude-fable', 21, 30),

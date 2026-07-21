@@ -432,6 +432,10 @@ export function EvaluationExplorer() {
           </section>
         </div>
       )}
+      <p className="explorer-note">
+        These charts visualize expected call coverage only. Additional calls are
+        recorded in every accepted artifact and are not yet charted.
+      </p>
     </div>
   );
 }

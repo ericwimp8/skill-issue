@@ -199,34 +199,52 @@ export const siteData = {
     ],
   },
   analysis: {
-    title: 'The charts are only the start of the result.',
+    title: 'Skill calling belongs to the pairing.',
     introduction:
-      'This page explains what the accepted campaign evidence shows, how large the observed differences are, and where the evidence stops.',
-    sections: [
-      {
-        title: 'Harness findings',
-        description:
-          'Hold the Codex model and Medium reasoning target constant, then explain whether changing the harness changed reliable skill calling.',
-      },
-      {
-        title: 'Model findings',
-        description:
-          'Compare supported models inside shared environments and identify which patterns persist across scenarios and harnesses.',
-      },
-      {
-        title: 'Scenario observations',
-        description:
-          'Show where individual conversations differ from the aggregate and keep those differences connected to the underlying calls and misses.',
-      },
-      {
-        title: 'Limits and evidence',
-        description:
-          'State the exact tested configurations, the scale of the campaign, the remaining uncertainty, and the retained artifacts behind every conclusion.',
-      },
+      'The first campaign produced sharply different results from configurations that shared a model or shared a harness. The clearest finding is that reliable skill calling describes the complete model and harness setup, not either name on its own.',
+    scopeTitle: 'One campaign, one bounded question.',
+    scope: [
+      'The campaign asks whether a configured coding agent calls the supplied skill at each governed point in a thirty turn conversation. Every expected turn and skill pair produces one Boolean result: called or missed. Additional calls are retained separately and do not improve the success percentage.',
+      'The comparisons below describe accepted runs under the tested models, harnesses, reasoning settings, scenarios, skills, and evaluator. They measure skill invocation in this setup. They do not measure general coding ability or establish a permanent model or harness ranking.',
     ],
-    evidenceTitle: 'Every finding stays tied to its evidence.',
-    evidence:
-      'Every ranking, percentage, trend, and conclusion is derived from accepted campaign artifacts and remains tied to the exact configuration and retained evidence that produced it.',
+    pairingTitle: 'The same model produced a perfect result and a low band.',
+    pairing: [
+      'Codex Sol called every expected skill when it ran in OpenAI Codex. The same model recorded much lower coverage in OpenCode and Pi, even though the scenarios, supplied skills, and scoring rules stayed fixed.',
+      'That spread is evidence of a harness associated effect inside the tested setup. The evaluation does not isolate one mechanism. System prompting, skill surfacing, invocation instructions, tools, and product behavior remain bundled together in the harness.',
+    ],
+    modelTitle: 'The same harness produced two different behaviors.',
+    model: [
+      'Cursor held the surrounding product constant while Grok and Composer moved in opposite directions. Grok sustained skill use through the conversations. Composer engaged early, then called fewer of the recurring skills as the tasks continued.',
+      'This matched comparison rules out a simple claim that Cursor is uniformly good or uniformly bad for skill calling. The model still matters inside the harness, just as the harness matters around the model.',
+    ],
+    callingStyleTitle: 'High coverage did not require one calling style.',
+    callingStyle: [
+      'OpenAI Codex reached full expected call coverage while also making many additional calls. Grok reached nearly the same coverage with far fewer additional calls. Both found the governed calls, but Grok was more selective in these scenarios.',
+      'Composer, Claude Fable, OpenCode, and Pi showed a different shape. Their lower totals came primarily from missed expected calls, not from uncontrolled extra calling. They did not often call the wrong supplied skill. They mostly stopped calling supplied skills at all.',
+    ],
+    timeTitle:
+      'The weakest configurations became quieter as the task continued.',
+    time: [
+      'The turn order matters because each scenario stays inside one continuing agent session. Splitting the conversations into ten turn bands shows whether invocation survives as context and task state accumulate.',
+      'The strongest configurations remained active throughout the full conversation. Several lower scoring configurations recorded some early calls and almost none in the final ten turns. That pattern is consistent with skills being treated as setup tools rather than continuing operating instructions.',
+    ],
+    validityTitle:
+      'The ceiling was reachable, and the quiet turns stayed quiet.',
+    validity: [
+      'A complete 137 out of 137 result shows that the scorecard did not demand an impossible sequence. Turns 13, 18, and 24 contained no expected call by design. The highest coverage configurations made no additional calls on those decoy turns, so their result was not produced by calling indiscriminately on every message.',
+      'The Codex results were re-derived after retained evidence exposed an attribution gap. The first matcher recognized echo-form instrumentation but missed equivalent printf-form signals and direct governed skill reads. The matcher was corrected, the accepted artifacts were reconciled from the raw transcripts, and the website now publishes those corrected counts.',
+    ],
+    meaningTitle: 'The result changes where diagnosis should begin.',
+    meaning: [
+      'When a skill is ignored, rewriting the skill is not automatically the right first response. A configuration can suppress reliable invocation even when another configuration calls the same supplied skills throughout the same governed conversation.',
+      'For skill authors, these results support testing the complete environment before repeatedly changing a sound skill. For harness and model evaluators, they support matched comparisons that hold one side of the pairing constant. They do not establish why a particular configuration behaved as it did without further trace review.',
+    ],
+    limitationsTitle: 'These are descriptive results, not universal rates.',
+    limitations: [
+      'Each complete configuration currently contributes one run for each of three authored scenarios. That is enough to describe the recorded campaign and expose large differences. It is not enough to estimate statistical reliability, persistence across repeated attempts, or behavior across the wider population of coding tasks.',
+      'The campaign covers one machine, one time window, one supplied skill set, one scenario suite, and the recorded product versions. Harness controls are similar rather than identical. Codex attribution is capture based, while other harnesses execute instrumentation markers, so the observation paths also have different failure modes.',
+      'Every conclusion on this page should be read as a statement about the accepted evidence. Broader claims require repeated runs, additional scenario families, more skills, and explicit tests of the mechanisms that remain bundled inside each configuration.',
+    ],
   },
   footer:
     'Local-first skill creation and evaluations. Static, reviewable evidence.',

@@ -13,6 +13,8 @@ Use `skill-issue evaluate run --output <path> --evaluation neighborhood-emergenc
 
 The evaluated agent receives no answer sheet, expected-call map, scoring wording, or turn-attribution state. The CLI records opaque signals in private application state outside the workspace. Let each of the thirty turns finish fully before the next fixed prompt is sent.
 
+The governed turns keep automated verification in Node and assign every in-browser check to the user. The built-in evaluation forbids browser processes in the harness descendant tree on macOS, so a browser-launch attempt is blocked before Chrome can request host keychain access.
+
 ## Evidence
 
 A tooling-complete run retains:

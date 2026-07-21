@@ -1,14 +1,13 @@
 package evaluation
 
 import (
-	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io"
+	"net"
 	"os"
 	"os/user"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 	"unicode"
@@ -17,35 +16,53 @@ import (
 	"github.com/ericwimp8/skill-issue/cli/internal/replay"
 )
 
-type transcriptSanitizerConfig struct {
-	Workspace   string
-	OutputRoot  string
-	StateRoot   string
-	RuntimeRoot string
-	CLIPath     string
+type artifactSanitizerConfig struct {
+	Workspace    string
+	OutputRoot   string
+	StateRoot    string
+	RuntimeRoot  string
+	CLIPath      string
+	SignalTokens []string
 }
 
-type transcriptReplacement struct {
+type artifactReplacement struct {
 	value       string
 	replacement string
 	identity    bool
 }
 
-type transcriptSanitizer struct {
-	replacements []transcriptReplacement
+type artifactPattern struct {
+	pattern     *regexp.Regexp
+	replacement string
 }
 
-func newTranscriptSanitizer(config transcriptSanitizerConfig) (transcriptSanitizer, error) {
+type artifactSanitizer struct {
+	replacements []artifactReplacement
+	patterns     []artifactPattern
+}
+
+type TranscriptArtifact struct {
+	SchemaVersion int              `json:"schema_version"`
+	Turns         []TranscriptTurn `json:"turns"`
+}
+
+type TranscriptTurn struct {
+	TurnID    string `json:"turn_id"`
+	User      string `json:"user"`
+	Assistant string `json:"assistant"`
+}
+
+func newArtifactSanitizer(config artifactSanitizerConfig) (artifactSanitizer, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return transcriptSanitizer{}, fmt.Errorf("resolve transcript privacy home: %w", err)
+		return artifactSanitizer{}, fmt.Errorf("resolve artifact privacy home: %w", err)
 	}
 	hostname, err := os.Hostname()
 	if err != nil {
-		return transcriptSanitizer{}, fmt.Errorf("resolve transcript privacy hostname: %w", err)
+		return artifactSanitizer{}, fmt.Errorf("resolve artifact privacy hostname: %w", err)
 	}
 
-	sanitizer := transcriptSanitizer{}
+	sanitizer := artifactSanitizer{patterns: defaultArtifactPatterns()}
 	sanitizer.addPath(config.CLIPath, "[skill-issue-cli]")
 	sanitizer.addPath(config.StateRoot, "[evaluation-state]")
 	sanitizer.addPath(config.OutputRoot, "[evaluation-output]")
@@ -65,14 +82,31 @@ func newTranscriptSanitizer(config transcriptSanitizerConfig) (transcriptSanitiz
 		sanitizer.addIdentity(current.Name, "[user]")
 		sanitizer.addPath(current.HomeDir, "[home]")
 	}
+	for _, token := range config.SignalTokens {
+		sanitizer.addIdentity(token, "[signal-token]")
+	}
 
-	slices.SortStableFunc(sanitizer.replacements, func(left, right transcriptReplacement) int {
+	slices.SortStableFunc(sanitizer.replacements, func(left, right artifactReplacement) int {
 		return len(right.value) - len(left.value)
 	})
 	return sanitizer, nil
 }
 
-func (sanitizer *transcriptSanitizer) addPath(value, replacement string) {
+func defaultArtifactPatterns() []artifactPattern {
+	return []artifactPattern{
+		{regexp.MustCompile(`(?s)-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----.*?-----END (?:RSA |EC |OPENSSH )?PRIVATE KEY-----`), "[private-key]"},
+		{regexp.MustCompile(`(?i)(\bauthorization\s*[:=]\s*["']?(?:bearer|basic)\s+)[A-Za-z0-9._~+/=-]{8,}`), `${1}[authorization]`},
+		{regexp.MustCompile(`(?i)(\b(?:api[_-]?key|access[_-]?token|auth[_-]?token|password|passwd|secret|client[_-]?secret)\b["']?\s*[:=]\s*)(?:"[^"\r\n]*"|'[^'\r\n]*'|[^\s,;#]+)`), `${1}[secret]`},
+		{regexp.MustCompile(`(?i)(\bhttps?://)[^\s/@:]+:[^\s/@]+@`), `${1}[url-credentials]@`},
+		{regexp.MustCompile(`\b(?:sk-[A-Za-z0-9_-]{16,}|ghp_[A-Za-z0-9]{16,}|xox[baprs]-[A-Za-z0-9-]{16,})\b`), "[token]"},
+		{regexp.MustCompile(`\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b`), "[jwt]"},
+		{regexp.MustCompile(`(?i)\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b`), "[email]"},
+		{regexp.MustCompile(`(/Users/|/home/)[^/\\\s]+`), `${1}[user]`},
+		{regexp.MustCompile(`(?i)(C:\\Users\\)[^\\/\s]+`), `${1}[user]`},
+	}
+}
+
+func (sanitizer *artifactSanitizer) addPath(value, replacement string) {
 	if strings.TrimSpace(value) == "" {
 		return
 	}
@@ -89,7 +123,7 @@ func (sanitizer *transcriptSanitizer) addPath(value, replacement string) {
 	}
 }
 
-func (sanitizer *transcriptSanitizer) addIdentity(value, replacement string) {
+func (sanitizer *artifactSanitizer) addIdentity(value, replacement string) {
 	value = strings.TrimSpace(value)
 	if value == "" || genericIdentity(value) {
 		return
@@ -97,19 +131,19 @@ func (sanitizer *transcriptSanitizer) addIdentity(value, replacement string) {
 	sanitizer.addReplacement(value, replacement, true)
 }
 
-func (sanitizer *transcriptSanitizer) addReplacement(value, replacement string, identity bool) {
+func (sanitizer *artifactSanitizer) addReplacement(value, replacement string, identity bool) {
 	if value == "" {
 		return
 	}
-	if slices.ContainsFunc(sanitizer.replacements, func(existing transcriptReplacement) bool { return existing.value == value }) {
+	if slices.ContainsFunc(sanitizer.replacements, func(existing artifactReplacement) bool { return existing.value == value }) {
 		return
 	}
-	sanitizer.replacements = append(sanitizer.replacements, transcriptReplacement{value: value, replacement: replacement, identity: identity})
+	sanitizer.replacements = append(sanitizer.replacements, artifactReplacement{value: value, replacement: replacement, identity: identity})
 	escaped, err := json.Marshal(value)
 	if err == nil {
 		encoded := string(escaped[1 : len(escaped)-1])
 		if encoded != value {
-			sanitizer.replacements = append(sanitizer.replacements, transcriptReplacement{value: encoded, replacement: replacement, identity: identity})
+			sanitizer.replacements = append(sanitizer.replacements, artifactReplacement{value: encoded, replacement: replacement, identity: identity})
 		}
 	}
 }
@@ -123,69 +157,124 @@ func genericIdentity(value string) bool {
 	}
 }
 
-func (sanitizer transcriptSanitizer) sanitize(result *replay.Result) error {
-	for index := range result.Scenario.Turns {
-		result.Scenario.Turns[index].Prompt = sanitizer.sanitizeText(result.Scenario.Turns[index].Prompt)
+func newTranscriptArtifact(result replay.Result) (TranscriptArtifact, error) {
+	captures := make(map[string]replay.Capture, len(result.Turns))
+	for _, turn := range result.Turns {
+		captures[turn.TurnID] = turn.Capture
 	}
-	for turnIndex := range result.Turns {
-		capture := &result.Turns[turnIndex].Capture
-		capture.Transcript = sanitizer.sanitizeText(capture.Transcript)
-		capture.Stderr = sanitizer.sanitizeText(capture.Stderr)
-		for eventIndex, event := range capture.Events {
-			sanitized, err := sanitizer.sanitizeEvent(event)
-			if err != nil {
-				return fmt.Errorf("sanitize transcript event for turn %q: %w", result.Turns[turnIndex].TurnID, err)
+	artifact := TranscriptArtifact{SchemaVersion: 1, Turns: make([]TranscriptTurn, 0, len(result.Scenario.Turns))}
+	for _, turn := range result.Scenario.Turns {
+		capture, ok := captures[turn.ID]
+		if !ok {
+			return TranscriptArtifact{}, fmt.Errorf("transcript capture missing turn %q", turn.ID)
+		}
+		assistant, err := extractAssistantResponse(result.HarnessID, capture.Events)
+		if err != nil {
+			return TranscriptArtifact{}, fmt.Errorf("extract assistant response for turn %q: %w", turn.ID, err)
+		}
+		artifact.Turns = append(artifact.Turns, TranscriptTurn{TurnID: turn.ID, User: turn.Prompt, Assistant: assistant})
+	}
+	return artifact, nil
+}
+
+func extractAssistantResponse(harnessID replay.HarnessID, events []json.RawMessage) (string, error) {
+	responses := make([]string, 0, 4)
+	for _, event := range events {
+		var value struct {
+			Type string `json:"type"`
+			Item struct {
+				Type string `json:"type"`
+				Text string `json:"text"`
+			} `json:"item"`
+			Part struct {
+				Type string `json:"type"`
+				Text string `json:"text"`
+			} `json:"part"`
+			Message struct {
+				Role    string `json:"role"`
+				Content []struct {
+					Type string `json:"type"`
+					Text string `json:"text"`
+				} `json:"content"`
+			} `json:"message"`
+		}
+		if err := json.Unmarshal(event, &value); err != nil {
+			return "", err
+		}
+		switch harnessID {
+		case replay.HarnessCodex:
+			if value.Type == "item.completed" && value.Item.Type == "agent_message" {
+				responses = appendConversationText(responses, value.Item.Text)
 			}
-			capture.Events[eventIndex] = sanitized
+		case replay.HarnessCursor, replay.HarnessClaude:
+			if value.Type == "assistant" && value.Message.Role == "assistant" {
+				responses = appendMessageContent(responses, value.Message.Content)
+			}
+		case replay.HarnessOpenCode:
+			if value.Type == "text" && value.Part.Type == "text" {
+				responses = appendConversationText(responses, value.Part.Text)
+			}
+		case replay.HarnessPi:
+			if value.Type == "message_end" && value.Message.Role == "assistant" {
+				responses = appendMessageContent(responses, value.Message.Content)
+			}
+		default:
+			return "", fmt.Errorf("unsupported transcript harness %q", harnessID)
 		}
 	}
-	return nil
+	return strings.Join(responses, "\n\n"), nil
 }
 
-func (sanitizer transcriptSanitizer) sanitizeEvent(event json.RawMessage) (json.RawMessage, error) {
-	decoder := json.NewDecoder(bytes.NewReader(event))
-	decoder.UseNumber()
-	var value any
-	if err := decoder.Decode(&value); err != nil {
-		return nil, err
-	}
-	if err := decoder.Decode(&struct{}{}); err != io.EOF {
-		return nil, errors.New("structured event contains trailing data")
-	}
-	value = sanitizer.sanitizeJSON(value)
-	data, err := json.Marshal(value)
-	if err != nil {
-		return nil, err
-	}
-	return json.RawMessage(data), nil
-}
-
-func (sanitizer transcriptSanitizer) sanitizeJSON(value any) any {
-	switch typed := value.(type) {
-	case string:
-		return sanitizer.sanitizeText(typed)
-	case []any:
-		for index := range typed {
-			typed[index] = sanitizer.sanitizeJSON(typed[index])
+func appendMessageContent(responses []string, content []struct {
+	Type string `json:"type"`
+	Text string `json:"text"`
+}) []string {
+	for _, item := range content {
+		if item.Type == "text" || item.Type == "output_text" {
+			responses = appendConversationText(responses, item.Text)
 		}
-	case map[string]any:
-		sanitized := make(map[string]any, len(typed))
-		for key, child := range typed {
-			sanitized[sanitizer.sanitizeText(key)] = sanitizer.sanitizeJSON(child)
-		}
-		return sanitized
 	}
-	return value
+	return responses
 }
 
-func (sanitizer transcriptSanitizer) sanitizeText(value string) string {
+func appendConversationText(responses []string, value string) []string {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return responses
+	}
+	return append(responses, value)
+}
+
+func (sanitizer artifactSanitizer) sanitizeTranscript(artifact *TranscriptArtifact) {
+	for index := range artifact.Turns {
+		artifact.Turns[index].User = sanitizer.sanitizeText(artifact.Turns[index].User)
+		artifact.Turns[index].Assistant = sanitizer.sanitizeText(artifact.Turns[index].Assistant)
+	}
+}
+
+func (sanitizer artifactSanitizer) sanitizeFailure(record *FailureRecord) {
+	record.Error = sanitizer.sanitizeText(record.Error)
+}
+
+func (sanitizer artifactSanitizer) sanitizeText(value string) string {
 	for _, replacement := range sanitizer.replacements {
-		value = replaceTranscriptValue(value, replacement)
+		value = replaceArtifactValue(value, replacement)
 	}
+	for _, pattern := range sanitizer.patterns {
+		value = pattern.pattern.ReplaceAllString(value, pattern.replacement)
+	}
+	value = artifactIPv4Pattern.ReplaceAllStringFunc(value, func(candidate string) string {
+		if net.ParseIP(candidate) == nil {
+			return candidate
+		}
+		return "[ip-address]"
+	})
 	return value
 }
 
-func replaceTranscriptValue(value string, replacement transcriptReplacement) string {
+var artifactIPv4Pattern = regexp.MustCompile(`(?:\d{1,3}\.){3}\d{1,3}`)
+
+func replaceArtifactValue(value string, replacement artifactReplacement) string {
 	start := 0
 	for {
 		index := strings.Index(value[start:], replacement.value)
@@ -194,7 +283,7 @@ func replaceTranscriptValue(value string, replacement transcriptReplacement) str
 		}
 		index += start
 		end := index + len(replacement.value)
-		if transcriptBoundary(value, index, end, replacement.identity) {
+		if artifactBoundary(value, index, end, replacement.identity) {
 			value = value[:index] + replacement.replacement + value[end:]
 			start = index + len(replacement.replacement)
 			continue
@@ -203,23 +292,23 @@ func replaceTranscriptValue(value string, replacement transcriptReplacement) str
 	}
 }
 
-func transcriptBoundary(value string, start, end int, identity bool) bool {
+func artifactBoundary(value string, start, end int, identity bool) bool {
 	if start > 0 {
 		previous, _ := utf8.DecodeLastRuneInString(value[:start])
-		if transcriptWordRune(previous, identity) {
+		if artifactWordRune(previous, identity) {
 			return false
 		}
 	}
 	if end < len(value) {
 		next, _ := utf8.DecodeRuneInString(value[end:])
-		if transcriptWordRune(next, identity) {
+		if artifactWordRune(next, identity) {
 			return false
 		}
 	}
 	return true
 }
 
-func transcriptWordRune(value rune, identity bool) bool {
+func artifactWordRune(value rune, identity bool) bool {
 	if unicode.IsLetter(value) || unicode.IsDigit(value) || value == '_' || value == '-' {
 		return true
 	}

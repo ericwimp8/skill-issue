@@ -8,18 +8,18 @@ This document records campaign execution progress only. The governed scenarios, 
 
 ## Campaign Configuration
 
-| Harness      | Model label          | Reasoning target                       |   Runs | Complete |
-| ------------ | -------------------- | -------------------------------------- | -----: | -------: |
-| Claude Code  | Codex                | Medium                                 |      3 |      1/3 |
-| OpenAI Codex | GPT-5.6 Sol          | Medium                                 |      3 |      1/3 |
-| Claude Code  | Fable                | Medium                                 |      3 |      0/3 |
-| Cursor       | Fable                | Medium or model-native equivalent      |      3 |      0/3 |
-| Cursor       | Codex                | Medium or model-native equivalent      |      3 |      0/3 |
-| Cursor       | Grok                 | Medium or model-native equivalent      |      3 |      0/3 |
-| Cursor       | Composer             | Medium or model-native equivalent      |      3 |      0/3 |
-| Pi           | Codex                | Medium                                 |      3 |      1/3 |
-| OpenCode     | Codex                | Medium or closest supported equivalent |      3 |      1/3 |
-| **Total**    | **9 configurations** | **One consistent target**              | **27** | **4/27** |
+| Harness      | Model label          | Reasoning target                       |   Runs |  Complete |
+| ------------ | -------------------- | -------------------------------------- | -----: | --------: |
+| Claude Code  | Codex                | Medium                                 |      3 |       0/3 |
+| OpenAI Codex | GPT-5.6 Sol          | Medium                                 |      3 |       3/3 |
+| Claude Code  | Fable                | Medium                                 |      3 |       3/3 |
+| Cursor       | Fable                | Medium or model-native equivalent      |      3 |       0/3 |
+| Cursor       | Codex                | Medium or model-native equivalent      |      3 |       0/3 |
+| Cursor       | Grok                 | Medium or model-native equivalent      |      3 |       3/3 |
+| Cursor       | Composer             | Medium or model-native equivalent      |      3 |       3/3 |
+| Pi           | Codex                | Medium                                 |      3 |       3/3 |
+| OpenCode     | Codex                | Medium or closest supported equivalent |      3 |       3/3 |
+| **Total**    | **9 configurations** | **One consistent target**              | **27** | **19/27** |
 
 Use one reasoning target across the campaign, or the closest documented harness-specific equivalent where a harness does not expose the same control. Record the exact effective model identifier, model version or alias, harness version, and reasoning setting with each result.
 
@@ -27,13 +27,13 @@ Use one reasoning target across the campaign, or the closest documented harness-
 
 | Measure                       | Progress |
 | ----------------------------- | -------: |
-| Configuration suites complete |      0/9 |
-| Evaluation runs complete      |     4/27 |
-| Evaluation runs running       |        0 |
-| Evaluation runs pending       |    23/27 |
+| Configuration suites complete |      6/9 |
+| Evaluation runs complete      |    19/27 |
+| Evaluation runs running       |     1/27 |
+| Evaluation runs pending       |     1/27 |
 | Evaluation runs failed        |        0 |
-| Evaluation runs blocked       |        0 |
-| Overall completion            |    13.3% |
+| Evaluation runs blocked       |     6/27 |
+| Overall completion            |    70.4% |
 
 ## Tracking Rules
 
@@ -63,80 +63,88 @@ The adjacent `campaign-orchestration-prompt.md` owns scheduling, command launch 
 
 ## 1. Claude Code — Codex
 
-- [ ] **Configuration complete:** Claude Code — Codex — 1/3
-- [x] **CLA-COD-01:** Gardening Web Application — Status: `Complete` — Attempts: 1 — Result: `<chats>/chat-5` — Notes: Completed all 30 turns; `gpt-5.6-sol`, medium reasoning.
-- [ ] **CLA-COD-02:** Community Archive Desktop Application — Status: `Pending` — Attempts: 0 — Result: — Notes: —
-- [ ] **CLA-COD-03:** Neighborhood Emergency Preparedness Program — Status: `Pending` — Attempts: 0 — Result: — Notes: —
+- [ ] **Configuration complete:** Claude Code — Codex — 0/3
+- [ ] **CLA-COD-01:** Gardening Web Application — Status: `Running` — Attempts: 2 — Result: `<chats>/chat-37` — Notes: The attempt-1 evidence container (`<chats>/chat-5`) was removed during operator cleanup. Attempt 2 runs in `<chats>/chat-37` in parallel with CLA-COD-03 after the operator relaxed the one-claudex rule; parallel safety was verified against the launcher's idempotent shared proxy and the three concurrent Claude Code — Fable runs.
+- [x] **CLA-COD-02:** Community Archive Desktop Application — Status: `Complete` — Attempts: 1 — Result: `<chats>/chat-31` — Notes: Tooling-clean, all 30 turns; `gpt-5.6-sol` through the claudex proxy, medium reasoning; 46 expected, 4 expected hits, 42 missing, 2 additional; per-turn skill visibility verified in-run.
+- [ ] **CLA-COD-03:** Neighborhood Emergency Preparedness Program — Status: `Running` — Attempts: 2 — Result: `<chats>/chat-32` — Notes: `gpt-5.6-sol` through the claudex proxy, medium reasoning. Attempt 1 was killed at turn 15 when the orchestrator session closed; cleanup verified and the container was recreated for attempt 2.
 
 ## 2. OpenAI Codex — GPT-5.6 Sol
 
-- [ ] **Configuration complete:** OpenAI Codex — GPT-5.6 Sol — 1/3
-- [x] **COD-SOL-01:** Gardening Web Application — Status: `Complete` — Attempts: 1 — Result: `<chats>/chat-1` — Notes: Completed all 30 turns; `gpt-5.6-sol`, medium reasoning.
-- [ ] **COD-SOL-02:** Community Archive Desktop Application — Status: `Pending` — Attempts: 0 — Result: — Notes: —
-- [ ] **COD-SOL-03:** Neighborhood Emergency Preparedness Program — Status: `Pending` — Attempts: 0 — Result: — Notes: —
+- [x] **Configuration complete:** OpenAI Codex — GPT-5.6 Sol — 3/3
+- [x] **COD-SOL-01:** Gardening Web Application — Status: `Complete` — Attempts: 2 — Result: `<chats>/chat-18` — Notes: Tooling-clean, all 30 turns; `gpt-5.6-sol`, medium reasoning; 46 expected, 16 observed, 34 missing, 4 additional. The attempt-1 evidence container (`<chats>/chat-1`) was removed during operator cleanup, so attempt 2 reran the scenario.
+- [x] **COD-SOL-02:** Community Archive Desktop Application — Status: `Complete` — Attempts: 1 — Result: `<chats>/chat-19` — Notes: Tooling-clean, all 30 turns; `gpt-5.6-sol`, medium reasoning; 46 expected, 44 expected hits, 2 missing, 36 additional; zero calls on the three no-expectation reminder turns.
+- [x] **COD-SOL-03:** Neighborhood Emergency Preparedness Program — Status: `Complete` — Attempts: 1 — Result: `<chats>/chat-20` — Notes: Tooling-clean, all 30 turns; `gpt-5.6-sol`, medium reasoning; 45 expected, 45 expected hits (0 missing), 17 additional; zero calls on the three no-expectation reminder turns, corroborating attribution.
 
 ## 3. Claude Code — Fable
 
-- [ ] **Configuration complete:** Claude Code — Fable — 0/3
-- [ ] **CLA-FAB-01:** Gardening Web Application — Status: `Pending` — Attempts: 0 — Result: — Notes: —
-- [ ] **CLA-FAB-02:** Community Archive Desktop Application — Status: `Pending` — Attempts: 0 — Result: — Notes: —
-- [ ] **CLA-FAB-03:** Neighborhood Emergency Preparedness Program — Status: `Pending` — Attempts: 0 — Result: — Notes: —
+- [x] **Configuration complete:** Claude Code — Fable — 3/3
+- [x] **CLA-FAB-01:** Gardening Web Application — Status: `Complete` — Attempts: 1 — Result: `<chats>/chat-33` — Notes: Tooling-clean, all 30 turns; `claude-fable-5`, medium reasoning; 46 expected, 7 observed, 40 missing, 1 additional; per-turn skill visibility verified in-run.
+- [x] **CLA-FAB-02:** Community Archive Desktop Application — Status: `Complete` — Attempts: 1 — Result: `<chats>/chat-34` — Notes: Tooling-clean, all 30 turns; `claude-fable-5`, medium reasoning; 46 expected, 6 observed, 41 missing, 1 additional; per-turn skill visibility verified in-run.
+- [x] **CLA-FAB-03:** Neighborhood Emergency Preparedness Program — Status: `Complete` — Attempts: 1 — Result: `<chats>/chat-35` — Notes: Tooling-clean, all 30 turns; `claude-fable-5`, medium reasoning; 45 expected, 7 observed, 39 missing, 1 additional; per-turn skill visibility verified in-run.
 
 ## 4. Cursor
 
 ### Fable
 
 - [ ] **Configuration complete:** Cursor — Fable — 0/3
-- [ ] **CUR-FAB-01:** Gardening Web Application — Status: `Pending` — Attempts: 0 — Result: — Notes: —
-- [ ] **CUR-FAB-02:** Community Archive Desktop Application — Status: `Pending` — Attempts: 0 — Result: — Notes: —
-- [ ] **CUR-FAB-03:** Neighborhood Emergency Preparedness Program — Status: `Pending` — Attempts: 0 — Result: — Notes: —
+- [ ] **CUR-FAB-01:** Gardening Web Application — Status: `Blocked` — Attempts: 1 — Result: `<chats>/chat-15` — Notes: `claude-fable-5-thinking-high` (no medium variant listed; recorded deviation). Failed at turn 21: Cursor Pro+ API usage limit exhausted (resets 2026-08-21); requires operator billing action.
+- [ ] **CUR-FAB-02:** Community Archive Desktop Application — Status: `Blocked` — Attempts: 1 — Result: `<chats>/chat-16` — Notes: `claude-fable-5-thinking-high`. Failed at turn 16: Cursor API usage limit.
+- [ ] **CUR-FAB-03:** Neighborhood Emergency Preparedness Program — Status: `Blocked` — Attempts: 1 — Result: `<chats>/chat-36` — Notes: `claude-fable-5-thinking-high`; `<chats>/chat-17` held unrelated residue and was preserved untouched, so this run uses `chat-36`. Failed at turn 16: Cursor API usage limit.
 
 ### Codex
 
 - [ ] **Configuration complete:** Cursor — Codex — 0/3
-- [ ] **CUR-COD-01:** Gardening Web Application — Status: `Pending` — Attempts: 0 — Result: — Notes: —
-- [ ] **CUR-COD-02:** Community Archive Desktop Application — Status: `Pending` — Attempts: 0 — Result: — Notes: —
-- [ ] **CUR-COD-03:** Neighborhood Emergency Preparedness Program — Status: `Pending` — Attempts: 0 — Result: — Notes: —
+- [ ] **CUR-COD-01:** Gardening Web Application — Status: `Blocked` — Attempts: 1 — Result: `<chats>/chat-12` — Notes: `gpt-5.6-sol-high` (no medium variant listed; recorded deviation). Failed at turn 15: Cursor Pro+ API usage limit exhausted (resets 2026-08-21); requires operator billing action.
+- [ ] **CUR-COD-02:** Community Archive Desktop Application — Status: `Blocked` — Attempts: 1 — Result: `<chats>/chat-13` — Notes: `gpt-5.6-sol-high`. Failed at turn 18: Cursor API usage limit.
+- [ ] **CUR-COD-03:** Neighborhood Emergency Preparedness Program — Status: `Blocked` — Attempts: 1 — Result: `<chats>/chat-14` — Notes: `gpt-5.6-sol-high`. Failed at turn 15: Cursor API usage limit.
 
 ### Grok
 
-- [ ] **Configuration complete:** Cursor — Grok — 0/3
-- [ ] **CUR-GRO-01:** Gardening Web Application — Status: `Pending` — Attempts: 2 — Result: `<chats>/chat-7` — Notes: The operator stopped the detached attempt at turn 25 and an overlapping duplicate attempt at turn 8; `cursor-grok-4.5-medium`, model-native medium reasoning.
-- [ ] **CUR-GRO-02:** Community Archive Desktop Application — Status: `Pending` — Attempts: 0 — Result: — Notes: —
-- [ ] **CUR-GRO-03:** Neighborhood Emergency Preparedness Program — Status: `Pending` — Attempts: 0 — Result: — Notes: —
+- [x] **Configuration complete:** Cursor — Grok — 3/3
+- [x] **CUR-GRO-01:** Gardening Web Application — Status: `Complete` — Attempts: 3 — Result: `<chats>/chat-7` — Notes: Tooling-clean, all 30 turns; `cursor-grok-4.5-medium`, model-native medium reasoning; 46 expected, 41 expected hits, 5 missing, 11 additional. Attempts 1–2 were operator-stopped; the container was recreated fresh for attempt 3.
+- [x] **CUR-GRO-02:** Community Archive Desktop Application — Status: `Complete` — Attempts: 1 — Result: `<chats>/chat-10` — Notes: Tooling-clean, all 30 turns; `cursor-grok-4.5-medium`; 46 expected, 45 expected hits, 1 missing, 1 additional.
+- [x] **CUR-GRO-03:** Neighborhood Emergency Preparedness Program — Status: `Complete` — Attempts: 1 — Result: `<chats>/chat-11` — Notes: Tooling-clean, all 30 turns; `cursor-grok-4.5-medium`; 45 expected, 44 expected hits, 1 missing, 7 additional.
 
 ### Composer
 
 - [ ] **Configuration complete:** Cursor — Composer — 0/3
-- [ ] **CUR-COM-01:** Gardening Web Application — Status: `Pending` — Attempts: 1 — Result: `<chats>/chat-6` — Notes: The operator stopped the detached attempt at turn 16; `composer-2.5`, model-native medium reasoning.
-- [ ] **CUR-COM-02:** Community Archive Desktop Application — Status: `Pending` — Attempts: 0 — Result: — Notes: —
-- [ ] **CUR-COM-03:** Neighborhood Emergency Preparedness Program — Status: `Pending` — Attempts: 0 — Result: — Notes: —
+- [x] **CUR-COM-01:** Gardening Web Application — Status: `Complete` — Attempts: 2 — Result: `<chats>/chat-6` — Notes: Tooling-clean, all 30 turns; `composer-2.5`, model-native medium reasoning; 46 expected, 15 observed, 33 missing, 2 additional. Attempt 1 was operator-stopped; the container was recreated fresh for attempt 2.
+- [x] **CUR-COM-02:** Community Archive Desktop Application — Status: `Complete` — Attempts: 1 — Result: `<chats>/chat-8` — Notes: Tooling-clean, all 30 turns; `composer-2.5`; 46 expected, 6 observed, 40 missing, 0 additional.
+- [x] **CUR-COM-03:** Neighborhood Emergency Preparedness Program — Status: `Complete` — Attempts: 1 — Result: `<chats>/chat-9` — Notes: Tooling-clean, all 30 turns; `composer-2.5`; 45 expected, 7 observed, 38 missing, 0 additional.
 
 ## 5. Pi — Codex
 
-- [ ] **Configuration complete:** Pi — Codex — 1/3
-- [x] **PI-COD-01:** Gardening Web Application — Status: `Complete` — Attempts: 1 — Result: `<chats>/chat-2` — Notes: Completed all 30 turns; `openai-codex/gpt-5.6-sol`, medium reasoning.
-- [ ] **PI-COD-02:** Community Archive Desktop Application — Status: `Pending` — Attempts: 0 — Result: — Notes: —
-- [ ] **PI-COD-03:** Neighborhood Emergency Preparedness Program — Status: `Pending` — Attempts: 0 — Result: — Notes: —
+- [x] **Configuration complete:** Pi — Codex — 3/3
+- [x] **PI-COD-01:** Gardening Web Application — Status: `Complete` — Attempts: 2 — Result: `<chats>/chat-21` — Notes: Tooling-clean, all 30 turns; `openai-codex/gpt-5.6-sol`, medium reasoning; 46 expected, 8 observed, 40 missing, 2 additional. The attempt-1 evidence container (`<chats>/chat-2`) was removed during operator cleanup, so attempt 2 reran the scenario.
+- [x] **PI-COD-02:** Community Archive Desktop Application — Status: `Complete` — Attempts: 1 — Result: `<chats>/chat-22` — Notes: Tooling-clean, all 30 turns; `openai-codex/gpt-5.6-sol`, medium reasoning; 46 expected, 9 observed, 41 missing, 4 additional; supplied-skill visibility verified via get_commands.
+- [x] **PI-COD-03:** Neighborhood Emergency Preparedness Program — Status: `Complete` — Attempts: 1 — Result: `<chats>/chat-23` — Notes: Tooling-clean, all 30 turns; `openai-codex/gpt-5.6-sol`, medium reasoning; 45 expected, 8 observed, 41 missing, 4 additional; supplied-skill visibility verified via get_commands.
 
 ## 6. OpenCode — Codex
 
-- [ ] **Configuration complete:** OpenCode — Codex — 1/3
-- [x] **OPE-COD-01:** Gardening Web Application — Status: `Complete` — Attempts: 1 — Result: `<chats>/chat-3` — Notes: Completed all 30 turns; `openai/gpt-5.6-sol`, medium reasoning.
-- [ ] **OPE-COD-02:** Community Archive Desktop Application — Status: `Pending` — Attempts: 0 — Result: — Notes: —
-- [ ] **OPE-COD-03:** Neighborhood Emergency Preparedness Program — Status: `Pending` — Attempts: 0 — Result: — Notes: —
+- [x] **Configuration complete:** OpenCode — Codex — 3/3
+- [x] **OPE-COD-01:** Gardening Web Application — Status: `Complete` — Attempts: 2 — Result: `<chats>/chat-24` — Notes: Tooling-clean, all 30 turns; `openai/gpt-5.6-sol`, medium reasoning; 46 expected, 8 observed, 40 missing, 2 additional. The attempt-1 evidence container (`<chats>/chat-3`) was removed during operator cleanup, so attempt 2 reran the scenario.
+- [x] **OPE-COD-02:** Community Archive Desktop Application — Status: `Complete` — Attempts: 1 — Result: `<chats>/chat-25` — Notes: Tooling-clean, all 30 turns; `openai/gpt-5.6-sol`, medium reasoning; 46 expected, 9 observed, 38 missing, 1 additional; native skill discovery verified pre-run.
+- [x] **OPE-COD-03:** Neighborhood Emergency Preparedness Program — Status: `Complete` — Attempts: 2 — Result: `<chats>/chat-26` — Notes: Tooling-clean, all 30 turns; `openai/gpt-5.6-sol`, medium reasoning; 45 expected, 9 observed, 39 missing, 3 additional. Attempt 1 failed at the authentication preflight during simultaneous lane launch; attempt 2 ran solo.
 
 ## Failure And Blocker Log
 
 Add one row for every failed or blocked attempt before deleting its container for a rerun. Retain the tracker row after a successful rerun so the diagnosis and correction history remain visible even though failed-attempt artifacts are replaced.
 
-| Evaluation ID | Date       | Attempt | Status  | Failure or blocker                                                                                                         | Resolution or next action                                                                              | Rerun result                                    |
-| ------------- | ---------- | ------: | ------- | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------- |
-| CUR-COM-01    | 2026-07-22 |       0 | Blocked | Orchestrator policy denied Cursor workspace and transcript export before process creation.                                 | Run from an environment authorized to send the evaluation data to Cursor.                              | Attempt 1 later stopped by the operator.        |
-| CUR-GRO-01    | 2026-07-22 |       0 | Blocked | Orchestrator policy denied Cursor workspace and transcript export before process creation.                                 | Run from an environment authorized to send the evaluation data to Cursor.                              | Attempts 1 and 2 later stopped by the operator. |
-| CUR-COM-01    | 2026-07-22 |       1 | Stopped | The operator stopped all active runs while turn 16 was running; the harness exited after receiving the termination signal. | Preserve the incomplete container until the operator requests cleanup or a fresh same-container retry. | Pending.                                        |
-| CUR-GRO-01    | 2026-07-22 |       1 | Stopped | The operator stopped all active runs while turn 25 was running; the harness exited after receiving the termination signal. | Preserve the incomplete container until the operator requests cleanup or a fresh same-container retry. | Pending.                                        |
-| CUR-GRO-01    | 2026-07-22 |       2 | Stopped | A concurrent duplicate run existed in `<chats>/chat-7`; the operator's stop request terminated it during turn 8.           | Treat the duplicate as an orchestration error and recreate the container before any future retry.      | Pending.                                        |
+| Evaluation ID | Date       | Attempt | Status  | Failure or blocker                                                                                                                                                                         | Resolution or next action                                                                                                                        | Rerun result                                    |
+| ------------- | ---------- | ------: | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------- |
+| CUR-COM-01    | 2026-07-22 |       0 | Blocked | Orchestrator policy denied Cursor workspace and transcript export before process creation.                                                                                                 | Run from an environment authorized to send the evaluation data to Cursor.                                                                        | Attempt 1 later stopped by the operator.        |
+| CUR-GRO-01    | 2026-07-22 |       0 | Blocked | Orchestrator policy denied Cursor workspace and transcript export before process creation.                                                                                                 | Run from an environment authorized to send the evaluation data to Cursor.                                                                        | Attempts 1 and 2 later stopped by the operator. |
+| CUR-COM-01    | 2026-07-22 |       1 | Stopped | The operator stopped all active runs while turn 16 was running; the harness exited after receiving the termination signal.                                                                 | Preserve the incomplete container until the operator requests cleanup or a fresh same-container retry.                                           | Pending.                                        |
+| CUR-GRO-01    | 2026-07-22 |       1 | Stopped | The operator stopped all active runs while turn 25 was running; the harness exited after receiving the termination signal.                                                                 | Preserve the incomplete container until the operator requests cleanup or a fresh same-container retry.                                           | Pending.                                        |
+| CUR-GRO-01    | 2026-07-22 |       2 | Stopped | A concurrent duplicate run existed in `<chats>/chat-7`; the operator's stop request terminated it during turn 8.                                                                           | Treat the duplicate as an orchestration error and recreate the container before any future retry.                                                | Attempt 3 running.                              |
+| OPE-COD-03    | 2026-07-22 |       1 | Failed  | OpenCode authentication preflight returned "Unexpected error" when both OpenCode runs launched simultaneously, before any side effects; the concurrent auth check is the suspected race.   | Container recreated; attempt 2 relaunched solo after its lane-mate's preflight had settled.                                                      | Attempt 2 complete, tooling-clean.              |
+| CLA-COD-03    | 2026-07-22 |       1 | Stopped | The orchestrator session closed and its teardown killed the active harness process at turn 15 (`signal: killed`); the CLI's interrupt handling removed temporary skills and private state. | Container recreated; the chain rerun (CLA-COD-03 then CLA-COD-01) was relaunched in a fresh session.                                             | Attempt 2 running.                              |
+| CUR-COD-01    | 2026-07-22 |       1 | Blocked | Cursor Pro+ monthly API usage limit exhausted at turn 15 (`ActionRequiredError`); API-billed models cannot continue until the cycle resets 2026-08-21 or the operator raises the limit.    | Operator decision 2026-07-22: wait — the six runs stay blocked until the Cursor cycle resets 2026-08-21 or the operator raises the limit sooner. | Deferred to cycle reset.                        |
+| CUR-COD-02    | 2026-07-22 |       1 | Blocked | Same Cursor API usage limit at turn 18.                                                                                                                                                    | Same as CUR-COD-01.                                                                                                                              | Pending operator action.                        |
+| CUR-COD-03    | 2026-07-22 |       1 | Blocked | Same Cursor API usage limit at turn 15.                                                                                                                                                    | Same as CUR-COD-01.                                                                                                                              | Pending operator action.                        |
+| CUR-FAB-01    | 2026-07-22 |       1 | Blocked | Same Cursor API usage limit at turn 21.                                                                                                                                                    | Same as CUR-COD-01.                                                                                                                              | Pending operator action.                        |
+| CUR-FAB-02    | 2026-07-22 |       1 | Blocked | Same Cursor API usage limit at turn 16.                                                                                                                                                    | Same as CUR-COD-01.                                                                                                                              | Pending operator action.                        |
+| CUR-FAB-03    | 2026-07-22 |       1 | Blocked | Same Cursor API usage limit at turn 16.                                                                                                                                                    | Same as CUR-COD-01.                                                                                                                              | Pending operator action.                        |
 
 ## Campaign Notes
 

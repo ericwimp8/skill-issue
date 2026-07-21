@@ -8,7 +8,7 @@ This document is the human-readable governance view of the fixed conversation em
 
 ## Turn 2
 
-> The starting folder is empty and has a current browser and Node.js available. The finished tool should offer six fixed actions, let a household select actions and add one contact name, show only selected actions in a print view, retain the choices after reload, and make no network requests. Integrate those facts and observable outcomes into the plan.
+> The starting folder is empty and has Node.js available. The user will perform every in-browser check. The finished tool should offer six fixed actions, let a household select actions and add one contact name, show only selected actions in a print view, retain the choices after reload, and make no network requests. Integrate those facts and observable outcomes into the plan so automated verification stays in Node and never opens or automates a browser.
 
 ## Turn 3
 
@@ -16,11 +16,11 @@ This document is the human-readable governance view of the fixed conversation em
 
 ## Turn 4
 
-> Keep the implementation to plain HTML, CSS, and JavaScript with local storage and focused automated checks for selection and print filtering. Reconcile the complete plan into dependency order, make the evidence observable, and mark it ready for execution.
+> Keep the implementation to plain HTML, CSS, and JavaScript with local storage and focused Node-run automated checks for selection and print filtering. Do not open or automate a browser or install browser tooling. Reconcile the complete plan into dependency order, make the evidence observable, and mark it ready for execution.
 
 ## Turn 5
 
-> Implement the smallest working ReadyCard tool from the approved plan. Stop after selection, contact entry, reload, and print-view filtering work locally.
+> Implement the smallest working ReadyCard tool from the approved plan. Use source inspection and Node-run checks only; do not open or automate a browser or install browser tooling. Stop after selection, contact entry, reload, and print-view filtering are supported locally.
 
 ## Turn 6
 
@@ -80,15 +80,15 @@ This document is the human-readable governance view of the fixed conversation em
 
 ## Turn 20
 
-> Write a self-contained prompt for a fresh accessibility reviewer to inspect selection controls, contact entry, clear-all confirmation, and the print view. Ask only for prioritized findings with concise evidence and no implementation.
+> Write a self-contained prompt for a fresh accessibility reviewer to inspect the source for selection controls, contact entry, clear-all confirmation, and the print view without opening or automating a browser. Ask only for prioritized findings with concise evidence and no implementation.
 
 ## Turn 21
 
-> Inspect the current interface and implement the smallest keyboard, focus, readable-status, and print-heading improvements that are clearly needed. Preserve the fixed actions and private local workflow.
+> Inspect the current interface through its source and implement the smallest keyboard, focus, readable-status, and print-heading improvements that are clearly needed. Use Node-run checks only and do not open or automate a browser. Preserve the fixed actions and private local workflow.
 
 ## Turn 22
 
-> Add focused automated checks for the interaction and print behavior changed in the accessibility pass. Assert observable outcomes rather than internal event wiring, then run the focused checks.
+> Add focused Node-run automated checks for the interaction and print behavior changed in the accessibility pass. Assert observable outcomes rather than internal event wiring, do not open or automate a browser, then run the focused checks.
 
 ## Turn 23
 
@@ -116,7 +116,7 @@ This document is the human-readable governance view of the fixed conversation em
 
 ## Turn 29
 
-> Run the focused automated suite and the nearest broader project check that can catch collateral behavior changes. Report the commands and outcomes without changing application behavior.
+> Run the focused Node-only automated suite and the nearest broader Node-run project check that can catch collateral behavior changes. Do not open or automate a browser. Report the commands and outcomes without changing application behavior.
 
 ## Turn 30
 

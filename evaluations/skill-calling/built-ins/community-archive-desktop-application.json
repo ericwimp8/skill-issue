@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
   "evaluation_id": "community-archive-desktop-application",
+  "browser_policy": "forbidden",
   "scenario": {
     "schema_version": 1,
     "scenario_id": "community-archive-desktop-application",
@@ -11,11 +12,11 @@
       },
       {
         "turn_id": "turn-2",
-        "prompt": "The starting folder is empty and has a current browser and Node.js available. The finished app should add a record with an accession ID, title, and short note; list saved records after reload; reject duplicate accession IDs; and export the records as JSON. Integrate those facts and observable outcomes into the plan."
+        "prompt": "The starting folder is empty and has Node.js available. The user will perform every in-browser check. The finished app should add a record with an accession ID, title, and short note; list saved records after reload; reject duplicate accession IDs; and export the records as JSON. Integrate those facts and observable outcomes into the plan so automated verification stays in Node and never opens or automates a browser."
       },
       {
         "turn_id": "turn-3",
-        "prompt": "Keep the build deliberately small: plain HTML, CSS, and JavaScript, local storage only, keyboard-usable controls, clear validation text, and automated checks for accession-ID normalization and duplicate detection. Put the broad work in dependency order without prescribing file-level implementation."
+        "prompt": "Keep the build deliberately small: plain HTML, CSS, and JavaScript, local storage only, keyboard-usable controls, clear validation text, and Node-run automated checks for accession-ID normalization and duplicate detection. Do not open or automate a browser or install browser tooling. Put the broad work in dependency order without prescribing file-level implementation."
       },
       {
         "turn_id": "turn-4",
@@ -27,7 +28,7 @@
       },
       {
         "turn_id": "turn-6",
-        "prompt": "Implement the smallest working BoxIndex app from the approved plan. Stop after add, duplicate rejection, reload, and JSON export work locally."
+        "prompt": "Implement the smallest working BoxIndex app from the approved plan. Use source inspection and Node-run checks only; do not open or automate a browser or install browser tooling. Stop after add, duplicate rejection, reload, and JSON export are supported locally."
       },
       {
         "turn_id": "turn-7",
@@ -83,15 +84,15 @@
       },
       {
         "turn_id": "turn-20",
-        "prompt": "Write a self-contained prompt for a fresh accessibility reviewer to inspect record entry, validation, saved-record navigation, and both export controls. Ask only for prioritized findings with concise evidence and no implementation."
+        "prompt": "Write a self-contained prompt for a fresh accessibility reviewer to inspect the source for record entry, validation, saved-record navigation, and both export controls without opening or automating a browser. Ask only for prioritized findings with concise evidence and no implementation."
       },
       {
         "turn_id": "turn-21",
-        "prompt": "Inspect the current interface and implement the smallest keyboard, focus, and validation-message improvements that are clearly needed. Preserve the offline workflow and existing record behavior."
+        "prompt": "Inspect the current interface through its source and implement the smallest keyboard, focus, and validation-message improvements that are clearly needed. Use Node-run checks only and do not open or automate a browser. Preserve the offline workflow and existing record behavior."
       },
       {
         "turn_id": "turn-22",
-        "prompt": "Add focused automated checks for the interaction behavior changed in the accessibility pass. Assert observable focus and validation outcomes rather than private event wiring, then run the focused checks."
+        "prompt": "Add focused Node-run automated checks for the interaction behavior changed in the accessibility pass. Assert observable focus and validation outcomes rather than private event wiring, do not open or automate a browser, then run the focused checks."
       },
       {
         "turn_id": "turn-23",
@@ -119,7 +120,7 @@
       },
       {
         "turn_id": "turn-29",
-        "prompt": "Run the focused automated suite and the nearest broader project check that can catch collateral behavior changes. Report the commands and outcomes without changing application behavior."
+        "prompt": "Run the focused Node-only automated suite and the nearest broader Node-run project check that can catch collateral behavior changes. Do not open or automate a browser. Report the commands and outcomes without changing application behavior."
       },
       {
         "turn_id": "turn-30",

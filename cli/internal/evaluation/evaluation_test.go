@@ -71,15 +71,19 @@ func TestBuiltInIdentifierLoadsScenarioAndAnswerTogether(t *testing.T) {
 	}
 	for identifier, shape := range shapes {
 		t.Run(identifier, func(t *testing.T) {
-			scenario, answer, err := loadInputs(RunRequest{EvaluationID: identifier})
+			inputs, err := loadEvaluationInputs(RunRequest{EvaluationID: identifier})
 			if err != nil {
 				t.Fatal(err)
 			}
+			scenario, answer := inputs.scenario, inputs.answer
 			if scenario.ID != identifier || answer.ScenarioID != scenario.ID {
 				t.Fatalf("built-in parts do not match: %#v %#v", scenario, answer)
 			}
 			if len(scenario.Turns) != shape.turns || len(answer.Expected) != shape.expected {
 				t.Fatalf("unexpected built-in shape: %d turns, %d expected calls", len(scenario.Turns), len(answer.Expected))
+			}
+			if inputs.browserPolicy != replay.BrowserPolicyForbidden {
+				t.Fatalf("built-in browser policy = %q", inputs.browserPolicy)
 			}
 		})
 	}
@@ -530,11 +534,25 @@ func markSignalForTurn(t *testing.T, service Service, runID, token string) {
 func TestToolingFailureWritesFailureRecord(t *testing.T) {
 	directory := t.TempDir()
 	service := New(filepath.Join(directory, "state"))
-	failure := &replay.DiagnosticError{
-		Diagnostic: replay.Diagnostic{Command: "/tmp/harness --run", Stdout: "captured stdout", Stderr: "captured stderr"},
-		Err:        errors.New("harness exited unsuccessfully"),
+	signalToken := strings.Repeat("a", 64)
+	sanitizer := artifactSanitizer{patterns: defaultArtifactPatterns()}
+	sanitizer.addIdentity(signalToken, "[signal-token]")
+	runID, err := runstate.NewRunID()
+	if err != nil {
+		t.Fatal(err)
 	}
-	wrapped := service.toolingFailure(directory, "run-id", RunRequest{Harness: harness.Codex, Model: "gpt-5.6-sol", Reasoning: "medium"}, fmt.Errorf("wait for turn %q: %w", "turn-1", failure))
+	if err := service.runs.Create(runstate.Run{SchemaVersion: 1, ID: runID, ActiveTurn: "turn-1", Tokens: map[string]string{signalToken: "prompt-writing"}}); err != nil {
+		t.Fatal(err)
+	}
+	failure := &replay.DiagnosticError{
+		Diagnostic: replay.Diagnostic{
+			Command: "/Users/private-person/bin/harness --run [prompt]",
+			Stdout:  "captured stdout for private@example.com using " + signalToken,
+			Stderr:  "authorization: Bearer private-credential-value",
+		},
+		Err: errors.New("harness exited unsuccessfully for private@example.com"),
+	}
+	wrapped := service.toolingFailure(directory, runID, RunRequest{Harness: harness.Codex}, sanitizer, fmt.Errorf("wait for turn %q: %w", "turn-1", failure))
 	if wrapped == nil || !strings.Contains(wrapped.Error(), "failure diagnostics: ") {
 		t.Fatalf("failure error does not name the diagnostics file: %v", wrapped)
 	}
@@ -546,10 +564,27 @@ func TestToolingFailureWritesFailureRecord(t *testing.T) {
 	if err := json.Unmarshal(data, &record); err != nil {
 		t.Fatal(err)
 	}
-	if record.RunID != "run-id" || record.Harness != "codex" || record.Command != "/tmp/harness --run" {
+	if record.RunID != runID || record.Harness != "codex" || record.TurnID != "turn-1" {
 		t.Fatalf("unexpected failure record: %#v", record)
 	}
-	if record.Stdout != "captured stdout" || record.Stderr != "captured stderr" || !strings.Contains(record.Error, "turn-1") {
-		t.Fatalf("failure record lacks native output: %#v", record)
+	if !strings.Contains(record.Error, "turn-1") || !strings.Contains(record.Error, "[email]") {
+		t.Fatalf("failure record lacks sanitized summary: %#v", record)
+	}
+	var fields map[string]any
+	if err := json.Unmarshal(data, &fields); err != nil {
+		t.Fatal(err)
+	}
+	if len(fields) != 6 {
+		t.Fatalf("failure record contains unexpected fields: %#v", fields)
+	}
+	for _, excluded := range []string{"command", "stdout", "stderr", "model", "reasoning", "browser_policy"} {
+		if _, exists := fields[excluded]; exists {
+			t.Fatalf("failure record retained %q: %#v", excluded, fields)
+		}
+	}
+	for _, private := range []string{"private-person", "private@example.com", signalToken, "private-credential-value", "captured stdout"} {
+		if strings.Contains(string(data), private) {
+			t.Fatalf("failure record retained private value %q", private)
+		}
 	}
 }

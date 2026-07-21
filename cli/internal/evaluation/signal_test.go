@@ -38,13 +38,35 @@ func TestIsCodexSignalCommandAcceptsCapturedEscapedQuotes(t *testing.T) {
 	}{
 		{name: "plain echo", command: `echo "abc123"`, want: true},
 		{name: "captured zsh command", command: `/bin/zsh -lc "echo \"abc123\""`, want: true},
+		{name: "plain printf", command: `printf '%s\n' abc123`, want: true},
+		{name: "captured zsh printf command", command: `/bin/zsh -lc "printf '%s\\n' abc123"`, want: true},
 		{name: "token embedded in larger word", command: `/bin/zsh -lc "echo \"xabc123\""`, want: false},
-		{name: "different command", command: `/bin/zsh -lc "printf \"abc123\""`, want: false},
+		{name: "different command", command: `/bin/zsh -lc "cat \"abc123\""`, want: false},
 	}
 	for _, testCase := range cases {
 		t.Run(testCase.name, func(t *testing.T) {
 			if got := isCodexSignalCommand(testCase.command, token); got != testCase.want {
 				t.Fatalf("isCodexSignalCommand(%q) = %v, want %v", testCase.command, got, testCase.want)
+			}
+		})
+	}
+}
+
+func TestIsCodexSkillReadCommandAcceptsConcreteEntrypointReads(t *testing.T) {
+	cases := []struct {
+		name    string
+		command string
+		want    bool
+	}{
+		{name: "relative sed", command: `sed -n '1,240p' .agents/skills/prompt-writing/SKILL.md`, want: true},
+		{name: "captured compound command", command: `/bin/zsh -lc "cat \".agents/skills/prompt-writing/SKILL.md\"; pwd"`, want: true},
+		{name: "different skill", command: `cat .agents/skills/dictate-plan/SKILL.md`, want: false},
+		{name: "listing only", command: `find .agents/skills/prompt-writing -name SKILL.md`, want: false},
+	}
+	for _, testCase := range cases {
+		t.Run(testCase.name, func(t *testing.T) {
+			if got := isCodexSkillReadCommand(testCase.command, "prompt-writing"); got != testCase.want {
+				t.Fatalf("isCodexSkillReadCommand(%q) = %v, want %v", testCase.command, got, testCase.want)
 			}
 		})
 	}

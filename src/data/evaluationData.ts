@@ -5,10 +5,11 @@ export type WebsiteEvaluationPoint = {
   turn_id: string;
   called: number;
   missed: number;
+  unexpected: number;
 };
 
 export type WebsiteEvaluationArtifact = {
-  schema_version: 1;
+  schema_version: 2;
   run_id: string;
   scenario_id: string;
   harness: string;
@@ -17,14 +18,16 @@ export type WebsiteEvaluationArtifact = {
   points: WebsiteEvaluationPoint[];
 };
 
-export type EvaluationResult = WebsiteEvaluationArtifact & {
+export type EvaluationResult = Omit<WebsiteEvaluationArtifact, 'model'> & {
   cellId: string;
   cellLabel: string;
   harnessLabel: string;
+  model: string;
   modelLabel: string;
   reasoningLabel: string;
-  scenarioLabel: string;
   sampleSize: number;
+  scenarioLabel: string;
+  sourceModel: string;
 };
 
 type ScenarioDefinition = {
@@ -33,10 +36,11 @@ type ScenarioDefinition = {
 };
 
 type CellDefinition = {
+  artifactModels: readonly string[];
+  available: boolean;
   harness: string;
-  missedCalls: readonly [number, number, number];
   model: string;
-  seed: number;
+  reasoningLabel: string;
 };
 
 export const scenarioOptions = [
@@ -71,180 +75,147 @@ const modelLabels: Record<string, string> = {
 
 const cellDefinitions = [
   {
+    artifactModels: ['gpt-5.6-sol'],
+    available: true,
     harness: 'claude-code',
     model: 'codex-sol',
-    missedCalls: [2, 2, 2],
-    seed: 11,
+    reasoningLabel: 'Medium',
   },
   {
+    artifactModels: ['gpt-5.6-sol'],
+    available: true,
     harness: 'codex',
     model: 'codex-sol',
-    missedCalls: [1, 1, 1],
-    seed: 17,
+    reasoningLabel: 'Medium',
   },
   {
+    artifactModels: ['claude-fable-5'],
+    available: true,
     harness: 'claude-code',
     model: 'claude-fable',
-    missedCalls: [3, 3, 4],
-    seed: 23,
+    reasoningLabel: 'Medium',
   },
   {
+    artifactModels: ['claude-fable-5-thinking-high'],
+    available: false,
     harness: 'cursor',
     model: 'claude-fable',
-    missedCalls: [3, 4, 4],
-    seed: 29,
+    reasoningLabel: 'High',
   },
   {
+    artifactModels: ['gpt-5.6-sol-high'],
+    available: false,
     harness: 'cursor',
     model: 'codex-sol',
-    missedCalls: [1, 2, 2],
-    seed: 31,
+    reasoningLabel: 'High',
   },
   {
+    artifactModels: ['cursor-grok-4.5-medium'],
+    available: true,
     harness: 'cursor',
     model: 'grok',
-    missedCalls: [5, 5, 6],
-    seed: 37,
+    reasoningLabel: 'Medium',
   },
   {
+    artifactModels: ['composer-2.5'],
+    available: true,
     harness: 'cursor',
     model: 'composer',
-    missedCalls: [5, 6, 5],
-    seed: 41,
+    reasoningLabel: 'Medium',
   },
   {
+    artifactModels: ['openai-codex/gpt-5.6-sol'],
+    available: true,
     harness: 'pi',
     model: 'codex-sol',
-    missedCalls: [2, 3, 3],
-    seed: 43,
+    reasoningLabel: 'Medium',
   },
   {
+    artifactModels: ['openai/gpt-5.6-sol'],
+    available: true,
     harness: 'opencode',
     model: 'codex-sol',
-    missedCalls: [3, 3, 3],
-    seed: 47,
+    reasoningLabel: 'Medium',
   },
 ] as const satisfies readonly CellDefinition[];
-
-const totalTurns = 30;
 
 function cellId(harness: string, model: string) {
   return `${harness}::${model}`;
 }
 
-function failurePriority(turn: number, seed: number) {
-  const laterTurnBias = turn / totalTurns;
-  const patternVariation = ((turn * 17 + seed * 13) % 31) / 31;
-
-  return laterTurnBias * 0.7 + patternVariation * 0.3;
-}
-
-function createTurnPoints(missedCallCount: number, seed: number) {
-  const turns = Array.from({ length: totalTurns }, (_, index) => index + 1);
-  const earlyMissCount =
-    missedCallCount >= 5 ? 2 : missedCallCount >= 3 ? 1 : 0;
-  const earlyMissedTurns = turns
-    .filter((turn) => turn >= 3 && turn <= 9)
-    .sort(
-      (left, right) =>
-        failurePriority(right, seed) - failurePriority(left, seed) ||
-        right - left,
-    )
-    .slice(0, earlyMissCount);
-  const earlyMissedTurnSet = new Set(earlyMissedTurns);
-  const laterMissedTurns = turns
-    .filter((turn) => !earlyMissedTurnSet.has(turn))
-    .sort(
-      (left, right) =>
-        failurePriority(right, seed) - failurePriority(left, seed) ||
-        right - left,
-    )
-    .slice(0, missedCallCount - earlyMissCount);
-  const missedTurns = new Set([...earlyMissedTurns, ...laterMissedTurns]);
-
-  return turns.map((turn) => {
-    const missed = missedTurns.has(turn) ? 1 : 0;
-
-    return {
-      turn,
-      turn_id: `turn-${turn}`,
-      called: 1 - missed,
-      missed,
-    };
-  });
-}
-
-function createVideoSeedArtifacts(): WebsiteEvaluationArtifact[] {
-  return cellDefinitions.flatMap((cell) =>
-    scenarioOptions.map((scenario, scenarioIndex) => {
-      const missedCallCount = cell.missedCalls[scenarioIndex]!;
-
-      return {
-        schema_version: 1,
-        run_id: `video-seed-${cell.harness}-${cell.model}-${scenarioIndex + 1}`,
-        scenario_id: scenario.id,
-        harness: cell.harness,
-        model: cell.model,
-        total_turns: totalTurns,
-        points: createTurnPoints(
-          missedCallCount,
-          cell.seed + scenarioIndex * 7,
-        ),
-      };
-    }),
+function definitionForArtifact(artifact: WebsiteEvaluationArtifact) {
+  const definition = cellDefinitions.find(
+    (cell) =>
+      cell.harness === artifact.harness &&
+      (cell.artifactModels as readonly string[]).includes(artifact.model),
   );
+
+  if (!definition) {
+    throw new Error(
+      `No website cell maps ${artifact.harness} with ${artifact.model}`,
+    );
+  }
+
+  return definition;
 }
 
 export function adaptWebsiteArtifacts(
   artifacts: readonly WebsiteEvaluationArtifact[],
 ): EvaluationResult[] {
   return artifacts.map((artifact) => {
-    const harnessLabel = harnessLabels[artifact.harness] ?? artifact.harness;
-    const modelLabel = modelLabels[artifact.model] ?? artifact.model;
+    const definition = definitionForArtifact(artifact);
+    const harnessLabel =
+      harnessLabels[definition.harness] ?? definition.harness;
+    const modelLabel = modelLabels[definition.model] ?? definition.model;
     const scenario = scenarioOptions.find(
       (option) => option.id === artifact.scenario_id,
     );
 
+    if (!scenario) {
+      throw new Error(`No website scenario maps ${artifact.scenario_id}`);
+    }
+
     return {
       ...artifact,
-      cellId: cellId(artifact.harness, artifact.model),
-      cellLabel: `${harnessLabel} · ${modelLabel} · Medium`,
+      cellId: cellId(definition.harness, definition.model),
+      cellLabel: `${harnessLabel} · ${modelLabel} · ${definition.reasoningLabel}`,
       harnessLabel,
+      model: definition.model,
       modelLabel,
-      reasoningLabel: 'Medium',
-      scenarioLabel: scenario?.label ?? artifact.scenario_id,
+      reasoningLabel: definition.reasoningLabel,
       sampleSize: artifact.points.reduce(
-        (total, point) => total + point.called + point.missed,
+        (total, point) =>
+          total + point.called + point.missed + point.unexpected,
         0,
       ),
+      scenarioLabel: scenario.label,
+      sourceModel: artifact.model,
     };
   });
 }
 
-export const videoSeedWebsiteResults = createVideoSeedArtifacts();
 export const publishedWebsiteResults =
   publishedWebsiteArtifacts as WebsiteEvaluationArtifact[];
+export const defaultCellIds = cellDefinitions
+  .filter((cell) => cell.available)
+  .map((cell) => cellId(cell.harness, cell.model));
+const availableCellIds = new Set(defaultCellIds);
 export const evaluationResults = adaptWebsiteArtifacts(
-  publishedWebsiteResults.length > 0
-    ? publishedWebsiteResults
-    : videoSeedWebsiteResults,
-);
+  publishedWebsiteResults,
+).filter((result) => availableCellIds.has(result.cellId));
 
-export const availableCells = evaluationResults
-  .filter((result) => result.scenario_id === scenarioOptions[0].id)
-  .map((result) => ({
-    id: result.cellId,
-    harness: result.harness,
-    harnessLabel: result.harnessLabel,
-    model: result.model,
-    modelLabel: result.modelLabel,
-    reasoningLabel: result.reasoningLabel,
-    label: result.cellLabel,
-  }));
+export const availableCells = cellDefinitions.map((cell) => {
+  const harnessLabel = harnessLabels[cell.harness] ?? cell.harness;
+  const modelLabel = modelLabels[cell.model] ?? cell.model;
 
-export const defaultCellIds = [
-  cellId('cursor', 'claude-fable'),
-  cellId('cursor', 'codex-sol'),
-  cellId('cursor', 'grok'),
-  cellId('cursor', 'composer'),
-] as const;
+  return {
+    available: cell.available,
+    id: cellId(cell.harness, cell.model),
+    harness: cell.harness,
+    harnessLabel,
+    model: cell.model,
+    modelLabel,
+    reasoningLabel: cell.reasoningLabel,
+    label: `${harnessLabel} · ${modelLabel} · ${cell.reasoningLabel}`,
+  };
+});

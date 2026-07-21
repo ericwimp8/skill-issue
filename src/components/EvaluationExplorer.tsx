@@ -56,10 +56,14 @@ function CombinationPicker({
         </label>
         <div className="picker-options">
           {searchableCells.map((cell) => (
-            <label key={cell.id} className="picker-option">
+            <label
+              key={cell.id}
+              className={`picker-option${cell.available ? '' : ' picker-option-disabled'}`}
+            >
               <input
                 type="checkbox"
                 checked={selectedCellIds.includes(cell.id)}
+                disabled={!cell.available}
                 onChange={() => onToggleCell(cell.id)}
               />
               <span>
@@ -67,6 +71,7 @@ function CombinationPicker({
                 <small>
                   {cell.harnessLabel} · {cell.reasoningLabel} reasoning
                 </small>
+                {!cell.available && <small>No data</small>}
               </span>
               <i
                 aria-hidden="true"
@@ -224,6 +229,10 @@ export function EvaluationExplorer() {
   );
 
   function toggleCell(cellId: string) {
+    if (!availableCells.some((cell) => cell.id === cellId && cell.available)) {
+      return;
+    }
+
     setSelectedCellIds((current) =>
       current.includes(cellId)
         ? current.filter((id) => id !== cellId)
@@ -238,6 +247,10 @@ export function EvaluationExplorer() {
   }
 
   function toggleRankingCell(cellId: string) {
+    if (!availableCells.some((cell) => cell.id === cellId && cell.available)) {
+      return;
+    }
+
     setRankingCellIds((current) =>
       current.includes(cellId)
         ? current.filter((id) => id !== cellId)
@@ -328,7 +341,11 @@ export function EvaluationExplorer() {
               onToggleCell={toggleCell}
               onClear={() => setSelectedCellIds([])}
               onSelectAll={() =>
-                setSelectedCellIds(availableCells.map((cell) => cell.id))
+                setSelectedCellIds(
+                  availableCells
+                    .filter((cell) => cell.available)
+                    .map((cell) => cell.id),
+                )
               }
               onReset={resetSelection}
             />
@@ -391,7 +408,11 @@ export function EvaluationExplorer() {
                 onToggleCell={toggleRankingCell}
                 onClear={() => setRankingCellIds([])}
                 onSelectAll={() =>
-                  setRankingCellIds(availableCells.map((cell) => cell.id))
+                  setRankingCellIds(
+                    availableCells
+                      .filter((cell) => cell.available)
+                      .map((cell) => cell.id),
+                  )
                 }
                 onReset={resetRankingSelection}
               />

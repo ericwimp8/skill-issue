@@ -401,6 +401,7 @@ func (app App) reviewEvaluation(request evaluation.RunRequest) (bool, error) {
 	fmt.Fprintf(app.stderr, "  harness: %s\n", request.Harness)
 	fmt.Fprintf(app.stderr, "  model: %s\n", request.Model)
 	fmt.Fprintf(app.stderr, "  reasoning: %s\n", request.Reasoning)
+	fmt.Fprintf(app.stderr, "  browser policy: %s\n", request.BrowserPolicy)
 	if request.WorkspaceCreated {
 		fmt.Fprintf(app.stderr, "  workspace: %s (created for this run)\n", request.Workspace)
 	} else {
@@ -443,7 +444,7 @@ func (app App) warnEvaluation(args []string) {
 		fmt.Fprintln(app.stderr, "warning: custom evaluation inputs must not contain personal, confidential, or sensitive information; the harness conversation may retain their full contents")
 	}
 	if hasOption(args[1:], "transcript") {
-		fmt.Fprintln(app.stderr, "warning: --transcript writes the evaluation conversation, including prompts, responses, commands, command output, errors, and harness events; known local paths and machine identifiers are sanitized, but personal or confidential conversation content may remain, so review transcript.json before sharing")
+		fmt.Fprintln(app.stderr, "warning: --transcript writes the evaluation's user and assistant messages; known local identifiers and common sensitive patterns are sanitized, but contextual personal or confidential content may remain, so review transcript.json before sharing")
 	}
 }
 

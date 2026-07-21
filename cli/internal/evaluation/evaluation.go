@@ -37,6 +37,7 @@ type RunRequest struct {
 	ModelOverride      bool
 	Reasoning          string
 	ReasoningOverride  bool
+	BrowserPolicy      replay.BrowserPolicy
 	EvaluationID       string
 	SkillsPath         string
 	ScenarioPath       string
@@ -113,6 +114,10 @@ func PrepareRequest(request RunRequest) (RunRequest, error) {
 		request.inputs = &inputs
 	}
 	request.AvailableTurns = len(request.inputs.scenario.Turns)
+	request.BrowserPolicy = request.inputs.browserPolicy
+	if request.BrowserPolicy == "" {
+		request.BrowserPolicy = replay.BrowserPolicyAllowed
+	}
 	request.EffectiveTurns = request.AvailableTurns
 	if request.TurnLimit > 0 && request.TurnLimit < request.AvailableTurns {
 		request.EffectiveTurns = request.TurnLimit
@@ -121,16 +126,18 @@ func PrepareRequest(request RunRequest) (RunRequest, error) {
 }
 
 type BuiltInEvaluation struct {
-	SchemaVersion int             `json:"schema_version"`
-	EvaluationID  string          `json:"evaluation_id"`
-	Scenario      replay.Scenario `json:"scenario"`
-	AnswerSheet   AnswerSheet     `json:"answer_sheet"`
+	SchemaVersion int                  `json:"schema_version"`
+	EvaluationID  string               `json:"evaluation_id"`
+	BrowserPolicy replay.BrowserPolicy `json:"browser_policy"`
+	Scenario      replay.Scenario      `json:"scenario"`
+	AnswerSheet   AnswerSheet          `json:"answer_sheet"`
 }
 
 type loadedInputs struct {
-	scenario replay.Scenario
-	answer   AnswerSheet
-	skills   []payload.Skill
+	scenario      replay.Scenario
+	answer        AnswerSheet
+	skills        []payload.Skill
+	browserPolicy replay.BrowserPolicy
 }
 
 type Result struct {
@@ -139,6 +146,7 @@ type Result struct {
 	Harness        string      `json:"harness"`
 	Model          string      `json:"model"`
 	Reasoning      string      `json:"reasoning"`
+	BrowserPolicy  string      `json:"browser_policy"`
 	EvaluationID   string      `json:"evaluation_id"`
 	ScenarioID     string      `json:"scenario_id"`
 	Scope          string      `json:"scope"`
@@ -284,8 +292,23 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 		cliPath = runtime.signalExecutable
 	}
 	defer os.RemoveAll(privateRuntimeRunRoot(runID))
+	signalTokens := make([]string, 0, len(tokens))
+	for token := range tokens {
+		signalTokens = append(signalTokens, token)
+	}
+	sanitizer, err := newArtifactSanitizer(artifactSanitizerConfig{
+		Workspace:    workspace,
+		OutputRoot:   outputRoot,
+		StateRoot:    service.stateRoot,
+		RuntimeRoot:  privateRuntimeRunRoot(runID),
+		CLIPath:      cliPath,
+		SignalTokens: signalTokens,
+	})
+	if err != nil {
+		return Result{}, err
+	}
 	if err := replay.CheckAuthentication(ctx, replay.HarnessID(request.Harness), request.Executable, request.Model, runtime.environment, harnessSpec.CleanAuthenticationEnvironment); err != nil {
-		return Result{}, service.toolingFailure(outputDirectory, runID, request, err)
+		return Result{}, service.toolingFailure(outputDirectory, runID, request, sanitizer, err)
 	}
 	installationState, _, err := service.installer.PrepareEvaluation(installer.Request{
 		Harness:              request.Harness,
@@ -327,7 +350,7 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 	runtime.environment = append(runtime.environment, "PWD="+runtime.workingDirectory)
 	if request.Harness == harness.OpenCode {
 		if err := replay.CheckOpenCodeSkills(ctx, request.Executable, runtime.workingDirectory, runtime.environment, false, skillNames); err != nil {
-			return Result{}, service.toolingFailure(outputDirectory, runID, request, err)
+			return Result{}, service.toolingFailure(outputDirectory, runID, request, sanitizer, err)
 		}
 	}
 	run.InstallationState = installationStatePath
@@ -352,9 +375,10 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 		PiSkillsRoot:          runtime.piSkillsRoot,
 		SkillIssueExecutable:  cliPath,
 		ExpectedSkills:        skillNames,
+		BrowserPolicy:         request.BrowserPolicy,
 	})
 	if err != nil {
-		return Result{}, service.toolingFailure(outputDirectory, runID, request, err)
+		return Result{}, service.toolingFailure(outputDirectory, runID, request, sanitizer, err)
 	}
 	var turnStartedAt time.Time
 	runner := replay.Runner{
@@ -421,22 +445,15 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 	}
 	replayResult, err := runner.Run(ctx, scenario)
 	if err != nil {
-		return Result{}, service.toolingFailure(outputDirectory, runID, request, err)
+		return Result{}, service.toolingFailure(outputDirectory, runID, request, sanitizer, err)
 	}
+	var transcript TranscriptArtifact
 	if request.IncludeTranscript {
-		sanitizer, err := newTranscriptSanitizer(transcriptSanitizerConfig{
-			Workspace:   workspace,
-			OutputRoot:  outputRoot,
-			StateRoot:   service.stateRoot,
-			RuntimeRoot: privateRuntimeRunRoot(runID),
-			CLIPath:     cliPath,
-		})
+		transcript, err = newTranscriptArtifact(replayResult)
 		if err != nil {
 			return Result{}, err
 		}
-		if err := sanitizer.sanitize(&replayResult); err != nil {
-			return Result{}, err
-		}
+		sanitizer.sanitizeTranscript(&transcript)
 	}
 	events, err := service.runs.Events(runID)
 	if err != nil {
@@ -451,7 +468,7 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 	}
 	if request.IncludeTranscript {
 		transcriptPath := filepath.Join(outputDirectory, "transcript.json")
-		if err := writeJSON(transcriptPath, replayResult); err != nil {
+		if err := writeJSON(transcriptPath, transcript); err != nil {
 			return Result{}, err
 		}
 		result.TranscriptPath = filepath.Base(transcriptPath)
@@ -521,7 +538,8 @@ func (service Service) recordCodexSignals(runID, turnID string, capture replay.C
 		}
 		for token := range tokens {
 			skill := tokens[token]
-			if recorded[token] || observed[skill] || !isCodexSignalCommand(value.Item.Command, token) {
+			if recorded[token] || observed[skill] ||
+				(!isCodexSignalCommand(value.Item.Command, token) && !isCodexSkillReadCommand(value.Item.Command, skill)) {
 				continue
 			}
 			if err := service.runs.Mark(token); err != nil {
@@ -534,8 +552,17 @@ func (service Service) recordCodexSignals(runID, turnID string, capture replay.C
 }
 
 func isCodexSignalCommand(command, token string) bool {
-	return containsShellWord(command, "echo") &&
+	return (containsShellWord(command, "echo") || containsShellWord(command, "printf")) &&
 		(containsShellWord(command, token) || strings.Contains(command, `\"`+token+`\"`))
+}
+
+func isCodexSkillReadCommand(command, skill string) bool {
+	path := ".agents/skills/" + skill + "/SKILL.md"
+	readsFile := containsShellWord(command, "cat") || containsShellWord(command, "sed") ||
+		containsShellWord(command, "head") || containsShellWord(command, "tail") ||
+		containsShellWord(command, "awk") || containsShellWord(command, "grep") ||
+		containsShellWord(command, "rg")
+	return readsFile && (containsShellWord(command, path) || strings.Contains(command, `\"`+path+`\"`))
 }
 
 func (service Service) validateCursorSignals(runID, turnID string, capture replay.Capture, tokens map[string]string, cliPath string) error {
@@ -984,6 +1011,9 @@ func loadEvaluationInputs(request RunRequest) (loadedInputs, error) {
 		if builtIn.SchemaVersion != 1 || builtIn.EvaluationID != request.EvaluationID {
 			return loadedInputs{}, errors.New("built-in evaluation identity is invalid")
 		}
+		if err := builtIn.BrowserPolicy.Validate(); err != nil {
+			return loadedInputs{}, fmt.Errorf("validate built-in evaluation browser policy: %w", err)
+		}
 		if err := builtIn.Scenario.Validate(); err != nil {
 			return loadedInputs{}, err
 		}
@@ -994,7 +1024,7 @@ func loadEvaluationInputs(request RunRequest) (loadedInputs, error) {
 		if err != nil {
 			return loadedInputs{}, err
 		}
-		return loadedInputs{scenario: builtIn.Scenario, answer: builtIn.AnswerSheet, skills: skills}, nil
+		return loadedInputs{scenario: builtIn.Scenario, answer: builtIn.AnswerSheet, skills: skills, browserPolicy: builtIn.BrowserPolicy}, nil
 	}
 	if request.SkillsPath == "" || request.ScenarioPath == "" || request.AnswerSheet == "" {
 		return loadedInputs{}, errors.New("custom evaluation requires skills, scenario, and answer-sheet inputs")
@@ -1165,46 +1195,33 @@ func skillTokens(skills []payload.Skill) (map[string]string, error) {
 	return tokens, nil
 }
 
-// FailureRecord is the post-mortem artifact written to a failed run's output
-// directory. It preserves the failed harness command and its full native
-// output, which the error string alone cannot carry.
+// FailureRecord is the minimal post-mortem artifact written to a failed run's
+// output directory.
 type FailureRecord struct {
 	SchemaVersion int       `json:"schema_version"`
 	RunID         string    `json:"run_id"`
 	Harness       string    `json:"harness"`
-	Model         string    `json:"model"`
-	Reasoning     string    `json:"reasoning"`
 	TurnID        string    `json:"turn_id,omitempty"`
 	FailedAt      time.Time `json:"failed_at"`
 	Error         string    `json:"error"`
-	Command       string    `json:"command,omitempty"`
-	Stdout        string    `json:"stdout,omitempty"`
-	Stderr        string    `json:"stderr,omitempty"`
 }
 
 // toolingFailure marks the run failed and persists diagnostics best-effort;
 // when the record is written, the returned error names its location.
-func (service Service) toolingFailure(outputDirectory, runID string, request RunRequest, failure error) error {
+func (service Service) toolingFailure(outputDirectory, runID string, request RunRequest, sanitizer artifactSanitizer, failure error) error {
 	service.setStatus(runID, runstate.StatusToolingFailed)
 	wrapped := fmt.Errorf("evaluation encountered a tooling error: %w", failure)
 	record := FailureRecord{
 		SchemaVersion: 1,
 		RunID:         runID,
 		Harness:       string(request.Harness),
-		Model:         request.Model,
-		Reasoning:     request.Reasoning,
 		FailedAt:      time.Now().UTC(),
 		Error:         failure.Error(),
 	}
 	if run, err := service.runs.Load(runID); err == nil {
 		record.TurnID = run.ActiveTurn
 	}
-	var diagnostic *replay.DiagnosticError
-	if errors.As(failure, &diagnostic) {
-		record.Command = diagnostic.Diagnostic.Command
-		record.Stdout = diagnostic.Diagnostic.Stdout
-		record.Stderr = diagnostic.Diagnostic.Stderr
-	}
+	sanitizer.sanitizeFailure(&record)
 	failurePath := filepath.Join(outputDirectory, "failure.json")
 	if err := writeJSON(failurePath, record); err != nil {
 		return wrapped
@@ -1246,6 +1263,7 @@ func deriveResult(runID string, request RunRequest, evaluationID, scenarioID str
 		Harness:       string(request.Harness),
 		Model:         request.Model,
 		Reasoning:     request.Reasoning,
+		BrowserPolicy: string(request.BrowserPolicy),
 		EvaluationID:  evaluationID,
 		ScenarioID:    scenarioID,
 		Scope:         string(harness.ScopeProject),

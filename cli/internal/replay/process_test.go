@@ -211,7 +211,7 @@ func TestWaitFailureCarriesDiagnostics(t *testing.T) {
 	if !errors.As(err, &diagnostic) {
 		t.Fatalf("failure carries no diagnostics: %v", err)
 	}
-	if diagnostic.Diagnostic.Command != executable+" -p prompt" {
+	if diagnostic.Diagnostic.Command != executable+" -p [prompt]" {
 		t.Fatalf("unexpected failed command: %q", diagnostic.Diagnostic.Command)
 	}
 	if !strings.Contains(diagnostic.Diagnostic.Stdout, "harness-stdout-line") || !strings.Contains(diagnostic.Diagnostic.Stderr, "harness-stderr-line") {

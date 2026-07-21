@@ -29,9 +29,13 @@ type piAdapter struct {
 	model            string
 	reasoning        string
 	skillsRoot       string
+	browserPolicy    BrowserPolicy
 }
 
 func newPiAdapter(options Options) (Adapter, error) {
+	if err := options.BrowserPolicy.Validate(); err != nil {
+		return nil, err
+	}
 	path, err := resolveExecutable("pi", options.Executable)
 	if err != nil {
 		return nil, fmt.Errorf("pi executable: %w", err)
@@ -44,6 +48,7 @@ func newPiAdapter(options Options) (Adapter, error) {
 		model:            options.Model,
 		reasoning:        options.Reasoning,
 		skillsRoot:       options.PiSkillsRoot,
+		browserPolicy:    options.BrowserPolicy,
 	}, nil
 }
 
@@ -64,7 +69,7 @@ func (adapter *piAdapter) Start(ctx context.Context) (Session, error) {
 		args = append(args, "--skill", skill)
 	}
 	args = append(args, "--no-prompt-templates", "--no-themes", "--no-context-files", "--tools", "read,bash,edit,write,grep,find,ls", "--offline")
-	command := exec.CommandContext(ctx, adapter.path, args...)
+	command := evaluationCommand(ctx, adapter.path, args, adapter.browserPolicy)
 	configureOwnedProcess(command)
 	command.Dir = adapter.directory
 	command.Env = environment(adapter.environ, adapter.cleanEnvironment)

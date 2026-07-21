@@ -346,11 +346,8 @@ func TestMidTurnDeathWritesTurnAttributedDiagnostics(t *testing.T) {
 			if record.TurnID != "turn-2" {
 				t.Errorf("failure not attributed to turn-2: %#v", record)
 			}
-			if record.Command == "" {
-				t.Errorf("failure record lacks the harness command: %#v", record)
-			}
-			if !strings.Contains(record.Stderr, "died mid-turn") {
-				t.Errorf("failure record lacks native stderr: %#v", record)
+			if !strings.Contains(record.Error, "died mid-turn") {
+				t.Errorf("failure summary lacks the harness error: %#v", record)
 			}
 			run.assertCleanup()
 		})
@@ -424,8 +421,8 @@ func TestCodexConfigurationRejectionIsDiagnosed(t *testing.T) {
 		t.Fatalf("stderr does not report a tooling error: %s", stderr)
 	}
 	record := run.failureRecord()
-	if !strings.Contains(record.Stderr, "Error loading config.toml") {
-		t.Errorf("failure record lacks the native configuration error: %#v", record)
+	if !strings.Contains(record.Error, "Error loading config.toml") {
+		t.Errorf("failure summary lacks the native configuration error: %#v", record)
 	}
 	if record.TurnID != "turn-1" {
 		t.Errorf("failure not attributed to turn-1: %#v", record)

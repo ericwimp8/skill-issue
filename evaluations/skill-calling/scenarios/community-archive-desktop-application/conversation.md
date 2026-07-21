@@ -8,11 +8,11 @@ This document is the human-readable governance view of the fixed conversation em
 
 ## Turn 2
 
-> The starting folder is empty and has a current browser and Node.js available. The finished app should add a record with an accession ID, title, and short note; list saved records after reload; reject duplicate accession IDs; and export the records as JSON. Integrate those facts and observable outcomes into the plan.
+> The starting folder is empty and has Node.js available. The user will perform every in-browser check. The finished app should add a record with an accession ID, title, and short note; list saved records after reload; reject duplicate accession IDs; and export the records as JSON. Integrate those facts and observable outcomes into the plan so automated verification stays in Node and never opens or automates a browser.
 
 ## Turn 3
 
-> Keep the build deliberately small: plain HTML, CSS, and JavaScript, local storage only, keyboard-usable controls, clear validation text, and automated checks for accession-ID normalization and duplicate detection. Put the broad work in dependency order without prescribing file-level implementation.
+> Keep the build deliberately small: plain HTML, CSS, and JavaScript, local storage only, keyboard-usable controls, clear validation text, and Node-run automated checks for accession-ID normalization and duplicate detection. Do not open or automate a browser or install browser tooling. Put the broad work in dependency order without prescribing file-level implementation.
 
 ## Turn 4
 
@@ -24,7 +24,7 @@ This document is the human-readable governance view of the fixed conversation em
 
 ## Turn 6
 
-> Implement the smallest working BoxIndex app from the approved plan. Stop after add, duplicate rejection, reload, and JSON export work locally.
+> Implement the smallest working BoxIndex app from the approved plan. Use source inspection and Node-run checks only; do not open or automate a browser or install browser tooling. Stop after add, duplicate rejection, reload, and JSON export are supported locally.
 
 ## Turn 7
 
@@ -80,15 +80,15 @@ This document is the human-readable governance view of the fixed conversation em
 
 ## Turn 20
 
-> Write a self-contained prompt for a fresh accessibility reviewer to inspect record entry, validation, saved-record navigation, and both export controls. Ask only for prioritized findings with concise evidence and no implementation.
+> Write a self-contained prompt for a fresh accessibility reviewer to inspect the source for record entry, validation, saved-record navigation, and both export controls without opening or automating a browser. Ask only for prioritized findings with concise evidence and no implementation.
 
 ## Turn 21
 
-> Inspect the current interface and implement the smallest keyboard, focus, and validation-message improvements that are clearly needed. Preserve the offline workflow and existing record behavior.
+> Inspect the current interface through its source and implement the smallest keyboard, focus, and validation-message improvements that are clearly needed. Use Node-run checks only and do not open or automate a browser. Preserve the offline workflow and existing record behavior.
 
 ## Turn 22
 
-> Add focused automated checks for the interaction behavior changed in the accessibility pass. Assert observable focus and validation outcomes rather than private event wiring, then run the focused checks.
+> Add focused Node-run automated checks for the interaction behavior changed in the accessibility pass. Assert observable focus and validation outcomes rather than private event wiring, do not open or automate a browser, then run the focused checks.
 
 ## Turn 23
 
@@ -116,7 +116,7 @@ This document is the human-readable governance view of the fixed conversation em
 
 ## Turn 29
 
-> Run the focused automated suite and the nearest broader project check that can catch collateral behavior changes. Report the commands and outcomes without changing application behavior.
+> Run the focused Node-only automated suite and the nearest broader Node-run project check that can catch collateral behavior changes. Do not open or automate a browser. Report the commands and outcomes without changing application behavior.
 
 ## Turn 30
 

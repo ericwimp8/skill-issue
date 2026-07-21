@@ -90,11 +90,12 @@ Each completed run writes:
 
 - `result.json`: the detailed evaluation result;
 - `website.json`: a compact, chart-ready result; and
-- optional `events.jsonl` and `transcript.json` diagnostics.
+- optional `events.jsonl` diagnostics and a conversation-only `transcript.json`.
 
-Events and transcripts are disabled by default. A transcript may contain the
-complete evaluation conversation, including confidential information supplied
-during the run.
+Events and transcripts are disabled by default. A transcript retains only the
+ordered user and assistant messages. It may still contain confidential
+information supplied during the conversation and must be reviewed before
+sharing.
 
 ### Interpreting results
 
@@ -181,6 +182,30 @@ The production preview is available at
 `http://127.0.0.1:4173/skill-issue/`. Set `VITE_BASE_PATH` if the GitHub Pages
 repository path differs from `/skill-issue/`.
 
+### Prepare and publish a GitHub Pages release
+
+The Pages workflow is manual so changes on `main` are not published until a
+release is approved. Before publishing:
+
+1. Regenerate the published chart collection from the accepted evaluation
+   artifacts as described below.
+2. Publish the intended CLI release, or update the download call to action in
+   `src/data/siteData.ts` so it resolves to an available release.
+3. Review the complete static site for confidential or identifying content.
+   GitHub Pages sites are publicly available even when their source repository
+   is private.
+4. Run `npm run validate`, then inspect the production build with
+   `npm run preview`.
+
+For the first release, open **Settings → Pages** in GitHub and select
+**GitHub Actions** as the build and deployment source. Then run the
+**Deploy website to GitHub Pages** workflow from `main`. The workflow uses the
+base path reported by GitHub Pages, uploads `dist`, and creates the
+`github-pages` deployment environment.
+
+After deployment, verify the published URL, hash navigation, theme selection,
+charts, generated-skill readers, repository links, and CLI download link.
+
 ### Update website content
 
 - Edit curated copy, release metadata, summary metrics, and methodology text in
@@ -188,21 +213,26 @@ repository path differs from `/skill-issue/`.
 - Add complete generated-skill examples under
   `showcase-skills/*/skill/*/SKILL.md`; the website discovers them at build
   time.
-- Keep evaluation types, labels, artifact adaptation, and illustrative results
-  in `src/data/evaluationData.ts`.
+- Keep evaluation types, labels, and artifact adaptation in
+  `src/data/evaluationData.ts`.
 - Keep selection and filtering in `src/components/EvaluationExplorer.tsx` and
   chart presentation under `src/components/charts/`.
 
-Published charts must use accepted evaluation artifacts rather than
-hand-authored values. Load selected compact artifacts with:
+Published charts use accepted compact evaluation artifacts rather than
+hand-authored values. Retain each accepted schema-v2 artifact as
+`evaluations/skill-calling/results/accepted/<run-id>.json`, then regenerate the
+published collection with:
 
 ```sh
-npm run results:update -- output/run-one/website.json output/run-two/website.json
+npm run results:update
 ```
 
-This command validates the artifacts and writes the collection to
-`src/data/publishedWebsiteArtifacts.json`. Keep downloadable binaries in GitHub
-Releases rather than the Pages build.
+This command validates every accepted artifact, rejects duplicate run IDs and
+harness-model-scenario configurations, and writes the collection to
+`src/data/publishedWebsiteArtifacts.json`. Detailed results, events,
+transcripts, workspaces, and failed-run diagnostics remain outside the public
+repository. Keep downloadable binaries in GitHub Releases rather than the
+Pages build.
 
 ## Project status
 

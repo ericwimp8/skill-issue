@@ -24,10 +24,12 @@ type HarnessOutcomeChartProps = {
 
 type HarnessDatum = {
   called: number;
+  conversationTurns: number;
   failed: number;
   failureRate: number;
   harness: string;
   label: string;
+  scenarioCount: number;
   successRate: number;
   total: number;
 };
@@ -35,7 +37,10 @@ type HarnessDatum = {
 function aggregateHarnesses(results: EvaluationResult[]) {
   const aggregates = new Map<
     string,
-    Pick<HarnessDatum, 'called' | 'harness' | 'label' | 'total'>
+    Pick<
+      HarnessDatum,
+      'called' | 'conversationTurns' | 'harness' | 'label' | 'total'
+    > & { scenarioIds: Set<string> }
   >();
 
   results.forEach((result) => {
@@ -45,14 +50,18 @@ function aggregateHarnesses(results: EvaluationResult[]) {
 
     if (current) {
       current.called += called;
+      current.conversationTurns += result.total_turns;
+      current.scenarioIds.add(result.scenario_id);
       current.total += total;
       return;
     }
 
     aggregates.set(result.harness, {
       called,
+      conversationTurns: result.total_turns,
       harness: result.harness,
       label: result.harnessLabel,
+      scenarioIds: new Set([result.scenario_id]),
       total,
     });
   });
@@ -65,6 +74,7 @@ function aggregateHarnesses(results: EvaluationResult[]) {
         ...result,
         failed,
         failureRate: result.total === 0 ? 0 : (failed / result.total) * 100,
+        scenarioCount: result.scenarioIds.size,
         successRate:
           result.total === 0 ? 0 : (result.called / result.total) * 100,
       };
@@ -95,6 +105,11 @@ function HarnessTooltip({ active, payload }: TooltipContentProps) {
       <span>
         {result.called} called · {result.failed} missed · {result.total} scored
       </span>
+      <span>
+        {result.scenarioCount} scenario
+        {result.scenarioCount === 1 ? '' : 's'} · {result.conversationTurns}{' '}
+        conversation turns
+      </span>
     </div>
   );
 }
@@ -105,7 +120,10 @@ export function HarnessOutcomeChart({
   selectedScenarioIds,
 }: HarnessOutcomeChartProps) {
   const data = aggregateHarnesses(results);
-  const conversationTurns = selectedScenarioIds.length * 30;
+  const acceptedRuns = data.reduce(
+    (total, harness) => total + harness.scenarioCount,
+    0,
+  );
   const chartHeight = Math.max(390, data.length * 58 + 72);
 
   return (
@@ -140,8 +158,9 @@ export function HarnessOutcomeChart({
       </header>
       <p className="chart-description-wide">
         Codex Sol and Medium reasoning stay fixed while the harness changes. The
-        selected evidence represents {conversationTurns} conversation turns and{' '}
-        {selectedScenarioIds.length * 4} scored expected calls per harness.
+        chart uses the accepted runs currently available for the selected
+        scenarios. Hover over a bar for its exact coverage and scored-call
+        totals.
       </p>
       <div className="harness-summary" aria-label="Harness chart context">
         <span>
@@ -149,11 +168,12 @@ export function HarnessOutcomeChart({
           {selectedScenarioIds.length === 1 ? '' : 's'}
         </span>
         <span>
-          <strong>{conversationTurns}</strong> conversation turns
+          <strong>{data.length}</strong> harness
+          {data.length === 1 ? '' : 'es'} with data
         </span>
         <span>
-          <strong>{selectedScenarioIds.length * 4}</strong> scored calls per
-          harness
+          <strong>{acceptedRuns}</strong> accepted run
+          {acceptedRuns === 1 ? '' : 's'}
         </span>
       </div>
       <div className="chart-canvas" style={{ height: chartHeight }}>

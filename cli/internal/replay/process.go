@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"slices"
 	"strings"
 
 	"github.com/ericwimp8/skill-issue/cli/internal/harness"
@@ -33,6 +34,23 @@ type Options struct {
 	// ExpectedSkills names the installed evaluation skills a harness must
 	// report as visible where its protocol exposes that evidence.
 	ExpectedSkills []string
+	BrowserPolicy  BrowserPolicy
+}
+
+type BrowserPolicy string
+
+const (
+	BrowserPolicyAllowed   BrowserPolicy = "allowed"
+	BrowserPolicyForbidden BrowserPolicy = "forbidden"
+)
+
+func (policy BrowserPolicy) Validate() error {
+	switch policy {
+	case "", BrowserPolicyAllowed, BrowserPolicyForbidden:
+		return nil
+	default:
+		return fmt.Errorf("unsupported browser policy %q", policy)
+	}
 }
 
 type commandSpec struct {
@@ -58,6 +76,7 @@ type processAdapter struct {
 	piSkillsRoot          string
 	skillIssueExecutable  string
 	expectedSkills        []string
+	browserPolicy         BrowserPolicy
 	cleanup               func() error
 }
 
@@ -75,6 +94,9 @@ func NewAdapter(harnessID HarnessID, options Options) (Adapter, error) {
 	}
 	if err != nil {
 		return nil, fmt.Errorf("%s executable: %w", harnessID, err)
+	}
+	if err := options.BrowserPolicy.Validate(); err != nil {
+		return nil, err
 	}
 	adapter := &processAdapter{
 		harnessID:             harnessID,
@@ -94,6 +116,7 @@ func NewAdapter(harnessID HarnessID, options Options) (Adapter, error) {
 		piSkillsRoot:          options.PiSkillsRoot,
 		skillIssueExecutable:  options.SkillIssueExecutable,
 		expectedSkills:        options.ExpectedSkills,
+		browserPolicy:         options.BrowserPolicy,
 	}
 	if harnessID == HarnessClaude {
 		adapter.cleanup = func() error {
@@ -156,10 +179,12 @@ func (session *processSession) SendPrompt(ctx context.Context, prompt string) er
 		return errors.New("previous prompt is still running")
 	}
 	args := session.adapter.spec.buildArgs(session.adapter, session.sessionID, session.started, prompt)
-	session.lastCommand = strings.Join(append([]string{session.adapter.path}, args...), " ")
+	diagnosticArgs := slices.Clone(args)
+	diagnosticArgs[len(diagnosticArgs)-1] = "[prompt]"
+	session.lastCommand = strings.Join(append([]string{session.adapter.path}, diagnosticArgs...), " ")
 	session.stdout.Reset()
 	session.stderr.Reset()
-	command := exec.CommandContext(ctx, session.adapter.path, args...)
+	command := evaluationCommand(ctx, session.adapter.path, args, session.adapter.browserPolicy)
 	configureOwnedProcess(command)
 	command.Dir = session.adapter.directory
 	command.Env = environment(session.adapter.environ, session.adapter.cleanEnvironment)

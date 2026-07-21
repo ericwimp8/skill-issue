@@ -1,0 +1,199 @@
+{
+  "schema_version": 2,
+  "run_id": "12192ed7bb64e3cf049d712876b99bc5",
+  "scenario_id": "neighborhood-emergency-preparedness-program",
+  "harness": "claude-code",
+  "model": "gpt-5.6-sol",
+  "total_turns": 30,
+  "points": [
+    {
+      "turn": 1,
+      "turn_id": "turn-1",
+      "called": 0,
+      "missed": 2,
+      "unexpected": 0
+    },
+    {
+      "turn": 2,
+      "turn_id": "turn-2",
+      "called": 0,
+      "missed": 1,
+      "unexpected": 0
+    },
+    {
+      "turn": 3,
+      "turn_id": "turn-3",
+      "called": 0,
+      "missed": 2,
+      "unexpected": 0
+    },
+    {
+      "turn": 4,
+      "turn_id": "turn-4",
+      "called": 0,
+      "missed": 1,
+      "unexpected": 0
+    },
+    {
+      "turn": 5,
+      "turn_id": "turn-5",
+      "called": 0,
+      "missed": 1,
+      "unexpected": 0
+    },
+    {
+      "turn": 6,
+      "turn_id": "turn-6",
+      "called": 0,
+      "missed": 2,
+      "unexpected": 0
+    },
+    {
+      "turn": 7,
+      "turn_id": "turn-7",
+      "called": 1,
+      "missed": 1,
+      "unexpected": 0
+    },
+    {
+      "turn": 8,
+      "turn_id": "turn-8",
+      "called": 0,
+      "missed": 3,
+      "unexpected": 0
+    },
+    {
+      "turn": 9,
+      "turn_id": "turn-9",
+      "called": 0,
+      "missed": 2,
+      "unexpected": 0
+    },
+    {
+      "turn": 10,
+      "turn_id": "turn-10",
+      "called": 1,
+      "missed": 0,
+      "unexpected": 0
+    },
+    {
+      "turn": 11,
+      "turn_id": "turn-11",
+      "called": 0,
+      "missed": 2,
+      "unexpected": 0
+    },
+    {
+      "turn": 12,
+      "turn_id": "turn-12",
+      "called": 0,
+      "missed": 1,
+      "unexpected": 0
+    },
+    {
+      "turn": 14,
+      "turn_id": "turn-14",
+      "called": 0,
+      "missed": 1,
+      "unexpected": 0
+    },
+    {
+      "turn": 15,
+      "turn_id": "turn-15",
+      "called": 0,
+      "missed": 2,
+      "unexpected": 0
+    },
+    {
+      "turn": 16,
+      "turn_id": "turn-16",
+      "called": 1,
+      "missed": 2,
+      "unexpected": 0
+    },
+    {
+      "turn": 17,
+      "turn_id": "turn-17",
+      "called": 0,
+      "missed": 1,
+      "unexpected": 0
+    },
+    {
+      "turn": 19,
+      "turn_id": "turn-19",
+      "called": 0,
+      "missed": 2,
+      "unexpected": 0
+    },
+    {
+      "turn": 20,
+      "turn_id": "turn-20",
+      "called": 0,
+      "missed": 1,
+      "unexpected": 0
+    },
+    {
+      "turn": 21,
+      "turn_id": "turn-21",
+      "called": 0,
+      "missed": 1,
+      "unexpected": 0
+    },
+    {
+      "turn": 22,
+      "turn_id": "turn-22",
+      "called": 0,
+      "missed": 2,
+      "unexpected": 0
+    },
+    {
+      "turn": 23,
+      "turn_id": "turn-23",
+      "called": 0,
+      "missed": 2,
+      "unexpected": 0
+    },
+    {
+      "turn": 25,
+      "turn_id": "turn-25",
+      "called": 0,
+      "missed": 3,
+      "unexpected": 0
+    },
+    {
+      "turn": 26,
+      "turn_id": "turn-26",
+      "called": 0,
+      "missed": 2,
+      "unexpected": 0
+    },
+    {
+      "turn": 27,
+      "turn_id": "turn-27",
+      "called": 0,
+      "missed": 2,
+      "unexpected": 0
+    },
+    {
+      "turn": 28,
+      "turn_id": "turn-28",
+      "called": 0,
+      "missed": 1,
+      "unexpected": 0
+    },
+    {
+      "turn": 29,
+      "turn_id": "turn-29",
+      "called": 0,
+      "missed": 1,
+      "unexpected": 0
+    },
+    {
+      "turn": 30,
+      "turn_id": "turn-30",
+      "called": 0,
+      "missed": 1,
+      "unexpected": 0
+    }
+  ]
+}

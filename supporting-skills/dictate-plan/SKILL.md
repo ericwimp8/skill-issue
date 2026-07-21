@@ -1,6 +1,6 @@
 ---
 name: dictate-plan
-description: Living A-to-B task-sequencing from conversational dictation. Use only when the user explicitly asks to develop a dependency-ordered plan over successive messages.
+description: Living A-to-B task-sequencing from conversational dictation. Use when the user asks to Dictate Plan or start an A-to-B plan.
 ---
 
 # Dictate Plan

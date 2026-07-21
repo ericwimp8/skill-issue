@@ -14,8 +14,8 @@ The CLI replays each scenario's fixed user prompts in order through one continue
 The defensible public account is therefore a description of the **current development methodology**, with explicit qualifications:
 
 - the scenario inventory and scorecard totals must be re-counted after the development sources freeze;
-- the selected known-good executable, committed `HEAD`, index snapshots, and earlier 12-turn analyses are stale relative to the intended method and cannot control current conclusions;
-- that development-versus-known-good divergence blocks campaign freeze and publication, but it is not a reason to roll the scenarios back;
+- the current development sources and development executable are authoritative for this work;
+- the selected known-good executable, committed `HEAD`, index snapshots, and earlier 12-turn analyses are stale relative to the intended method and are excluded from current conclusions, campaign preparation, and result interpretation;
 - Dictate Plan is named explicitly once in Turn 1 of every scenario and is scored;
 - harness isolation is adapter-specific and retains documented product or host surfaces;
 - the eight skills have bounded hardening evidence, while complete intake-to-generation lineage is not retained for every skill;
@@ -198,7 +198,7 @@ The current development working tree is the authoritative methodology baseline f
 - earlier research and retained analyses describe superseded 12-turn scenarios; and
 - some retained historical status documents preserve obsolete source paths or iteration authority.
 
-These mismatches are freeze and publication blockers. The correct resolution is to finish and verify the intended development sources, commit the coherent baseline, build a new known-good executable from that revision, and confirm that its embedded units and hashes match the frozen sources. Rolling the current scenarios back to the stale executable would make the executable consistent by discarding the intended methodology and is therefore unsupported.
+These mismatches confirm that the selected known-good executable cannot participate in the current methodology or campaign. The correct resolution for this work is to finish and verify the intended development sources, rebuild the development executable from those sources, record its exact source state, and confirm that its embedded units and hashes match the frozen development baseline. Rolling the current scenarios back to the stale executable would discard the intended methodology and is therefore unsupported. Creating a future known-good snapshot is a separate baseline-management decision after the development method is coherent; it does not control this work.
 
 ## Conditional Alternatives
 
@@ -208,7 +208,7 @@ Publish only structural method claims: three planned scenarios, 30 turns per sce
 
 ### After scenario freeze
 
-Recompute and record turn counts, unique expected pairs, expectation-bearing turns, per-skill totals, prompt-level Dictate Plan occurrences, and canonical hashes from the frozen sources. Then build and inspect the known-good executable before starting campaign runs.
+Recompute and record turn counts, unique expected pairs, expectation-bearing turns, per-skill totals, prompt-level Dictate Plan occurrences, and canonical hashes from the frozen sources. Then rebuild and inspect the development executable before starting campaign runs.
 
 ### Before accepted campaign results
 
@@ -238,7 +238,7 @@ Describe concrete controls and residuals per harness. Use “fresh evaluator-own
 - **A passed refinement campaign proves universal skill correctness:** rejected by the campaigns' own evidence boundaries.
 - **The current website charts are observed campaign results:** rejected because the accepted collection is empty.
 - **A compact artifact that passes the importer is accepted campaign evidence:** rejected because the importer lacks provenance and acceptance checks.
-- **The stale known-good executable should override development intent:** rejected; the divergence blocks freeze and requires rebuilding the baseline.
+- **The stale known-good executable should override or corroborate development intent:** rejected; it is outside the authority chain for the current method and campaign.
 
 ## Canonical Repository Locations
 
@@ -267,8 +267,8 @@ Describe concrete controls and residuals per harness. Use “fresh evaluator-own
 ## Unresolved Blockers
 
 1. **Scenario freeze is incomplete.** The current 30-turn sources are authoritative for intent but still changing; final totals and hashes need one post-freeze verification.
-2. **Known-good parity is absent.** The selected known-good executable and earlier committed snapshots do not yet embed the current governed method.
-3. **The campaign baseline is not immutable.** A coherent revision, rebuilt known-good executable, exact version record, and embedded-source verification are still required.
+2. **The selected known-good build is stale.** It does not embed the current governed method and must not be used for current campaign decisions or interpretation.
+3. **The development campaign baseline is not immutable.** A coherent source state, rebuilt development executable, exact version record, and embedded-source verification are still required.
 4. **No accepted campaign set exists.** The planned matrix is 0/30 complete in the inspected progress record.
 5. **Lane confinement remains evidence-gated.** Each harness requires its bounded runtime probe, especially for product-managed surfaces, Kilo skill exclusivity, and Pi's host/network boundary.
 6. **Exact configuration provenance remains incomplete.** Every run needs the effective harness version, executable, model identifier/version or alias, and reasoning setting.

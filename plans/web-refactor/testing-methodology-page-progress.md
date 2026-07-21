@@ -14,13 +14,13 @@ This document is the progress owner for that page. It preserves the project owne
 - [x] Complete external methodology-page research.
 - [ ] Design and approve the page's information architecture and copy.
 - [ ] Organize canonical repository material for public linking.
-- [ ] Implement the page and its scenario and skill readers.
+- [x] Implement the page and its scenario and skill readers.
 - [ ] Complete technical, interactive, responsive, and visual validation.
 
 ## Verified Research Checkpoint
 
-- The development working tree is the authority for this work. The selected known-good build, committed baseline, and staged 12-turn snapshot are stale and must not drive the methodology page or campaign freeze.
-- The current development scenarios contain 30 turns each. Their current scorecards contain 44, 44, and 43 unique expected turn-skill pairs, with expectations on 27 turns per scenario. These totals remain provisional until the active scenario edits are frozen and rechecked.
+- The current development working tree and development CLI channel are the authority for this work. The selected known-good build, committed baseline, and staged 12-turn snapshot are stale and are excluded from methodology decisions, campaign preparation, and result interpretation.
+- The current development scenarios contain 30 turns each. Their current scorecards contain 46, 46, and 45 unique expected turn-skill pairs, with expectations on 27 turns per scenario. These totals remain provisional until the active scenario edits are frozen and rechecked.
 - Thirty currently describes both the number of turns in each scenario and the planned campaign total of 30 runs across ten configurations and three scenarios.
 - Dictate Plan is named manually once in Turn 1 of every scenario and is included in the scorecard. Codex metadata makes it explicit-only, while equivalent technical non-implicit enforcement is not established for every harness.
 - The instrumentation token's meaning is opaque outside evaluator-owned state, but the injected command and its side effects remain observable and must be disclosed as a possible influence.
@@ -35,6 +35,7 @@ This document is the progress owner for that page. It preserves the project owne
 
 - [ ] Treat the project owner's methodology description below as the starting account, while marking each publishable claim verified only after checking its production source, governed scenario material, retained artifact, or controlling repository document.
 - [ ] Trace relevant behavior end to end. Do not stop at interfaces, wrappers, test expectations, summaries, or website fixtures.
+- [ ] Use `./cli/scripts/local-cli.sh development` for current methodology and campaign verification. Do not treat the presently selected known-good executable as a fallback, comparison baseline, or corroborating source.
 - [ ] Use production source and governed repository artifacts as behavioral truth. Use tests only after intended behavior has been established.
 - [ ] Validate all agent-produced findings against the repository before they enter the research synthesis, page copy, or website data.
 - [ ] Keep unsupported statements visibly unresolved in research rather than smoothing them into confident public claims.
@@ -51,7 +52,7 @@ This document is the progress owner for that page. It preserves the project owne
 
 - [x] Verify that the campaign uses three governed scenarios.
 - [x] Verify that every current development scenario contains 30 conversational turns.
-- [x] Verify the current expected-call counts of 44, 44, and 43, while requiring a final recount after the active scenario edits are frozen.
+- [x] Verify the current expected-call counts of 46, 46, and 45, while requiring a final recount after the active scenario edits are frozen.
 - [x] Verify that expected calls are distributed across different points and conversational conditions rather than concentrated in one part of a scenario.
 - [x] Verify the exact source format for every scenario's ordered user and assistant exchange.
 - [x] Verify the exact scorecard format that maps turns to expected skills.
@@ -219,45 +220,45 @@ This document is the progress owner for that page. It preserves the project owne
 
 ## Phase 7: Organize Canonical Repository Material
 
-- [ ] Inventory the current canonical location of each governed scenario's instructions, conversation, expected calls, and configuration.
-- [ ] Inventory the current canonical location of each evaluated skill and its supporting files.
-- [ ] Identify the retained evaluation and refinement folder for each skill once its current run completes.
-- [ ] Decide which source material remains in its existing semantic home and which material requires deliberate publication organization.
+- [x] Inventory the current canonical location of each governed scenario's instructions, conversation, expected calls, and configuration.
+- [x] Inventory the current canonical location of each evaluated skill and its supporting files.
+- [x] Identify the retained evaluation and refinement folder for each skill once its current run completes.
+- [x] Decide which source material remains in its existing semantic home and which material requires deliberate publication organization.
 - [ ] Keep disposable CLI output under ignored `output/`; move only explicitly retained review evidence into an appropriate tracked location.
-- [ ] Define stable repository-relative and GitHub URLs for every scenario, scorecard, skill, and retained evaluation folder.
-- [ ] Ensure the website data references canonical sources rather than duplicating manually maintained copies without an ownership rule.
+- [x] Define stable repository-relative and GitHub URLs for every scenario, scorecard, skill, and retained evaluation folder.
+- [x] Ensure the website data references canonical sources rather than duplicating manually maintained copies without an ownership rule.
 - [ ] Verify that published folders do not expose credentials, machine-specific paths, private configuration, disposable recovery state, or unrelated local data.
-- [ ] Verify every GitHub link against the intended repository, branch behavior, path casing, and GitHub Pages deployment context.
-- [ ] Record which evaluation links remain blocked because their real retained folders are still being generated.
+- [x] Verify every GitHub link against the intended repository, branch behavior, path casing, and GitHub Pages deployment context.
+- [x] Record which evaluation links remain blocked because their real retained folders are still being generated. None remain blocked at the current remote `main` revision.
 
 ## Phase 8: Build The Scenario Presentation
 
-- [ ] Add one real entry for each governed scenario.
-- [ ] Show the scenario name and a concise verified description.
-- [ ] Show the verified turn count and expected-call count.
-- [ ] Let readers open each scenario inside the website using the established overlay or reader interaction used by the Build Skills view, adapted only where scenario content requires it.
-- [ ] Present every scenario message in exact conversational order.
+- [x] Add one real entry for each governed scenario.
+- [x] Show the scenario name and a concise verified description.
+- [x] Show the verified turn count and expected-call count.
+- [x] Let readers open each scenario inside the website using the established overlay or reader interaction used by the Build Skills view, adapted only where scenario content requires it.
+- [x] Present every scenario message in exact conversational order.
 - [ ] Clearly distinguish speaker, turn number, message content, and expected calls.
-- [ ] Annotate each relevant turn with the skill or skills expected by the scorecard.
+- [x] Annotate each relevant turn with the skill or skills expected by the scorecard.
 - [ ] Represent turns with no expected calls accurately without implying that those turns are unscored expected calls.
 - [ ] Represent multiple expected calls on one turn without collapsing their individual Boolean outcomes.
-- [ ] Provide access to the scorecard or its exact governed content.
-- [ ] Add a direct GitHub link to the scenario's canonical folder and scorecard.
+- [x] Provide access to the scorecard or its exact governed content.
+- [x] Add a direct GitHub link to the scenario's canonical folder and scorecard.
 - [ ] Make the overlay readable and navigable for long 30-turn content on desktop and narrow screens.
 - [ ] Provide accessible close behavior, focus management, keyboard navigation, labels, and external-link treatment.
 
 ## Phase 9: Build The Evaluated Skills Presentation
 
-- [ ] Inventory and display every real skill used by the governed scenarios.
-- [ ] Identify skills shared across scenarios without creating duplicate ownership or misleading counts.
-- [ ] Reuse the existing Build Skills skill-reader behavior and visual language where it remains suitable.
-- [ ] Let readers open and read each real `SKILL.md` inside the website.
-- [ ] Show a concise verified explanation of what each skill is for.
-- [ ] Identify Dictate Plan as explicit-only and manually invoked at scenario startup.
-- [ ] Distinguish that startup exception from skills whose discovery and invocation are evaluated later in the scenario.
-- [ ] Add a direct GitHub link to each skill's canonical folder.
-- [ ] Add a direct GitHub link to each skill's retained evaluation and refinement folder only when the real folder exists.
-- [ ] Make the link target clear enough that readers know whether they are opening the skill source or its evaluation evidence.
+- [x] Inventory and display every real skill used by the governed scenarios.
+- [x] Identify skills shared across scenarios without creating duplicate ownership or misleading counts.
+- [x] Reuse the existing Build Skills skill-reader behavior and visual language where it remains suitable.
+- [x] Let readers open and read each real `SKILL.md` inside the website.
+- [x] Show a concise verified explanation of what each skill is for.
+- [x] Identify Dictate Plan as explicit-only and manually invoked at scenario startup.
+- [x] Distinguish that startup exception from skills whose discovery and invocation are evaluated later in the scenario.
+- [x] Add a direct GitHub link to each skill's canonical folder.
+- [x] Add a direct GitHub link to each skill's retained evaluation and refinement folder only when the real folder exists.
+- [x] Make the link target clear enough that readers know whether they are opening the skill source or its evaluation evidence.
 - [ ] Link the section back to Build Skills and the CLI installation path.
 - [ ] Explain that readers can use the public generation and refinement workflow for their own skills.
 
@@ -286,12 +287,12 @@ This document is the progress owner for that page. It preserves the project owne
 - [ ] Verify every displayed scenario message against its canonical source.
 - [ ] Verify every displayed expected-call annotation against its canonical scorecard.
 - [ ] Verify every displayed skill against its canonical source.
-- [ ] Verify every active GitHub link by opening its real destination.
+- [x] Verify every active GitHub link by opening its real destination.
 - [ ] Verify the public copy one final time against the completed evidence map.
 
 ## Phase 12: Interactive, Responsive, And Visual Validation
 
-- [ ] Run the website with `npm run dev -- --host 127.0.0.1` and confirm live reload.
+- [x] Run the website with `npm run dev -- --host 127.0.0.1` and confirm live reload.
 - [ ] Open the methodology page through shared navigation and through its direct hash route.
 - [ ] Click through every scenario reader, skill reader, internal link, GitHub link, close control, and navigation state.
 - [ ] Inspect desktop, tablet, and narrow mobile layouts in both themes.
@@ -302,6 +303,14 @@ This document is the progress owner for that page. It preserves the project owne
 - [ ] Use the image-comparison workflow when typography, spacing, hierarchy, reading measure, overlays, or responsive behavior appears uncertain.
 - [ ] Fix every confirmed visual or interaction mismatch at its semantic owner.
 - [ ] Inspect the production build with `npm run preview` after local interactive checks pass.
+
+### Browser Link Verification, 2026-07-21
+
+- [x] Open all three scenario readers and confirm each contains 30 ordered turns, including Turn 1 and Turn 30.
+- [x] Open each scenario's canonical GitHub folder and confirm the destination renders successfully.
+- [x] Open all eight evaluated skill readers and confirm each displays its real `SKILL.md` content.
+- [x] Open all eight canonical skill-source folders and confirm the destination renders successfully.
+- [x] Open all eight retained evaluation folders and confirm the destination renders successfully.
 
 ## Completion Gate
 

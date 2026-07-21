@@ -16,6 +16,7 @@ This document is the human-readable governance view. The standalone CLI embeds t
 | 6    | `code-testing-discipline`        | The turn requests focused automated tests and their execution.        |
 | 6    | `code-implementation-discipline` | Creating test code is a code edit.                                    |
 | 7    | `skill-authoring-discipline`     | The turn creates a reusable portable skill.                           |
+| 7    | `document-update-discipline`     | Creating the skill requires a coherent new skill document.            |
 | 8    | `systematic-debugging`           | The reported defect requires evidence and root-cause tracing.         |
 | 8    | `code-testing-discipline`        | The defect must first be reproduced with a focused failing test.      |
 | 8    | `code-implementation-discipline` | The causal code owner must be corrected.                              |
@@ -33,6 +34,7 @@ This document is the human-readable governance view. The standalone CLI embeds t
 | 16   | `code-implementation-discipline` | The causal persisted-state owner must be corrected.                   |
 | 17   | `document-update-discipline`     | The living plan must incorporate completed clear-all evidence.        |
 | 19   | `skill-authoring-discipline`     | The scenario-created preparedness-message skill is revised.           |
+| 19   | `document-update-discipline`     | The existing skill document must be revised coherently.               |
 | 20   | `prompt-writing`                 | The turn requests a self-contained accessibility-review prompt.       |
 | 21   | `code-implementation-discipline` | The accessibility improvements are implemented in the interface.      |
 | 22   | `code-testing-discipline`        | The changed interaction and print behavior receives focused tests.    |

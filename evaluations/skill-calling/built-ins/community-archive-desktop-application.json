@@ -176,6 +176,10 @@
         "skill": "skill-authoring-discipline"
       },
       {
+        "turn_id": "turn-8",
+        "skill": "document-update-discipline"
+      },
+      {
         "turn_id": "turn-9",
         "skill": "systematic-debugging"
       },
@@ -242,6 +246,10 @@
       {
         "turn_id": "turn-19",
         "skill": "skill-authoring-discipline"
+      },
+      {
+        "turn_id": "turn-19",
+        "skill": "document-update-discipline"
       },
       {
         "turn_id": "turn-20",

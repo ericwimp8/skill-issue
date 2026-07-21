@@ -6,9 +6,11 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/ericwimp8/skill-issue/cli/internal/harness"
 	"github.com/ericwimp8/skill-issue/cli/internal/replay"
+	"github.com/ericwimp8/skill-issue/cli/internal/runstate"
 )
 
 func TestCustomInputsUseExistingScenarioAndAnswerShapes(t *testing.T) {
@@ -60,9 +62,9 @@ func TestBuiltInIdentifierLoadsScenarioAndAnswerTogether(t *testing.T) {
 		turns    int
 		expected int
 	}{
-		"gardening-web-application":                   {turns: 30, expected: 44},
-		"community-archive-desktop-application":       {turns: 30, expected: 44},
-		"neighborhood-emergency-preparedness-program": {turns: 30, expected: 43},
+		"gardening-web-application":                   {turns: 30, expected: 46},
+		"community-archive-desktop-application":       {turns: 30, expected: 46},
+		"neighborhood-emergency-preparedness-program": {turns: 30, expected: 45},
 	}
 	for identifier, shape := range shapes {
 		t.Run(identifier, func(t *testing.T) {
@@ -106,19 +108,63 @@ func TestWebsiteResultPreservesOrderAndDoesNotInflateRepeatedCalls(t *testing.T)
 			{TurnID: "opening", Skill: "plan-maintenance"},
 			{TurnID: "opening", Skill: "plan-maintenance"},
 			{TurnID: "opening", Skill: "document-update-discipline"},
+			{TurnID: "opening", Skill: "prompt-writing"},
+			{TurnID: "opening", Skill: "prompt-writing"},
+			{TurnID: "finish", Skill: "prompt-writing"},
+			{TurnID: "finish", Skill: "prompt-writing"},
+		},
+		Additional: []SkillCall{
+			{TurnID: "opening", Skill: "prompt-writing"},
+			{TurnID: "opening", Skill: "prompt-writing"},
+			{TurnID: "finish", Skill: "prompt-writing"},
 			{TurnID: "finish", Skill: "prompt-writing"},
 		},
 	}
 
 	website := deriveWebsiteResult(result, scenario)
-	if website.TotalTurns != 4 || len(website.Points) != 2 {
+	if website.SchemaVersion != 2 || website.TotalTurns != 4 || len(website.Points) != 3 {
 		t.Fatalf("unexpected website shape: %#v", website)
 	}
-	if website.Points[0] != (WebsitePoint{Turn: 1, TurnID: "opening", Called: 2, Missed: 0}) {
+	if website.Points[0] != (WebsitePoint{Turn: 1, TurnID: "opening", Called: 2, Missed: 0, Unexpected: 1}) {
 		t.Fatalf("unexpected opening point: %#v", website.Points[0])
 	}
 	if website.Points[1] != (WebsitePoint{Turn: 3, TurnID: "review-step", Called: 0, Missed: 1}) {
 		t.Fatalf("unexpected review point: %#v", website.Points[1])
+	}
+	if website.Points[2] != (WebsitePoint{Turn: 4, TurnID: "finish", Unexpected: 1}) {
+		t.Fatalf("unexpected finish point: %#v", website.Points[2])
+	}
+}
+
+func TestWebsiteResultProjectsAdditionalCallsAsUnexpected(t *testing.T) {
+	scenario := replay.Scenario{
+		SchemaVersion: 1,
+		ID:            "custom",
+		Turns: []replay.Turn{
+			{ID: "expected", Prompt: "one"},
+			{ID: "unexpected", Prompt: "two"},
+		},
+	}
+	result := deriveResult(
+		"run",
+		RunRequest{Harness: harness.Codex, Model: "model", Reasoning: "medium"},
+		"evaluation",
+		scenario.ID,
+		time.Now(),
+		[]SkillCall{{TurnID: "expected", Skill: "prompt-writing"}},
+		[]runstate.Event{
+			{TurnID: "unexpected", Skill: "prompt-writing", Attributed: true},
+			{TurnID: "unexpected", Skill: "prompt-writing", Attributed: true},
+			{TurnID: "unexpected", Skill: "document-update-discipline"},
+		},
+	)
+
+	website := deriveWebsiteResult(result, scenario)
+	if len(result.Additional) != 2 || len(result.Unattributed) != 1 {
+		t.Fatalf("unexpected detailed classification: %#v", result)
+	}
+	if len(website.Points) != 2 || website.Points[1] != (WebsitePoint{Turn: 2, TurnID: "unexpected", Unexpected: 1}) {
+		t.Fatalf("unexpected website projection: %#v", website)
 	}
 }
 
@@ -223,7 +269,7 @@ func TestToolingCompleteRunWritesWebsiteArtifact(t *testing.T) {
 	if err := json.Unmarshal(data, &website); err != nil {
 		t.Fatal(err)
 	}
-	if website.RunID != result.RunID || website.TotalTurns != 1 || len(website.Points) != 1 {
+	if website.SchemaVersion != 2 || website.RunID != result.RunID || website.TotalTurns != 1 || len(website.Points) != 1 {
 		t.Fatalf("unexpected website file: %#v", website)
 	}
 	if _, err := os.Stat(filepath.Join(output, ".skill-issue", "runs", result.RunID, "run.json")); !os.IsNotExist(err) {

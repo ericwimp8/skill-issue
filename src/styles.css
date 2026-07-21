@@ -1592,10 +1592,6 @@ h1 {
 }
 
 .scenario-transcript header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-4);
   margin-bottom: var(--space-3);
 }
 
@@ -1608,21 +1604,34 @@ h1 {
   text-transform: uppercase;
 }
 
-.scenario-transcript header > div {
+.scenario-expected-skills {
+  margin-top: var(--space-2);
+}
+
+.scenario-expected-skills > span {
+  display: block;
+  margin-bottom: var(--space-2);
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.scenario-expected-skills > div {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
   gap: var(--space-2);
 }
 
 .scenario-transcript code,
 .scenario-transcript small {
-  padding: 0.2rem 0.4rem;
+  padding: 0.3rem 0.52rem;
   border: 1px solid var(--color-line);
   border-radius: 0.35rem;
   color: var(--color-text-muted);
   font-family: var(--font-mono);
-  font-size: 0.62rem;
+  font-size: 0.72rem;
 }
 
 .scenario-transcript p {
@@ -2096,14 +2105,6 @@ h1 {
   .methodology-record-actions {
     align-items: flex-start;
     flex-direction: row;
-    justify-content: flex-start;
-  }
-
-  .scenario-transcript header {
-    flex-direction: column;
-  }
-
-  .scenario-transcript header > div {
     justify-content: flex-start;
   }
 

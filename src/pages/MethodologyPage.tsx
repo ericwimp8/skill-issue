@@ -26,14 +26,17 @@ function ScenarioReader({ scenario }: { scenario: MethodologyScenario }) {
         <li key={turn.turn_id}>
           <header>
             <span>Turn {index + 1}</span>
-            <div aria-label={`Expected calls for turn ${index + 1}`}>
-              {turn.expectedSkills.length > 0 ? (
-                turn.expectedSkills.map((skill) => (
-                  <code key={skill}>{skill}</code>
-                ))
-              ) : (
-                <small>No expected skill call</small>
-              )}
+            <div className="scenario-expected-skills">
+              <span>Expected skills</span>
+              <div aria-label={`Expected skills for turn ${index + 1}`}>
+                {turn.expectedSkills.length > 0 ? (
+                  turn.expectedSkills.map((skill) => (
+                    <code key={skill}>{skill}</code>
+                  ))
+                ) : (
+                  <small>No expected skill call</small>
+                )}
+              </div>
             </div>
           </header>
           <p>{turn.prompt}</p>

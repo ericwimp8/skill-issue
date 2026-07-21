@@ -66,7 +66,7 @@ The built-in identifiers are:
 - `community-archive-desktop-application`
 - `neighborhood-emergency-preparedness-program`
 
-Each contains one complete 30-turn governed scenario and its matching expected invocations. Turns 13, 18, and 24 intentionally contain small factual reminders with no expected invocation; the remaining governed points continue through the final turn. The gardening and archive scenarios each contain 44 expected invocations; the preparedness scenario contains 43. For example:
+Each contains one complete 30-turn governed scenario and its matching expected invocations. Turns 13, 18, and 24 intentionally contain small factual reminders with no expected invocation; the remaining governed points continue through the final turn. The gardening and archive scenarios each contain 46 expected invocations; the preparedness scenario contains 45. For example:
 
 ```sh
 skill-issue evaluate run \
@@ -189,7 +189,7 @@ Warnings are written to standard error so the CLI's structured standard output r
 
 ```json
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "run_id": "<run ID>",
   "scenario_id": "<scenario ID>",
   "harness": "<harness ID>",
@@ -200,15 +200,16 @@ Warnings are written to standard error so the CLI's structured standard output r
       "turn": 1,
       "turn_id": "turn-1",
       "called": 2,
-      "missed": 0
+      "missed": 0,
+      "unexpected": 1
     }
   ]
 }
 ```
 
-The metadata comes from the same evaluated result and scenario used for `result.json`. `total_turns` is the number of ordered scenario turns. A point exists only when its turn has at least one expected call. `turn` is that turn's one-based position in the scenario, while `turn_id` preserves the source identifier even when it is nonnumeric. `called` counts unique expected skills observed on their expected turn, and `missed` counts unique expected skills absent there; repeated signal events do not inflate either value. Sample size is derived by summing `called + missed` and is not stored separately.
+The metadata comes from the same evaluated result and scenario used for `result.json`. `total_turns` is the number of ordered scenario turns. A point exists when its turn has at least one expected or unexpected call. `turn` is that turn's one-based position in the scenario, while `turn_id` preserves the source identifier even when it is nonnumeric. `called` counts unique expected skills observed on their expected turn, `missed` counts unique expected skills absent there, and `unexpected` counts unique additional skills observed on that turn. Repeated signal events for the same skill and turn do not inflate any count. Sample size is derived by summing `called + missed + unexpected` and is not stored separately.
 
-The compact artifact does not duplicate skill names, additional calls, unattributed calls, transcripts, or raw events. The later website uses numeric `turn` values for its horizontal axis and `called` and `missed` as its Recharts series; detailed interpretation continues to use `result.json` and any optional diagnostic artifacts the evaluator deliberately enabled.
+The compact artifact does not duplicate skill names, unattributed calls, transcripts, or raw events. Its `unexpected` count is the compact projection of detailed `additional` calls. Detailed interpretation continues to use `result.json` and any optional diagnostic artifacts the evaluator deliberately enabled.
 
 ## Output Storage and Recovery
 

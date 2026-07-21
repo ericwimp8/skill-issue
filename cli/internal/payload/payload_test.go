@@ -67,9 +67,9 @@ func TestBuiltInEvaluationsAreComplete(t *testing.T) {
 		turns    int
 		expected int
 	}{
-		"gardening-web-application":                   {turns: 30, expected: 44},
-		"community-archive-desktop-application":       {turns: 30, expected: 44},
-		"neighborhood-emergency-preparedness-program": {turns: 30, expected: 43},
+		"gardening-web-application":                   {turns: 30, expected: 46},
+		"community-archive-desktop-application":       {turns: 30, expected: 46},
+		"neighborhood-emergency-preparedness-program": {turns: 30, expected: 45},
 	}
 	for identifier, shape := range shapes {
 		t.Run(identifier, func(t *testing.T) {

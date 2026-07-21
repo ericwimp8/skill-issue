@@ -22,6 +22,7 @@ This document is the human-readable governance view. The standalone CLI embeds t
 | 9    | `code-testing-discipline`        | The turn strengthens and runs focused boundary tests.                |
 | 9    | `code-implementation-discipline` | Strengthening automated test code is a code edit.                    |
 | 10   | `skill-authoring-discipline`     | The turn creates a reusable portable skill.                          |
+| 10   | `document-update-discipline`     | Creating the skill requires a coherent new skill document.           |
 | 11   | `system-change-ownership`        | The date rule needs one authoritative system owner.                  |
 | 11   | `code-implementation-discipline` | The ownership decision is implemented across code callers.           |
 | 12   | `prompt-writing`                 | The turn requests a concise fresh-agent handoff prompt.              |
@@ -34,6 +35,7 @@ This document is the human-readable governance view. The standalone CLI embeds t
 | 16   | `code-implementation-discipline` | The causal schedule owner must be corrected.                         |
 | 17   | `document-update-discipline`     | The living plan must incorporate completed snooze evidence.          |
 | 19   | `skill-authoring-discipline`     | The scenario-created interface-copy skill is revised.                |
+| 19   | `document-update-discipline`     | The existing skill document must be revised coherently.              |
 | 20   | `prompt-writing`                 | The turn requests a self-contained accessibility-review prompt.      |
 | 21   | `code-implementation-discipline` | The accessibility improvements are implemented in the interface.     |
 | 22   | `code-testing-discipline`        | The changed interaction behavior receives focused tests.             |

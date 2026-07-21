@@ -146,10 +146,11 @@ type Result struct {
 }
 
 type WebsitePoint struct {
-	Turn   int    `json:"turn"`
-	TurnID string `json:"turn_id"`
-	Called int    `json:"called"`
-	Missed int    `json:"missed"`
+	Turn       int    `json:"turn"`
+	TurnID     string `json:"turn_id"`
+	Called     int    `json:"called"`
+	Missed     int    `json:"missed"`
+	Unexpected int    `json:"unexpected"`
 }
 
 type WebsiteResult struct {
@@ -1027,27 +1028,38 @@ func deriveWebsiteResult(result Result, scenario replay.Scenario) WebsiteResult 
 	for _, call := range result.Observed {
 		observed[call.TurnID+"\x00"+call.Skill] = struct{}{}
 	}
-	points := make([]WebsitePoint, 0, len(expectedByTurn))
+	unexpectedByTurn := make(map[string]map[string]struct{})
+	for _, call := range result.Additional {
+		skills := unexpectedByTurn[call.TurnID]
+		if skills == nil {
+			skills = make(map[string]struct{})
+			unexpectedByTurn[call.TurnID] = skills
+		}
+		skills[call.Skill] = struct{}{}
+	}
+	points := make([]WebsitePoint, 0, len(expectedByTurn)+len(unexpectedByTurn))
 	for index, turn := range scenario.Turns {
-		skills := expectedByTurn[turn.ID]
-		if len(skills) == 0 {
+		expectedSkills := expectedByTurn[turn.ID]
+		unexpectedSkills := unexpectedByTurn[turn.ID]
+		if len(expectedSkills) == 0 && len(unexpectedSkills) == 0 {
 			continue
 		}
 		called := 0
-		for skill := range skills {
+		for skill := range expectedSkills {
 			if _, ok := observed[turn.ID+"\x00"+skill]; ok {
 				called++
 			}
 		}
 		points = append(points, WebsitePoint{
-			Turn:   index + 1,
-			TurnID: turn.ID,
-			Called: called,
-			Missed: len(skills) - called,
+			Turn:       index + 1,
+			TurnID:     turn.ID,
+			Called:     called,
+			Missed:     len(expectedSkills) - called,
+			Unexpected: len(unexpectedSkills),
 		})
 	}
 	return WebsiteResult{
-		SchemaVersion: 1,
+		SchemaVersion: 2,
 		RunID:         result.RunID,
 		ScenarioID:    result.ScenarioID,
 		Harness:       result.Harness,

@@ -196,6 +196,10 @@
         "skill": "skill-authoring-discipline"
       },
       {
+        "turn_id": "turn-10",
+        "skill": "document-update-discipline"
+      },
+      {
         "turn_id": "turn-11",
         "skill": "system-change-ownership"
       },
@@ -242,6 +246,10 @@
       {
         "turn_id": "turn-19",
         "skill": "skill-authoring-discipline"
+      },
+      {
+        "turn_id": "turn-19",
+        "skill": "document-update-discipline"
       },
       {
         "turn_id": "turn-20",

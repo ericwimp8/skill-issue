@@ -22,6 +22,12 @@ const destinationHashes: Record<Destination, string> = {
   analysis: '#analysis',
 };
 
+const methodologyHashes = new Set([
+  destinationHashes.method,
+  '#method-scenarios',
+  '#method-skills',
+]);
+
 function routeFromHash(): RouteState {
   if (window.location.hash === '#build-skills') {
     return { destination: 'explore', productArm: 'build' };
@@ -31,7 +37,7 @@ function routeFromHash(): RouteState {
     return { destination: 'project', productArm: 'evaluate' };
   }
 
-  if (window.location.hash === '#method') {
+  if (methodologyHashes.has(window.location.hash)) {
     return { destination: 'method', productArm: 'evaluate' };
   }
 
@@ -54,6 +60,15 @@ export function App() {
       window.removeEventListener('popstate', syncRoute);
     };
   }, []);
+
+  useEffect(() => {
+    if (!methodologyHashes.has(window.location.hash)) {
+      return;
+    }
+
+    const targetId = window.location.hash.slice(1);
+    document.getElementById(targetId)?.scrollIntoView();
+  }, [route.destination, route.productArm]);
 
   function selectProductArm(productArm: ProductArm) {
     const hash =

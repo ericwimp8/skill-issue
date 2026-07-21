@@ -841,6 +841,14 @@ func pathInsideWorkspace(workspace, candidate string) (bool, error) {
 	if workspace == "" {
 		return false, nil
 	}
+	candidate, err := filepath.Abs(candidate)
+	if err != nil {
+		return false, fmt.Errorf("resolve custom answer sheet: %w", err)
+	}
+	workspace, err = filepath.Abs(workspace)
+	if err != nil {
+		return false, fmt.Errorf("resolve evaluation workspace: %w", err)
+	}
 	resolvedWorkspace, err := filepath.EvalSymlinks(workspace)
 	if err != nil {
 		return false, fmt.Errorf("resolve evaluation workspace: %w", err)

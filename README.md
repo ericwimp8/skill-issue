@@ -148,4 +148,12 @@ Generated skill examples are discovered at build time from `showcase-skills/*/sk
 
 Website evaluation artifact types, display labels, adaptation, and temporary illustrative results live in `src/data/evaluationData.ts`. `src/components/EvaluationExplorer.tsx` owns selection and filtering, while the components under `src/components/charts/` own the individual chart presentations. Published result data must come from the accepted evaluation artifacts and campaign evidence rather than hand-authored chart values.
 
+After the acceptance layer identifies the exact runs to publish, load their compact artifacts into the static site with:
+
+```sh
+npm run results:update -- output/run-one/website.json output/run-two/website.json
+```
+
+The command validates the website artifact envelope and writes the selected collection to `src/data/publishedWebsiteArtifacts.json`. An empty collection keeps the illustrative mock campaign visible. The chart adapter and presentation stay unchanged when accepted artifacts replace it.
+
 Replace the release URL in the same data file when the first CLI artifact is published through GitHub Releases. Keep binaries in Releases rather than the Pages build.

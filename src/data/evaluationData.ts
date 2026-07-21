@@ -1,3 +1,5 @@
+import publishedWebsiteArtifacts from './publishedWebsiteArtifacts.json';
+
 export type WebsiteEvaluationPoint = {
   turn: number;
   turn_id: string;
@@ -226,8 +228,12 @@ export function adaptWebsiteArtifacts(
 }
 
 export const illustrativeWebsiteResults = createIllustrativeArtifacts();
+export const publishedWebsiteResults =
+  publishedWebsiteArtifacts as WebsiteEvaluationArtifact[];
 export const evaluationResults = adaptWebsiteArtifacts(
-  illustrativeWebsiteResults,
+  publishedWebsiteResults.length > 0
+    ? publishedWebsiteResults
+    : illustrativeWebsiteResults,
 );
 
 export const availableCells = evaluationResults

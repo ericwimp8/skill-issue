@@ -206,9 +206,18 @@ func evaluationRunRequest(options map[string]string) (evaluation.RunRequest, err
 		return evaluation.RunRequest{}, err
 	}
 	evaluationID := options["evaluation"]
-	skills := options["skills"]
-	scenario := options["scenario"]
-	answer := options["answer-sheet"]
+	skills, err := optionalAbsolutePath(options, "skills")
+	if err != nil {
+		return evaluation.RunRequest{}, err
+	}
+	scenario, err := optionalAbsolutePath(options, "scenario")
+	if err != nil {
+		return evaluation.RunRequest{}, err
+	}
+	answer, err := optionalAbsolutePath(options, "answer-sheet")
+	if err != nil {
+		return evaluation.RunRequest{}, err
+	}
 	turnLimit, err := optionalPositiveInteger(options, "turns")
 	if err != nil {
 		return evaluation.RunRequest{}, err
@@ -239,6 +248,18 @@ func evaluationRunRequest(options map[string]string) (evaluation.RunRequest, err
 		TurnLimit:          turnLimit,
 	}
 	return evaluation.PrepareRequest(request)
+}
+
+func optionalAbsolutePath(options map[string]string, key string) (string, error) {
+	value := options[key]
+	if value == "" {
+		return "", nil
+	}
+	absolute, err := filepath.Abs(value)
+	if err != nil {
+		return "", fmt.Errorf("resolve --%s: %w", key, err)
+	}
+	return absolute, nil
 }
 
 func optionalPositiveInteger(options map[string]string, key string) (int, error) {

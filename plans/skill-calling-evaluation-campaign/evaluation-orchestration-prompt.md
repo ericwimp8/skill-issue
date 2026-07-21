@@ -2,7 +2,7 @@
 
 ## Goal
 
-Execute the complete skill-calling evaluation campaign tracked in `evaluation-progress.md` as quickly as its dependency and safety boundaries allow. Run the governed evaluations through the known-good Skill Issue CLI, retain the required evidence, keep the progress document current, and manage parallel evaluation commands without allowing shared-state collisions.
+Execute the complete skill-calling evaluation campaign tracked in `evaluation-progress.md` as quickly as its dependency and safety boundaries allow. Run the governed evaluations through the known-good Skill Issue CLI from fresh neutral workspaces, retain the required evidence, keep the progress document current, and manage parallel evaluation commands without allowing shared-state collisions or ambient project context to enter a harness conversation.
 
 ## Authoritative Sources
 
@@ -25,7 +25,7 @@ The campaign is complete only when:
 - every result records the exact harness version, effective model identifier, and reasoning setting;
 - instrumentation, session continuity, workspace effects, process ownership, and cleanup are tooling-complete;
 - all configuration headings, run entries, summary counts, percentages, dates, notes, failures, blockers, attempts, and result links in `evaluation-progress.md` match the retained evidence; and
-- no evaluation command session, temporary skill installation, private recovery state, or run-owned harness process remains.
+- no evaluation command session, temporary skill installation, private recovery state, run-owned workspace contents, or run-owned harness process remains.
 
 Do not report the campaign as complete while any run remains pending, running, failed, or blocked.
 
@@ -34,7 +34,8 @@ Do not report the campaign as complete while any run remains pending, running, f
 You may:
 
 - run the known-good local CLI;
-- create isolated evaluation workspaces outside the repository;
+- create isolated neutral workspaces beneath an adjacent `chats/` directory outside the repository;
+- create the neutral `chats/` parent when absent and remove contents only from a positively identified campaign-owned `chat-<number>` workspace;
 - write disposable evaluation artifacts beneath repository-root `output/`;
 - start, monitor, and coordinate evaluation CLI processes directly;
 - inspect non-secret executable, version, model, process, artifact, and cleanup evidence;
@@ -50,6 +51,7 @@ Do not:
 - delete or reset an existing harness installation;
 - add backup, rollback, repair, or machine-cleanup machinery;
 - weaken an evaluator-owned harness sandbox, approval policy, isolation control, or permission profile;
+- place orchestration instructions, Git metadata, repository files, retained results, or descriptive evaluation labels inside a harness workspace;
 - allow concurrent progress-document edits from separate threads or processes; or
 - infer a successful evaluation from process exit alone when required artifacts or cleanup evidence are missing.
 
@@ -73,12 +75,48 @@ Act as the campaign orchestrator, process monitor, and progress-document writer.
 - Keep at most six evaluation commands active simultaneously.
 - Retain the process or terminal session identifier for every active command so it can be monitored to completion.
 - Launch each command for exactly one matrix evaluation unless a bounded smoke gate explicitly groups two sequential smoke routes.
-- Give every evaluation a unique external temporary Git workspace and a distinct output root such as `output/skill-calling-evaluation-campaign/<evaluation-id>/`.
+- Give every smoke attempt, full run, and rerun its own newly allocated neutral workspace under the adjacent `chats/` root and a distinct retained output root such as `output/skill-calling-evaluation-campaign/<evaluation-id>/`.
 - Never run two evaluations in the same workspace or output location.
 - Fill open process capacity with any eligible pending evaluation whose configuration gate and dependencies are satisfied.
 - Inspect command output and retained artifacts directly, then serialize progress-document edits as runs finish.
 - Reuse a process slot only after the command has ended and process, temporary-skill, private-state, and workspace cleanup are verified.
 - If several main Codex threads participate, assign disjoint evaluation IDs and output roots to each thread and designate one thread as the only progress-document writer.
+
+### Neutral Workspace Allocation
+
+Resolve the repository root first, then use exactly one neutral workspace parent at `<repository-parent>/chats`. Create it when absent. The `chats/` directory is outside the Skill Issue repository and must not be a Git repository or contain orchestration instructions.
+
+Allocate workspaces serially before launching commands:
+
+1. Inspect only the immediate child directory names beneath `chats/`.
+2. Choose the next unused positive integer after the highest existing `chat-<number>` directory, starting with `chat-1` when none exist.
+3. Create exactly one new `<repository-parent>/chats/chat-<number>` directory for the run.
+4. Verify the new directory is empty and contains no `.git`, `AGENTS.md`, `CLAUDE.md`, rules, configuration, results, or files from another run.
+5. Pass that exact directory through the CLI's required `--workspace` argument. Do not rely on the orchestrator's current working directory to select the harness workspace.
+6. Keep retained output outside the workspace under repository-root `output/`. The CLI writes artifacts directly to the selected output root; do not copy results through the neutral workspace.
+7. After evidence capture, command completion, and evaluator cleanup, canonicalize the workspace path again and prove it is the allocated child of the neutral `chats/` parent. Only then remove every run-created file and directory inside `chat-<number>`, including workspace effects and temporary harness material. Retain the now-empty numbered directory so its number is never reused.
+
+The neutral name is deliberate. Do not include evaluation IDs, scenario names, harness names, model names, `eval`, `evaluation`, `test`, `skill`, or `skill-issue` in a workspace directory name. Supply only the assigned `chat-<number>` as the evaluation workspace. Directory placement and neutral naming reduce ambient context but do not themselves prove filesystem confinement. The qualified runtime must separately prevent the harness from reading sibling chat directories, the `chats/` parent, or the Skill Issue repository except for evaluator-owned paths required for skills, instrumentation, authentication, and retained output.
+
+### Workspace Smoke Gate
+
+Before starting or reopening a harness campaign lane, prove its current configuration with the smallest applicable smoke route in a newly allocated `chat-<number>` workspace. Use the existing two-turn built-in or custom smoke inputs selected by the campaign configuration; do not turn a smoke into a full campaign run.
+
+- Confirm the pre-run summary shows the newly allocated workspace and the intended external output root before accepting the command.
+- Confirm from production runtime configuration and a bounded probe that the harness cannot read the `chats/` parent, sibling chat directories, or the Skill Issue repository through its available file and shell tools. Do not infer confinement from the process working directory. Run this probe in its own disposable `chat-<number>` session, then clean and close it; never reuse the probe workspace or session for a scored smoke or campaign run.
+- Require turn progress, one stable resumable session, expected instrumentation, required artifacts, workspace effects, and complete evaluator cleanup.
+- Inspect the emptied workspace after cleanup and retain its numbered directory.
+- When a smoke fails, diagnose the concrete production-source or configuration owner, make only a portable correction within the authority boundary, allocate another new `chat-<number>`, and rerun the bounded smoke.
+- Continue this diagnose-correct-new-workspace cycle until the route passes or reaches a genuine user-action blocker. Do not repeat an unchanged failed command, weaken isolation, or reuse its workspace.
+- If the harness exposes an unconfined file or shell route and no already-qualified portable runtime control closes it, mark that lane `Blocked`. Do not run its campaign evaluations on the assumption that a neutral workspace path is sufficient isolation.
+
+## Adjacent Workspace Command Permission Rule
+
+The neutral `chats/` parent is deliberately adjacent to and outside the repository. When the orchestrator itself is running inside Codex, its ordinary repository `workspace-write` sandbox cannot create, populate, or clean those sibling directories.
+
+For every workspace-allocation command, governed evaluation command, smoke command, confinement probe, and workspace-cleanup command that must access `<repository-parent>/chats`, request command-scoped outer-sandbox escalation for that exact command. State that the Skill Issue evaluator needs access only to the newly allocated adjacent neutral workspace. Keep the harness's qualified inner sandbox, approval policy, controlled environment, model, reasoning, executable routing, output root, and evaluator cleanup unchanged.
+
+Do not request a reusable destructive-command approval, a broad shell prefix, `danger-full-access` inside a harness, or permission for the harness to read the `chats/` parent or sibling workspaces. Canonicalize and verify the exact `chat-<number>` path before cleanup. If outer escalation is denied, mark the attempt `Blocked`, leave unrelated workspaces untouched, and continue other eligible work.
 
 ## Required Opening Lane: Claude Code With Codex
 
@@ -100,7 +138,7 @@ Before any Claude Code — Fable campaign run:
 2. Confirm that the normal route does not inherit the project-local Codex proxy URL, proxy token, isolated `CLAUDE_CONFIG_DIR`, or forced Codex model aliases.
 3. Resolve the exact available Fable model identifier and medium reasoning control from the installed CLI and supported account. Record both in the progress document.
 4. If normal Claude Code installation, authentication, or model selection requires user action, mark Claude Code — Fable blocked and request that action. Do not install, authenticate, or rewrite user configuration autonomously.
-5. Run these smoke commands sequentially against the normal Claude Code executable in separate external workspaces and output locations:
+5. Run these smoke commands sequentially against the normal Claude Code executable in separate newly allocated `chat-<number>` workspaces and output locations:
    - the built-in gardening evaluation truncated to two turns;
    - the existing two-turn custom smoke using `evaluations/skill-calling/smoke/custom-skills/`, `custom-scenario.json`, and `custom-answer-sheet.json`.
 6. Require both smoke routes to complete with artifacts, one stable session per route, expected workspace effects, temporary-skill cleanup, private-state cleanup, and no run-owned Claude process before opening the Fable campaign lane.
@@ -108,7 +146,7 @@ Before any Claude Code — Fable campaign run:
 
 ## OpenAI Codex Command Permission Rule
 
-Every OpenAI Codex harness evaluation launched from Codex must request command-scoped outer-sandbox escalation for the exact known-good evaluation command.
+Every OpenAI Codex harness evaluation launched from Codex must request command-scoped outer-sandbox escalation for the exact known-good evaluation command. This is the same exact-command escalation required for the adjacent workspace, with the additional Codex authentication requirement below; do not launch the evaluation twice.
 
 Launch the command with:
 
@@ -127,15 +165,16 @@ Before launching each command, resolve and record:
 - the repository path and required authoritative files;
 - the known-good CLI requirement;
 - the exact harness executable or qualified launcher when it is intentionally absent from `PATH`;
-- a unique external workspace and unique retained output root;
+- the next newly allocated empty `<repository-parent>/chats/chat-<number>` workspace and a unique retained output root outside it;
 - the command-confirmation requirement after checking the CLI pre-run summary;
 - the OpenAI Codex escalation rule when applicable;
+- the adjacent-workspace exact-command escalation rule when the orchestrator runs inside Codex;
 - the expected artifacts and evidence to retain;
-- the cleanup checks required before reusing the process slot;
+- the cleanup checks required before reusing the process slot, including proving the numbered workspace is empty;
 - the prohibition on changing tracked files other than serialized campaign-progress updates; and
 - the stop boundary for authentication, permission, model, protocol, artifact, process, or cleanup failures.
 
-After completion, capture the exact run directory, run ID, harness version, effective model and reasoning, start and completion times, expected/observed/missing/additional/unattributed calls, artifact paths, workspace effects, session-continuity evidence, cleanup evidence, and pass/fail classification.
+After completion, capture the exact run directory, run ID, harness version, effective model and reasoning, start and completion times, expected/observed/missing/additional/unattributed calls, artifact paths, workspace effects, session-continuity evidence, empty-workspace cleanup evidence, and pass/fail classification. Do not record the neutral workspace path in model-visible prompts or generated skills.
 
 ## Progress Update Procedure
 
@@ -168,6 +207,7 @@ Use `apply_patch` for progress updates and run `npm run format:check` after Mark
 - Never repair authentication, mutate global configuration, delete user state, or broaden permissions to keep the queue moving.
 - When one lane blocks, keep all independent eligible lanes running up to the six-command limit.
 - If cleanup is incomplete, stop scheduling that harness until owned-process and temporary-state boundaries are restored.
+- If a numbered workspace is not empty after evaluator cleanup, stop scheduling that workspace, inspect only run-owned contents, complete evidence capture, verify the canonical campaign-owned path, clear its contents, and never assign that directory again.
 
 ## Final Report
 
@@ -178,7 +218,8 @@ When the campaign reaches a terminal state, report:
 - exact effective harness/model/reasoning combinations;
 - Claude Code route-transition and smoke-gate evidence;
 - any unresolved user-action blockers;
-- cleanup status across all harnesses; and
+- cleanup status across all harnesses;
+- neutral workspace allocation, confinement proof, and empty-workspace cleanup status; and
 - whether the campaign actually reached 30/30 complete.
 
 Do not publish, aggregate into website data, commit, push, or delete the campaign working documents unless the user separately requests it.

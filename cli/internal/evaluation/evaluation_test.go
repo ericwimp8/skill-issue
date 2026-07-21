@@ -323,3 +323,26 @@ func TestPrepareRequestCachesInputsForTheRun(t *testing.T) {
 		t.Fatalf("re-prepared request lost its cached inputs: %#v", again)
 	}
 }
+
+func TestCustomInputPathsMayBeRelative(t *testing.T) {
+	directory := t.TempDir()
+	workspace := filepath.Join(directory, "workspace")
+	if err := os.Mkdir(workspace, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	writeSkillFixture(t, filepath.Join(directory, "skills"), "prompt-writing")
+	writeJSONFixture(t, filepath.Join(directory, "scenario.json"), map[string]any{
+		"schema_version": 1,
+		"scenario_id":    "custom",
+		"turns":          []map[string]string{{"turn_id": "turn-1", "prompt": "Write a concise prompt."}},
+	})
+	writeJSONFixture(t, filepath.Join(directory, "answer.json"), map[string]any{
+		"schema_version": 1,
+		"scenario_id":    "custom",
+		"expected":       []map[string]string{{"turn_id": "turn-1", "skill": "prompt-writing"}},
+	})
+	t.Chdir(directory)
+	if _, _, err := loadInputs(RunRequest{Workspace: workspace, SkillsPath: "skills", ScenarioPath: "scenario.json", AnswerSheet: "answer.json"}); err != nil {
+		t.Fatalf("relative custom input paths were rejected: %v", err)
+	}
+}

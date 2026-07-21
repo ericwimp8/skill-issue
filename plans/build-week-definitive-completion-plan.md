@@ -375,6 +375,9 @@ configurations.
 
 ## 6. CLI Distribution And GitHub Pages
 
+- [x] Add automatic website validation for pushes and pull requests.
+- [x] Add a manually triggered GitHub Pages build and deployment workflow so
+      publication remains explicit while the website is unfinished.
 - [ ] Produce the intended downloadable CLI artifacts from the accepted release
       revision.
 - [ ] Verify each published CLI artifact's platform, architecture, version, and

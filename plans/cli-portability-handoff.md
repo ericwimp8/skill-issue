@@ -11,8 +11,7 @@ The Skill Issue CLI (`cli/`, Go, module root at the repository root) installs ca
 - `AGENTS.md` — CLI channel discipline, evaluation routing, output placement, planning-document policy.
 - `.repository-privacy.md` — never record machine-specific absolute paths in tracked files; build distributables with `-trimpath`; commit hooks must be installed (`scripts/setup-repository-hooks.sh`).
 - `cli/README.md` — commands, per-harness defaults, qualified versions, artifacts.
-- `plans/skill-calling-evaluation-campaign/hardening-orchestration-prompt.md` — the four-turn hardening run matrix, executable routes, environment requirements, failure classification, and every known operational trap. Treat its "Known Tips and Traps" section as hard-won fact.
-- `plans/skill-calling-evaluation-campaign/evaluation-orchestration-prompt.md` — campaign conventions (isolation, process ownership, the Codex outer-sandbox escalation rule if you are running inside Codex).
+- `plans/skill-calling-evaluation-campaign/campaign-orchestration-prompt.md` — the campaign's executable routes, environment requirements, model-identifier resolution, failure classification, and fail-fast rules. (It replaced the retired hardening and evaluation orchestration prompts; the hardening record survives in `hardening-report.md`.)
 
 ## State at Handoff
 

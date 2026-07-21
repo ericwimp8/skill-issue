@@ -30,9 +30,9 @@ Use one reasoning target across the campaign, or the closest documented harness-
 | ----------------------------- | -------: |
 | Configuration suites complete |     0/10 |
 | Evaluation runs complete      |     0/30 |
-| Evaluation runs pending       |    29/30 |
+| Evaluation runs pending       |    21/30 |
 | Evaluation runs failed        |        1 |
-| Evaluation runs blocked       |        0 |
+| Evaluation runs blocked       |        2 |
 | Overall completion            |       0% |
 
 ## Tracking Rules
@@ -48,28 +48,26 @@ Status values: `Pending`, `Running`, `Complete`, `Failed`, or `Blocked`.
 
 ## Execution Dependencies
 
-- Start the campaign with the Claude Code — Codex configuration. Run `CLA-COD-01`, `CLA-COD-02`, and `CLA-COD-03` sequentially in that order, with no overlap between them.
-- Other non-Claude-Code evaluations may run while the Claude Code — Codex sequence is active, subject to the campaign-wide limit of six simultaneous evaluation runs.
-- Do not start Claude Code — Fable until all three Claude Code — Codex evaluations are complete and the normal Claude Code route has passed its required smoke gate.
-- After that smoke gate passes, the three Claude Code — Fable evaluations may run concurrently with each other and with eligible non-Claude-Code evaluations.
+- All lanes except Claude Code — Fable start immediately and run in parallel, subject to the campaign-wide limit of six simultaneous evaluation runs, at most two concurrent Cursor runs, and at most one active `claude-code`-harness run.
+- Each configuration lane runs its three scenarios sequentially; a tooling failure closes the lane permanently with no retries.
+- Claude Code — Fable runs last, alone, only after every other lane is terminal and the Claude Code — Codex proxy is stopped and verified gone.
 - The campaign orchestrator starts and monitors evaluation commands directly and is the only writer of this progress document.
 - Every evaluation uses its own external workspace and its own retained output location.
 - OpenAI Codex evaluations launched from Codex require command-scoped outer-sandbox escalation for the exact known-good evaluation command. The nested evaluator-owned Codex sandbox and approval settings remain unchanged.
-- If several main Codex threads participate, assign disjoint evaluation IDs to each thread and designate one thread as the serialized progress-document writer.
 
-The adjacent `evaluation-orchestration-prompt.md` owns scheduling, command launch contracts, Claude Code route switching, smoke gates, failure handling, and progress-update procedure.
+The adjacent `campaign-orchestration-prompt.md` owns scheduling, command launch contracts, model-identifier resolution, fail-fast and halt rules, and the progress-update procedure.
 
 ## 1. Claude Code — Codex
 
 - [ ] **Configuration complete:** Claude Code — Codex — 0/3
 - [ ] **CLA-COD-01:** Gardening Web Application — Status: `Failed` — Attempts: 1 — Result: — Notes: Operator-requested interruption during turn 7; evaluator cleanup completed.
-- [ ] **CLA-COD-02:** Community Archive Desktop Application — Status: `Pending` — Attempts: 0 — Result: — Notes: —
-- [ ] **CLA-COD-03:** Neighborhood Emergency Preparedness Program — Status: `Pending` — Attempts: 0 — Result: — Notes: —
+- [ ] **CLA-COD-02:** Community Archive Desktop Application — Status: `Blocked` — Attempts: 0 — Result: — Notes: Lane closed permanently after `CLA-COD-01` failed under the campaign fail-fast rule.
+- [ ] **CLA-COD-03:** Neighborhood Emergency Preparedness Program — Status: `Blocked` — Attempts: 0 — Result: — Notes: Lane closed permanently after `CLA-COD-01` failed under the campaign fail-fast rule.
 
 ## 2. OpenAI Codex — GPT-5.6 Sol
 
 - [ ] **Configuration complete:** OpenAI Codex — GPT-5.6 Sol — 0/3
-- [ ] **COD-SOL-01:** Gardening Web Application — Status: `Pending` — Attempts: 0 — Result: — Notes: —
+- [ ] **COD-SOL-01:** Gardening Web Application — Status: `Running` — Attempts: 1 — Result: `<chats>/chat-6` — Notes: —
 - [ ] **COD-SOL-02:** Community Archive Desktop Application — Status: `Pending` — Attempts: 0 — Result: — Notes: —
 - [ ] **COD-SOL-03:** Neighborhood Emergency Preparedness Program — Status: `Pending` — Attempts: 0 — Result: — Notes: —
 
@@ -99,35 +97,35 @@ The adjacent `evaluation-orchestration-prompt.md` owns scheduling, command launc
 ### Grok
 
 - [ ] **Configuration complete:** Cursor — Grok — 0/3
-- [ ] **CUR-GRO-01:** Gardening Web Application — Status: `Pending` — Attempts: 0 — Result: — Notes: —
+- [ ] **CUR-GRO-01:** Gardening Web Application — Status: `Running` — Attempts: 1 — Result: `<chats>/chat-11` — Notes: Model `cursor-grok-4.5-medium`.
 - [ ] **CUR-GRO-02:** Community Archive Desktop Application — Status: `Pending` — Attempts: 0 — Result: — Notes: —
 - [ ] **CUR-GRO-03:** Neighborhood Emergency Preparedness Program — Status: `Pending` — Attempts: 0 — Result: — Notes: —
 
 ### Composer
 
 - [ ] **Configuration complete:** Cursor — Composer — 0/3
-- [ ] **CUR-COM-01:** Gardening Web Application — Status: `Pending` — Attempts: 0 — Result: — Notes: —
+- [ ] **CUR-COM-01:** Gardening Web Application — Status: `Running` — Attempts: 1 — Result: `<chats>/chat-10` — Notes: Model `composer-2.5`; fallback from the unavailable medium target.
 - [ ] **CUR-COM-02:** Community Archive Desktop Application — Status: `Pending` — Attempts: 0 — Result: — Notes: —
 - [ ] **CUR-COM-03:** Neighborhood Emergency Preparedness Program — Status: `Pending` — Attempts: 0 — Result: — Notes: —
 
 ## 5. Pi — Codex
 
 - [ ] **Configuration complete:** Pi — Codex — 0/3
-- [ ] **PI-COD-01:** Gardening Web Application — Status: `Pending` — Attempts: 0 — Result: — Notes: —
+- [ ] **PI-COD-01:** Gardening Web Application — Status: `Running` — Attempts: 1 — Result: `<chats>/chat-7` — Notes: —
 - [ ] **PI-COD-02:** Community Archive Desktop Application — Status: `Pending` — Attempts: 0 — Result: — Notes: —
 - [ ] **PI-COD-03:** Neighborhood Emergency Preparedness Program — Status: `Pending` — Attempts: 0 — Result: — Notes: —
 
 ## 6. OpenCode — Codex
 
 - [ ] **Configuration complete:** OpenCode — Codex — 0/3
-- [ ] **OPE-COD-01:** Gardening Web Application — Status: `Pending` — Attempts: 0 — Result: — Notes: —
+- [ ] **OPE-COD-01:** Gardening Web Application — Status: `Running` — Attempts: 1 — Result: `<chats>/chat-8` — Notes: —
 - [ ] **OPE-COD-02:** Community Archive Desktop Application — Status: `Pending` — Attempts: 0 — Result: — Notes: —
 - [ ] **OPE-COD-03:** Neighborhood Emergency Preparedness Program — Status: `Pending` — Attempts: 0 — Result: — Notes: —
 
 ## 7. Kilo Code — Codex
 
 - [ ] **Configuration complete:** Kilo Code — Codex — 0/3
-- [ ] **KIL-COD-01:** Gardening Web Application — Status: `Pending` — Attempts: 0 — Result: — Notes: —
+- [ ] **KIL-COD-01:** Gardening Web Application — Status: `Running` — Attempts: 1 — Result: `<chats>/chat-9` — Notes: —
 - [ ] **KIL-COD-02:** Community Archive Desktop Application — Status: `Pending` — Attempts: 0 — Result: — Notes: —
 - [ ] **KIL-COD-03:** Neighborhood Emergency Preparedness Program — Status: `Pending` — Attempts: 0 — Result: — Notes: —
 
@@ -137,12 +135,15 @@ Add one row for every failed or blocked attempt. Retain earlier rows after a suc
 
 | Evaluation ID | Date       | Attempt | Status | Failure or blocker                                                           | Resolution or next action                                                                  | Rerun result |
 | ------------- | ---------- | ------: | ------ | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------ |
-| CLA-COD-01    | 2026-07-21 |       1 | Failed | Operator-requested interruption during turn 7; evaluator exited on `SIGINT`. | Cleanup completed; rerun the full governed scenario from a fresh workspace when requested. | —            |
+| CLA-COD-01    | 2026-07-21 |       1 | Failed  | Operator-requested interruption during turn 7; evaluator exited on `SIGINT`. | Cleanup completed; lane closed permanently under the campaign fail-fast rule. | —            |
+| CLA-COD-02    | 2026-07-21 |       0 | Blocked | Lane closed after the tooling failure in `CLA-COD-01`.                        | Do not start this run.                                                         | —            |
+| CLA-COD-03    | 2026-07-21 |       0 | Blocked | Lane closed after the tooling failure in `CLA-COD-01`.                        | Do not start this run.                                                         | —            |
 
 ## Campaign Notes
 
 - **Reasoning target:** Medium, or the closest documented harness-specific equivalent where no independent medium control exists.
-- **Exact model identifiers:** Claude Code — Codex uses `gpt-5.6-sol` with Claude Code `2.1.205` through CLIProxyAPI `7.2.91`.
+- **Exact model identifiers:** Claude Code — Codex uses `gpt-5.6-sol`; Cursor — Composer uses `composer-2.5` (fallback because no medium variant was listed); Cursor — Grok uses `cursor-grok-4.5-medium`; Cursor — Codex uses `gpt-5.6-sol-medium`; Cursor — Fable uses `claude-fable-5-medium`.
+- **Preflight:** Known-good `177a68d9cbfd` resolved. All seven executable routes passed doctor. Cursor identifiers were resolved from the 2026-07-21 native listing retained at `output/campaign/preflight-cursor-models.txt`. The Claude Code — Codex launcher exists.
 - **Campaign started:** 2026-07-21
 - **Campaign completed:** —
-- **General notes:** Official Claude Code — Codex lane paused after the operator requested that `CLA-COD-01` stop during its first attempt.
+- **General notes:** Claude Code — Codex is terminal with one failed run and two blocked runs because a failed lane is permanently closed.

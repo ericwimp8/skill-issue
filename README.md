@@ -2,99 +2,147 @@
 
 > It’s not always a skill problem, but it’s always a Skill Issue.
 
-Skill Issue makes agent skills easier to create, evaluate, and trust. It was built with skills to build, evaluate, and fix skills.
+Skill Issue helps people create, evaluate, and improve agent skills. It separates
+problems in a skill from problems in the model and agent harness running it, so
+users can fix the right thing.
 
-The name is a play on the familiar claim that a problem is a “skill issue.” In this case, the skills are the reusable instructions and workflows used by coding agents.
+In this project, a skill is a reusable set of instructions and resources for a
+coding agent.
 
-## The problem
+## Why Skill Issue exists
 
-Building an agent skill currently involves a great deal of uncertainty and manual refinement. When a skill fails, it can be difficult to tell what actually went wrong:
+When a skill fails, the cause is often unclear:
 
-- Is the description too weak for the model to recognize when the skill applies?
-- Is the skill body unclear or ineffective after the skill is invoked?
-- Is the model inconsistent at selecting skills?
-- Is the surrounding agent harness doing too little to support reliable skill use?
+- The description may not tell the model when to use the skill.
+- The instructions may be ineffective after the skill loads.
+- The model may select skills inconsistently.
+- The agent harness may not discover or expose skills reliably.
 
-These failures often look the same from the user’s perspective. Someone can spend hours rewriting a good skill description when the model-and-harness environment is the real limitation. Others encounter inconsistent results, conclude that skills do not work, and abandon them entirely.
+These failures can look identical to the user. Rewriting a good skill cannot
+fix an environment that never loads it, and changing environments cannot fix
+unclear instructions. Skill Issue makes these failure modes observable and
+actionable.
 
-Skill Issue aims to make those failures observable, attributable, and actionable.
+## What Skill Issue does
 
-## How it works
+Skill Issue has two connected workflows:
 
-Skill Issue has two complementary parts:
+1. **Evaluate the environment.** Measure whether a model-and-harness
+   configuration discovers and invokes the expected skills.
+2. **Build better skills.** Create, evaluate, diagnose, and refine skills until
+   they behave as intended.
 
-1. **Evaluate the environment.** Determine whether a particular model and agent harness can discover and invoke skills reliably.
-2. **Build better skills.** Help users create, evaluate, and refine skills that behave as intended.
+The environment is evaluated first. Reliable skill discovery provides a sound
+foundation for skill refinement; unreliable discovery is reported as an
+environment limitation instead of being misdiagnosed as a writing problem.
 
-The model and harness are initially treated as a single practical environment. The important question for a user is whether the setup they work in—such as Codex, Claude Code, or another coding-agent environment—can use skills consistently enough to support their workflow.
+## Environment evaluation
 
-Users evaluate their environment first. If it performs reliably, they can build and refine skills with confidence. If it does not, they can reconsider the environment instead of endlessly rewriting a skill that was never the underlying problem.
+The built-in evaluation replays three fixed 30-turn scenarios. Every tested
+configuration receives the same prompts in the same order, and later prompts
+never adapt to the agent’s responses. Each scenario includes expected skill
+calls distributed across the conversation and three short turns where no skill
+should be invoked.
 
-## Testing methodology
+Results are measured by turn rather than by token count. Tokenization, context
+limits, compaction, and telemetry differ across models and harnesses; turns
+provide a consistent comparison point across identical conversations.
 
-The initial skill-calling evaluation uses three scripted scenarios with the same number of fixed user turns. Every harness-and-model configuration receives the same turns in the same order. Agent responses are retained as evidence but do not change the next scripted turn.
+### Comparison design
 
-Results are measured by turn rather than by context-token count. Tokenization, context limits, compaction, and exposed telemetry differ across models and harnesses, while a turn represents the same point in the user's workflow for every configuration. This makes observations such as a skill first loading on turn 10 or failing to load by turn 20 directly comparable across identical conversations.
+The evaluation supports six harnesses:
 
-The MVP scenarios contain 30 turns each and use compact, coherent application stories with expected skill invocations distributed across the full conversation. Three small factual-recall turns in each scenario intentionally expect no skill invocation. Context-based analysis may be added later when comparable telemetry is available across the supported environments.
+- OpenAI Codex
+- Claude Code
+- Cursor
+- Pi
+- OpenCode
+- Kilo Code
 
-### Comparison strategy
+The comparison campaign tests models across harnesses and multiple models
+within the same harness where those combinations are available. Each
+configuration uses the same scenarios, prompts, skill payload, scoring rules,
+and reasoning target or closest supported equivalent. Results record the exact
+model, harness version, operating system, and effective reasoning setting.
 
-The planned campaign compares models across multiple harnesses and multiple models within the same harness wherever those combinations are supported. Repeating a model across harnesses may reveal harness-level patterns, such as one environment consistently discovering skills more or less reliably. Repeating several models within a harness may reveal model-level patterns that persist across environments. Flagship model-and-harness pairings provide useful anchors, while overlapping combinations make it easier to distinguish model behavior from harness behavior.
+Cross-harness comparisons can expose harness-level patterns. Within-harness
+comparisons can expose model-level patterns. Unsupported or unrun combinations
+are omitted.
 
-The minimum comparison matrix spans OpenAI Codex, Claude Code, Cursor, Pi, OpenCode, and Kilo Code. Each supported configuration uses the same scenarios, prompts, skill payload, reasoning target or closest available equivalent, and scoring rules. Exact model identifiers, harness versions, operating systems, and effective reasoning settings are recorded with the result.
+### Isolation and evidence
 
-### Evaluation isolation
+The runner evaluates each harness’s primary agent while reducing interference
+from ambient skills, plugins, instructions, configuration, and unrelated
+project customization. It uses:
 
-Evaluations aim to isolate the supplied skills from ambient skills, plugins, instructions, configuration, and unrelated project customization. The runner evaluates each harness's primary agent directly. It uses fixed verbatim prompts, private answer sheets and turn state, cryptographically random opaque marker tokens, temporary generated skill copies, and external event storage. Later prompts never adapt to model responses, and temporary instrumentation is removed after the run while the selected evidence is retained.
+- fixed, verbatim prompts;
+- private answer sheets and turn state;
+- temporary instrumented copies of the canonical skills;
+- cryptographically random marker tokens; and
+- run-owned external event storage.
 
-Each completed run writes a detailed `result.json` and compact chart-ready `website.json`. Raw event output and the complete conversation transcript are explicit optional diagnostics and default to off; enabling a transcript produces a warning that any personal or confidential information in the evaluation conversation will be written unchanged.
+Temporary instrumentation is removed during cleanup. When complete isolation
+is unavailable, the result records the prepared environment and the remaining
+uncertainty.
 
-Where complete automated isolation is unavailable, the evaluator records the environment they prepared and the remaining uncertainty. These controls reduce evaluation clues and customization pollution, but an agent inspecting its environment may still infer that instrumentation exists.
+Each completed run writes:
 
-### Interpretation and limitations
+- `result.json`: the detailed evaluation result;
+- `website.json`: a compact, chart-ready result; and
+- optional `events.jsonl` and `transcript.json` diagnostics.
 
-The initial campaign is a transparent minimum viable evaluation. A completed, correctly instrumented run remains valid even when no expected skills are called; missed calls are results rather than tooling failures. Tooling, permission, session, or instrumentation failures are fixed and rerun instead of being reported as model behavior.
+Events and transcripts are disabled by default. A transcript may contain the
+complete evaluation conversation, including confidential information supplied
+during the run.
 
-One completed scenario suite per configuration cannot establish statistical reliability or universal model behavior. Results may also be affected by residual configuration, organization policy, harness and model version changes, provider aliases, operating-system differences, and incomplete isolation. Published results therefore describe observed calls and misses without assigning universal winners, pass labels, or guarantees.
+### Interpreting results
 
-Running the full comparison matrix requires access to models and harnesses that may not be available in one environment. The evaluation system is designed so contributors can run the same governed scenarios in additional supported configurations and return comparable evidence. Unsupported or unrun combinations are omitted rather than presented as evaluated outcomes.
+A correctly instrumented run remains valid when expected skills are missed;
+those misses are evaluation results. Tooling, permission, session, visibility,
+or instrumentation failures are operational failures and must be resolved
+before the run is interpreted as model behavior.
+
+One scenario suite cannot establish universal reliability. Results can still be
+affected by residual configuration, organization policy, provider aliases,
+model or harness updates, operating-system differences, and incomplete
+isolation. Published results therefore report observed calls and misses without
+claiming a universal winner or guarantee.
 
 ## Skill creation
 
-The goal is to let users describe the outcome they want in ordinary language. For example:
+Users describe the outcome they want in ordinary language. For example:
 
-> Create a skill that runs linting at the end of each task, applies automatic fixes, then finds and resolves any remaining compile-time errors.
+> Create a skill that runs linting at the end of each task, applies automatic
+> fixes, then finds and resolves any remaining compile-time errors.
 
-Skill Issue should inspect the current project, understand the relevant languages and tooling, and identify important ambiguities before generating anything. If the repository contains both a TypeScript backend and a Rust project, for example, it should ask whether the skill applies to one or both rather than silently choosing the wrong scope.
+Skill Issue then:
 
-Once the request is clear, the system should:
+1. Inspects the project and resolves important scope questions.
+2. Generates an idiomatic skill for the project and target environment.
+3. Creates evaluations for skill selection and post-invocation behavior.
+4. Runs the evaluations and diagnoses failures.
+5. Refines the description, instructions, or supporting resources as needed.
+6. Delivers the skill with a clear account of what was validated.
 
-1. Generate an idiomatic skill for the user’s project and environment.
-2. Create evaluations for both skill invocation and skill behavior.
-3. Run those evaluations and diagnose failures.
-4. Refine the description or body as appropriate.
-5. Repeat until the skill meets the expected standard.
-6. Deliver a ready-to-use skill with a clear account of what was validated.
+The user defines the outcome; Skill Issue handles the skill-engineering
+workflow.
 
-The user describes the outcome. Skill Issue handles the skill-engineering work.
+## Command-line interface
 
-## Minimum viable product
+The project includes a self-contained Go CLI for local use. It installs the
+eleven canonical Skill Issue skills, checks supported harness environments,
+runs blind turn-attributed evaluations, and produces local evidence files.
 
-The initial product will focus on local execution. Rather than operating a hosted service across every model API, Skill Issue will provide something users can install and run inside their own agent setup.
+The CLI owns deterministic installation, removal, evaluation execution,
+reporting, cleanup, and recovery. Installed skills own the generation,
+diagnosis, and refinement workflows. Reinstalling replaces only the known
+Skill Issue payload directories.
 
-The MVP uses a self-contained Go CLI distributed as prebuilt macOS, Windows, and Linux executables. It:
+See [`cli/README.md`](cli/README.md) for commands, harness configuration,
+installation behavior, custom evaluations, output formats, recovery, and
+qualification details.
 
-- installs the required canonical skills;
-- runs a repeatable evaluation inside the user’s configured environment;
-- measures skill discovery and invocation behavior; and
-- produces a useful local report explaining the results.
-
-The CLI owns deterministic installation, removal, evaluation execution, and reporting boundaries. Re-running installation replaces the disposable embedded payload. The installed agent skills own generation, diagnosis, and refinement behavior.
-
-The current implementation embeds the canonical primary and supporting skills, replaces only their known directories in researched native project or user roots, and provides blind primary-agent replay with private turn attribution, graph-ready evidence, direct canonical rematerialization, and cleanup. Supported harness adapters retain bounded real-environment qualification records before release claims are made.
-
-### CLI development
+### Develop the CLI
 
 ```sh
 go vet ./cli/...
@@ -102,25 +150,15 @@ go run ./cli/cmd/skill-issue help
 ./cli/scripts/build-cross-platform.sh
 ```
 
-Focused tests currently cover the embedded evaluation units, evaluation input and output contracts, neutral instrumentation, project-only evaluation placement, and native project skill roots. Final installation, lifecycle, adapter, replay, recovery, and native-platform coverage remains for qualification after the remaining CLI interfaces stabilize.
+The build script produces standalone Darwin, Linux, and Windows binaries for
+`amd64` and `arm64`. Cross-compilation confirms that the binaries build; native
+runtime qualification is still required on each released platform.
 
-The build script produces standalone Darwin, Windows, and Linux binaries for `amd64` and `arm64`. Cross-compilation does not replace native runtime testing on each released platform.
+## Website
 
-## Longer-term vision
-
-A future hosted service could provide standardized evaluations across multiple models and APIs, publish comparisons, and present results through clear graphs and reports. Local evaluation results could also be exported or aggregated for broader comparisons.
-
-The MVP deliberately starts with the part users can run in the environments they already use. This removes the cost and complexity of operating every provider’s API while still answering the central question: **does my current setup use skills well enough for me to depend on them?**
-
-## Status
-
-Skill Issue is in active development. The standalone CLI, canonical embedded payload, direct disposable materialization, blind evaluation runner, website mock-up, and six-target cross-build foundation are implemented. Harness detection and preview, concrete adapter preflight, real-harness and native-platform qualification, campaign evidence, release automation, and public release remain in progress.
-
-The current six-block completion sequence is maintained in `plans/skill-issue-project-completion/skill-issue-project-completion-a-to-b-plan.md`. Its completed-work inventory, research source map, CLI mismatch record, and old-task reconciliation live in `plans/skill-issue-project-completion/reorganization-dependency-audit.md`. Document authority, supersession, consumer links, and required update routing live in `plans/skill-issue-project-completion/document-authority-and-update-map.md`.
-
-## Website mock-up
-
-The repository includes a one-page React and TypeScript website that builds to static files for GitHub Pages. Benchmark content is local and requires no database or runtime API.
+The repository also contains a static React and TypeScript website for
+exploring the project, methodology, generated skills, and evaluation results.
+It builds for GitHub Pages and does not require a database or runtime API.
 
 ### Run locally
 
@@ -138,22 +176,50 @@ npm run validate
 npm run preview
 ```
 
-The production preview is available at `http://127.0.0.1:4173/skill-issue/`. Set `VITE_BASE_PATH` when the eventual GitHub Pages repository path differs from `/skill-issue/`.
+The production preview is available at
+`http://127.0.0.1:4173/skill-issue/`. Set `VITE_BASE_PATH` if the GitHub Pages
+repository path differs from `/skill-issue/`.
 
 ### Update website content
 
-Edit curated website copy, release metadata, summary metrics, and methodology text in `src/data/siteData.ts`.
+- Edit curated copy, release metadata, summary metrics, and methodology text in
+  `src/data/siteData.ts`.
+- Add complete generated-skill examples under
+  `showcase-skills/*/skill/*/SKILL.md`; the website discovers them at build
+  time.
+- Keep evaluation types, labels, artifact adaptation, and illustrative results
+  in `src/data/evaluationData.ts`.
+- Keep selection and filtering in `src/components/EvaluationExplorer.tsx` and
+  chart presentation under `src/components/charts/`.
 
-Generated skill examples are discovered at build time from `showcase-skills/*/skill/*/SKILL.md`. Add a complete generated-skill folder under `showcase-skills/` and the website will include its name, description, and skill instructions automatically. This keeps the gallery static for GitHub Pages while preserving each example with its generation and evaluation evidence.
-
-Website evaluation artifact types, display labels, adaptation, and temporary illustrative results live in `src/data/evaluationData.ts`. `src/components/EvaluationExplorer.tsx` owns selection and filtering, while the components under `src/components/charts/` own the individual chart presentations. Published result data must come from the accepted evaluation artifacts and campaign evidence rather than hand-authored chart values.
-
-After the acceptance layer identifies the exact runs to publish, load their compact artifacts into the static site with:
+Published charts must use accepted evaluation artifacts rather than
+hand-authored values. Load selected compact artifacts with:
 
 ```sh
 npm run results:update -- output/run-one/website.json output/run-two/website.json
 ```
 
-The command validates the website artifact envelope and writes the selected collection to `src/data/publishedWebsiteArtifacts.json`. An empty collection keeps the illustrative mock campaign visible. The chart adapter and presentation stay unchanged when accepted artifacts replace it.
+This command validates the artifacts and writes the collection to
+`src/data/publishedWebsiteArtifacts.json`. Keep downloadable binaries in GitHub
+Releases rather than the Pages build.
 
-Replace the release URL in the same data file when the first CLI artifact is published through GitHub Releases. Keep binaries in Releases rather than the Pages build.
+## Project status
+
+Skill Issue is in active development. The CLI, embedded skill payload, blind
+evaluation runner, result artifacts, website, harness adapters, environment
+checks, and six-target cross-build are implemented. Evaluation qualification,
+campaign evidence, release preparation, and public distribution continue.
+
+The current skill-calling campaign is tracked in
+[`plans/skill-calling-evaluation-campaign/evaluation-progress.md`](plans/skill-calling-evaluation-campaign/evaluation-progress.md).
+Its execution rules, scheduling, failure handling, and progress-update process
+are defined in
+[`campaign-orchestration-prompt.md`](plans/skill-calling-evaluation-campaign/campaign-orchestration-prompt.md).
+
+## Longer-term direction
+
+The local CLI answers the immediate question: **does my current agent setup use
+skills reliably enough for me to depend on them?**
+
+A future hosted service could run standardized evaluations across more models
+and APIs, publish broader comparisons, and aggregate compatible local results.

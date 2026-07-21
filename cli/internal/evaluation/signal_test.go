@@ -28,3 +28,24 @@ func TestIsSignalCommandRequiresStandaloneShellWords(t *testing.T) {
 		})
 	}
 }
+
+func TestIsCodexSignalCommandAcceptsCapturedEscapedQuotes(t *testing.T) {
+	token := "abc123"
+	cases := []struct {
+		name    string
+		command string
+		want    bool
+	}{
+		{name: "plain echo", command: `echo "abc123"`, want: true},
+		{name: "captured zsh command", command: `/bin/zsh -lc "echo \"abc123\""`, want: true},
+		{name: "token embedded in larger word", command: `/bin/zsh -lc "echo \"xabc123\""`, want: false},
+		{name: "different command", command: `/bin/zsh -lc "printf \"abc123\""`, want: false},
+	}
+	for _, testCase := range cases {
+		t.Run(testCase.name, func(t *testing.T) {
+			if got := isCodexSignalCommand(testCase.command, token); got != testCase.want {
+				t.Fatalf("isCodexSignalCommand(%q) = %v, want %v", testCase.command, got, testCase.want)
+			}
+		})
+	}
+}

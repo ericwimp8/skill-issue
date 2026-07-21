@@ -529,7 +529,8 @@ func (service Service) recordCodexSignals(runID, turnID string, capture replay.C
 }
 
 func isCodexSignalCommand(command, token string) bool {
-	return containsShellWord(command, "echo") && containsShellWord(command, token)
+	return containsShellWord(command, "echo") &&
+		(containsShellWord(command, token) || strings.Contains(command, `\"`+token+`\"`))
 }
 
 func (service Service) validateCursorSignals(runID, turnID string, capture replay.Capture, tokens map[string]string, cliPath string) error {

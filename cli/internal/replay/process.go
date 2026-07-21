@@ -831,9 +831,9 @@ func codexBuildArgs(adapter *processAdapter, sessionID string, _ bool, prompt st
 }
 
 func codexInitial(prompt string) []string {
-	return []string{"exec", "--ignore-user-config", "--ignore-rules", "--json", prompt}
+	return []string{"exec", "--skip-git-repo-check", "--ignore-user-config", "--ignore-rules", "--json", prompt}
 }
 
 func codexResume(sessionID, prompt string) []string {
-	return []string{"exec", "resume", "--ignore-user-config", "--ignore-rules", "--json", sessionID, prompt}
+	return []string{"exec", "resume", "--skip-git-repo-check", "--ignore-user-config", "--ignore-rules", "--json", sessionID, prompt}
 }

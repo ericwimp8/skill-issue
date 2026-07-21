@@ -37,7 +37,7 @@ Use one reasoning target across the campaign, or the closest documented harness-
 
 ## Tracking Rules
 
-- Check an evaluation only after the complete 30-turn scenario and its instrumentation finish successfully and the required result artifacts are retained.
+- Check an evaluation only after the complete governed scenario and its instrumentation finish successfully and the required result artifacts are retained.
 - A tooling-complete run with zero observed skill calls is a completed evaluation and may be checked.
 - Leave a tooling failure unchecked, set its status to `Failed`, record it in the failure log, and rerun it after the cause is resolved.
 - Use `Blocked` when an evaluation cannot start because access, authentication, model availability, or another prerequisite is unavailable.
@@ -135,9 +135,9 @@ The adjacent `evaluation-orchestration-prompt.md` owns scheduling, command launc
 
 Add one row for every failed or blocked attempt. Retain earlier rows after a successful rerun so the campaign history remains visible.
 
-| Evaluation ID | Date | Attempt | Status | Failure or blocker | Resolution or next action | Rerun result |
-| ------------- | ---- | ------: | ------ | ------------------ | ------------------------- | ------------ |
-| CLA-COD-01    | 2026-07-21 | 1 | Failed | Operator-requested interruption during turn 7; evaluator exited on `SIGINT`. | Cleanup completed; rerun all 30 turns from a fresh workspace when requested. | — |
+| Evaluation ID | Date       | Attempt | Status | Failure or blocker                                                           | Resolution or next action                                                                  | Rerun result |
+| ------------- | ---------- | ------: | ------ | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------ |
+| CLA-COD-01    | 2026-07-21 |       1 | Failed | Operator-requested interruption during turn 7; evaluator exited on `SIGINT`. | Cleanup completed; rerun the full governed scenario from a fresh workspace when requested. | —            |
 
 ## Campaign Notes
 

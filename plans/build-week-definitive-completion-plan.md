@@ -122,7 +122,7 @@ tests as validation.
 ## 3. Evaluation Campaign
 
 The campaign contains ten harness-and-model configurations and three governed
-30-turn scenarios per configuration, for 30 completed runs.
+scenarios per configuration, for 30 completed runs.
 
 ### Campaign Execution Rules
 

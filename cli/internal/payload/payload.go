@@ -20,7 +20,8 @@ import (
 var manifestData []byte
 
 type Component struct {
-	ID string `json:"id"`
+	ID     string `json:"id"`
+	Source string `json:"source"`
 }
 
 type Manifest struct {
@@ -46,6 +47,25 @@ func ReadManifest() (Manifest, error) {
 	}
 	if manifest.SchemaVersion != 1 || manifest.Product == "" {
 		return Manifest{}, fmt.Errorf("embedded payload manifest is invalid")
+	}
+	identifiers := make(map[string]bool, len(manifest.Components))
+	sources := make(map[string]bool, len(manifest.Components))
+	for _, component := range manifest.Components {
+		cleanSource := path.Clean(component.Source)
+		if component.ID == "" || path.Base(component.ID) != component.ID {
+			return Manifest{}, fmt.Errorf("embedded payload manifest has invalid component ID %q", component.ID)
+		}
+		if component.Source == "" || cleanSource != component.Source || path.IsAbs(cleanSource) || cleanSource == ".." || strings.HasPrefix(cleanSource, "../") {
+			return Manifest{}, fmt.Errorf("embedded payload manifest has invalid source %q", component.Source)
+		}
+		if identifiers[component.ID] {
+			return Manifest{}, fmt.Errorf("embedded payload manifest repeats component %q", component.ID)
+		}
+		if sources[component.Source] {
+			return Manifest{}, fmt.Errorf("embedded payload manifest repeats source %q", component.Source)
+		}
+		identifiers[component.ID] = true
+		sources[component.Source] = true
 	}
 	return manifest, nil
 }
@@ -112,43 +132,20 @@ func readSkills() ([]Skill, error) {
 		return nil, err
 	}
 
-	components := make(map[string]Component, len(manifest.Components))
+	skills := make([]Skill, 0, len(manifest.Components))
 	for _, component := range manifest.Components {
-		components[component.ID] = component
-	}
-
-	var skills []Skill
-	for _, root := range []string{"skills", "supporting-skills"} {
-		entries, err := fs.ReadDir(skillissue.CanonicalSkills, root)
+		files, err := readSkill(component.Source, component.ID)
 		if err != nil {
-			return nil, fmt.Errorf("read canonical %s: %w", root, err)
+			return nil, err
 		}
-		for _, entry := range entries {
-			if !entry.IsDir() {
-				continue
-			}
-			name := entry.Name()
-			_, ok := components[name]
-			if !ok {
-				return nil, fmt.Errorf("canonical skill %q is absent from payload manifest", name)
-			}
-			files, err := readSkill(root, name)
-			if err != nil {
-				return nil, err
-			}
-			skills = append(skills, Skill{Name: name, Files: files})
-			delete(components, name)
-		}
-	}
-	if len(components) != 0 {
-		return nil, fmt.Errorf("payload manifest references absent canonical skills")
+		skills = append(skills, Skill{Name: component.ID, Files: files})
 	}
 	slices.SortFunc(skills, func(left, right Skill) int { return strings.Compare(left.Name, right.Name) })
 	return skills, nil
 }
 
-func readSkill(root, name string) (map[string][]byte, error) {
-	base := path.Join(root, name)
+func readSkill(source, name string) (map[string][]byte, error) {
+	base := source
 	files := map[string][]byte{}
 	err := fs.WalkDir(skillissue.CanonicalSkills, base, func(filePath string, entry fs.DirEntry, walkErr error) error {
 		if walkErr != nil {

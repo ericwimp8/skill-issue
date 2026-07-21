@@ -1,0 +1,51 @@
+✔ uses the default for a missing value (0.79625ms)
+✖ uses the default for non-positive values (1.200333ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 20
+  
+      at TestContext.<anonymous> (file://<repo-root>/evaluations/scenario-skill-refinement/code-testing-discipline/behavior/cycle-1/case-1/workspace/src/pageSize.test.js:10:10)
+      at Test.runInAsyncScope (node:async_hooks:211:14)
+      at Test.run (node:internal/test_runner/test:931:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:629:18)
+      at Test.postRun (node:internal/test_runner/test:1042:19)
+      at Test.run (node:internal/test_runner/test:970:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:297:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 20,
+    operator: 'strictEqual'
+  }
+
+✔ caps large page sizes (0.179875ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 2
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 149.344709
+
+✖ failing tests:
+
+test at src/pageSize.test.js:9:1
+✖ uses the default for non-positive values (1.200333ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 20
+  
+      at TestContext.<anonymous> (file://<repo-root>/evaluations/scenario-skill-refinement/code-testing-discipline/behavior/cycle-1/case-1/workspace/src/pageSize.test.js:10:10)
+      at Test.runInAsyncScope (node:async_hooks:211:14)
+      at Test.run (node:internal/test_runner/test:931:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:629:18)
+      at Test.postRun (node:internal/test_runner/test:1042:19)
+      at Test.run (node:internal/test_runner/test:970:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:297:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 20,
+    operator: 'strictEqual'
+  }

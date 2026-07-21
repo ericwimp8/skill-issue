@@ -4,120 +4,120 @@ This document is the human-readable governance view of the fixed conversation em
 
 ## Turn 1
 
-> I want to create and maintain a living A-to-B plan for a production-ready cross-platform desktop application called ArchiveDesk for small museums, historical societies, and community archives. It should help teams ingest, describe, preserve, search, and export local digital collections while remaining useful without a continuous internet connection. We are planning the complete product from the current idea through a public release, but we are not implementing it during this conversation. Start the plan for this work.
+> Let's do Dictate Plan. I want to make BoxIndex, a tiny offline browser app that lets a volunteer catalog a community archive box without uploading anything. Start one living A-to-B plan for taking the empty workspace to a locally verified app.
 
 ## Turn 2
 
-> The main users are volunteer archivists, professional collection managers, researchers working on-site, and administrators responsible for policy and backups. Add the important outcomes for each group, including approachable workflows for occasional volunteers, efficient bulk work for experienced staff, dependable discovery for researchers, and visible operational control for administrators.
+> The starting folder is empty and has a current browser and Node.js available. The finished app should add a record with an accession ID, title, and short note; list saved records after reload; reject duplicate accession IDs; and export the records as JSON. Integrate those facts and observable outcomes into the plan.
 
 ## Turn 3
 
-> Use a fixed technical baseline for the plan: Tauri with Rust for the desktop shell and local services, React and TypeScript for the interface, SQLite for structured local data, managed local storage for collection files and derivatives, and optional organization-controlled synchronization. The release must support current macOS, Windows, and Linux systems. Record these as established constraints rather than reopening the stack choice later.
+> Keep the build deliberately small: plain HTML, CSS, and JavaScript, local storage only, keyboard-usable controls, clear validation text, and automated checks for accession-ID normalization and duplicate detection. Put the broad work in dependency order without prescribing file-level implementation.
 
 ## Turn 4
 
-> The initial product has five major working areas: collection setup, ingest, description and review, search and discovery, and preservation and export. Describe what each area must enable, how records move between them, and which capabilities belong in the first public release. Include an empty archive, an interrupted import, and the experience of reopening a collection after several months.
+> Write a self-contained prompt for a fresh agent to inspect the empty project and recommend the smallest internal record shape and file structure that support the app and its focused tests. Ask for only the decision and concise rationale. Add that inspection as an execution input in the living plan.
 
 ## Turn 5
 
-> Add a complete interaction and visual-quality task covering keyboard-first operation, screen readers, contrast, reduced motion, scalable text, dense-data readability, long-running progress, recoverable errors, high-resolution displays, and layouts that remain usable on modest laptops. Include observable accessibility and usability criteria.
+> That completes the planning input. Reconcile the full plan so the baseline, desired app, ordered work, and proof agree without duplicated requirements, then mark it ready for execution.
 
 ## Turn 6
 
-> The domain needs to represent organizations, users, collections, accessions, items, files, derivatives, descriptive fields, controlled terms, people, places, dates, rights, restrictions, preservation checks, review states, exports, and audit history. Integrate the domain-model work into the plan, including relationships, stable identifiers, deletion behavior, provenance, and migration between schema versions.
+> Implement the smallest working BoxIndex app from the approved plan. Stop after add, duplicate rejection, reload, and JSON export work locally.
 
 ## Turn 7
 
-> Add the ingest work for individual files, watched folders, removable drives, and large batch imports. Cover duplicate detection, file naming, checksum creation, metadata extraction, resumable processing, unsupported formats, quarantine, operator review, rollback, and clear evidence that source files were preserved unchanged.
+> Add focused automated tests for accession-ID normalization and duplicate rejection. Cover one accepted unique ID and one duplicate that differs only by letter case, then run the smallest relevant test command.
 
 ## Turn 8
 
-> Map the important end-to-end journeys into the plan: creating a collection, importing a mixed batch, describing and reviewing records, applying controlled terms, finding related material, correcting metadata, generating access copies, exporting a finding aid, restoring from backup, and transferring a collection to another installation. Order the work so these journeys can be proved before release.
+> Create a reusable agent skill named respectful-archive-labels in this workspace. It should guide agents writing short catalog titles and notes to distinguish evidence from inference, preserve supplied terminology, and state uncertainty plainly. Keep it portable and include only files it genuinely needs.
 
 ## Turn 9
 
-> ArchiveDesk must remain dependable on isolated computers and unreliable networks. Add local-first expectations for every core workflow, optional synchronization boundaries, conflict visibility, safe retry behavior, removable-media handling, clock differences, recovery after partial transfer, and an explicit first-release limit on real-time collaboration.
+> A volunteer reports that an accession ID with surrounding spaces can bypass duplicate detection. Reproduce the report with the smallest failing test, trace the actual normalization path, fix the causal owner, and rerun the focused checks.
 
 ## Turn 10
 
-> Add security, privacy, and collection-rights work. Cover local account roles, sensitive personal records, culturally restricted material, encrypted storage choices, credential handling, auditability, export controls, retention, secure deletion limits, backup protection, compromised-device response, and safeguards against accidentally publishing restricted items.
+> Manual entry, stored records, export, and tests now need one authoritative accession-ID rule. Restructure the small app so that responsibility has one clear owner, update every affected caller, and verify behavior remains unchanged.
 
 ## Turn 11
 
-> Write a self-contained prompt that I can give to a research agent to investigate authoritative archival description and digital-preservation standards suitable for ArchiveDesk. The researcher should compare relevant metadata schemas, controlled vocabularies, identifiers, rights statements, packaging formats, fixity practices, interoperability expectations, licensing, maintenance, and practical adoption by small institutions. Add the research and its decision point to the living plan, but do not perform the research now.
+> Write a concise handoff prompt for a fresh agent to add CSV export later without changing the current JSON behavior. Then update the living plan to record that deferred extension separately from the completed application.
 
 ## Turn 12
 
-> Add the work for turning approved archival standards into configurable product behavior. Include field mapping, required and optional metadata, local extensions, controlled vocabulary updates, validation, import and export profiles, provenance, administrator review, backward compatibility, and a clear distinction between standards compliance and institution-specific practice.
+> Run the existing focused test suite as final evidence. Update the living plan with what was actually verified, preserve the deferred CSV work, and remove any completion claim that the retained evidence does not support.
 
 ## Turn 13
 
-> Build out the preservation workflow. Cover cryptographic fixity, scheduled verification, derivative generation, format identification, storage-health warnings, multiple copies, backup rotation, restore drills, media migration, corruption response, and reports that distinguish a verified fact from a recommendation requiring professional judgment.
+> Before we continue, remind me which record fields BoxIndex stores and which export format already works.
 
 ## Turn 14
 
-> The description workspace must support templates, bulk editing, field inheritance, controlled terms, validation, review queues, saved searches, duplicate records, linked people and places, uncertain dates, multilingual description, notes, and undo. Add the product, data, interaction, and quality work needed to make this safe for both volunteers and experts.
+> CSV export is no longer deferred. Implement the smallest export that preserves accession ID, title, and note while leaving the existing JSON export unchanged.
 
 ## Turn 15
 
-> Add optional OCR and transcription workflows for scanned documents, photographs, and recorded interviews. Include local and external processing choices, confidence indicators, correction interfaces, language support, accessibility, sensitive-content handling, provenance, human review, and clear limits preventing generated text from silently becoming authoritative description.
+> Add focused automated tests for CSV column order, stable record order, and escaping of commas and quotation marks. Run the focused tests and keep JSON coverage intact.
 
 ## Turn 16
 
-> Add organization collaboration without assuming continuous connectivity. Cover assignments, review states, record locking, change comparison, portable work packages, merge conflicts, role boundaries, approval, attribution, and reconciliation when work completed on separate computers returns to the main collection.
+> A volunteer reports that a note containing a line break produces a malformed CSV file. Reproduce the report with the smallest failing test, trace the value through the export path, fix the causal owner, and rerun the focused checks.
 
 ## Turn 17
 
-> Define operational workflows for administrators and support. Cover collection repair, schema migration, storage relocation, failed ingest diagnosis, controlled-term correction, account recovery, permissions review, backup status, diagnostic export, privacy-safe support bundles, feature flags, and evidence needed to investigate problems without casually exposing collection contents.
+> Update the living plan so CSV export is recorded as completed rather than deferred. Reconcile the claim with the exact export behavior and retained tests without weakening the JSON requirements.
 
 ## Turn 18
 
-> Write a detailed prompt for a research agent to study how small museums and community archives currently receive, describe, preserve, and share digital material. The research should examine paper and spreadsheet workflows, volunteer turnover, technical confidence, equipment, disconnected sites, common failure points, accessibility barriers, institutional memory, and reasons collection systems are abandoned. Add this research to the plan as a product-validation input without conducting it now.
+> Quick reminder: does BoxIndex require an internet connection to add or review records?
 
 ## Turn 19
 
-> Add privacy-respecting analytics and operational visibility. The plan should show whether ingest, description, review, search, export, preservation checks, backups, and restores are functioning while keeping collection content out of telemetry. Include local diagnostics, structured logs, performance measures, health summaries, support export, and explicit ownership of sensitive diagnostic data.
+> Revise the respectful-archive-labels skill created earlier so it also guides wording derived from filenames or incomplete donor notes. Preserve the distinction between evidence and inference, keep it portable, and remove anything it does not genuinely need.
 
 ## Turn 20
 
-> Build out the quality strategy as a dependency-ordered part of the plan. Cover Rust and TypeScript behavior, database migrations, file-system failures, very large collections, malformed files, accessibility, cross-platform packaging, upgrade and rollback, offline operation, synchronization, backup restoration, representative archival journeys, and testing on real macOS, Windows, and Linux machines.
+> Write a self-contained prompt for a fresh accessibility reviewer to inspect record entry, validation, saved-record navigation, and both export controls. Ask only for prioritized findings with concise evidence and no implementation.
 
 ## Turn 21
 
-> Add the release path from internal prototypes through seeded demonstration collections, partner pilots, signed release candidates, platform security review, data migration rehearsal, public downloads, rollback, support readiness, release notes, and post-release observation. Include the evidence required before widening access and conditions that should pause a release.
+> Inspect the current interface and implement the smallest keyboard, focus, and validation-message improvements that are clearly needed. Preserve the offline workflow and existing record behavior.
 
 ## Turn 22
 
-> Add sustainability and ongoing-service considerations without selecting a final funding model. Include open-source and paid-support possibilities, storage and synchronization costs, standards maintenance, platform signing costs, support burden, training material, governance, data portability, institutional closure, and the risk of an organization becoming dependent on a service it cannot continue funding.
+> Add focused automated checks for the interaction behavior changed in the accessibility pass. Assert observable focus and validation outcomes rather than private event wiring, then run the focused checks.
 
 ## Turn 23
 
-> Write a self-contained research prompt comparing durable file formats, preservation packaging approaches, and storage strategies suitable for small archives. It should investigate format openness, validation tools, metadata retention, checksums, compression, removable media, cloud and local copies, recovery characteristics, long-term cost, migration risk, and the consequences of proprietary dependencies. Add the resulting decision to the plan without selecting an approach.
+> Manual entry, duplicate detection, storage, JSON export, and CSV export now share the same record-shaping rules. Restructure the app so that record normalization and serialization responsibilities have clear owners, update affected callers, and preserve visible behavior.
 
 ## Turn 24
 
-> Review the entire living plan now. Reconcile duplicated ideas, keep established constraints in the starting position, ensure the desired position describes the finished desktop product, correct the dependency order, and strengthen completion criteria for ingest integrity, description quality, accessibility, privacy, preservation, portability, operations, and public release. Keep unresolved choices visible without turning them into user questions.
+> Which two export formats can a volunteer use now?
 
 ## Turn 25
 
-> Pause the planning update long enough to create a reusable agent skill called archive-description-quality inside the scenario workspace. It should guide agents that draft or revise archival descriptions so the wording is evidence-based, respectful, accessible, provenance-conscious, explicit about uncertainty, attentive to community terminology, and careful with sensitive people, places, rights, and culturally restricted material. Create the complete skill now with only the files it genuinely needs, then record its use in the living plan.
+> A volunteer reports that deleting the final record can appear to work, but the record returns after reloading. Reproduce the report with the smallest failing test, trace the stored collection state, fix the causal owner, and rerun the focused checks.
 
 ## Turn 26
 
-> Integrate the new archive-description-quality skill into the product plan. Identify which description, transcription, import review, correction, training, administrator, testing, and release activities should use it, what evidence would show it was applied effectively, and how the product avoids treating generated wording as a substitute for archivist or community authority.
+> Add the nearest useful collection boundaries exposed by that fix, including an empty archive and multiple retained records. Keep assertions on observable saved and exported results, then run the focused suite.
 
 ## Turn 27
 
-> Add a substantial description-governance task covering editorial standards, source and contributor attribution, culturally preferred terminology, restrictions, change history, corrections, translations, review authority, user reports, emergency withdrawal of harmful description, and communication when published wording changes. Reconcile this with standards mapping and the archive-description-quality skill rather than creating parallel owners.
+> Write a concise prompt for a fresh agent to assess future CSV import without implementing it. Ask for the smallest validation and conflict boundaries compatible with current accession handling, then update the living plan to retain import as deferred work.
 
 ## Turn 28
 
-> Review the archive-description-quality skill against the need we just established. Improve it if necessary so its description identifies the correct use boundary and its instructions remain general enough for item descriptions, collection summaries, OCR corrections, rights notes, public exports, and administrator revisions. Do not tailor it to the wording of this scenario; keep the skill reusable.
+> Improve the duplicate-accession validation message so it identifies the conflicting normalized ID without exposing internal storage details. Keep the correction limited to the current interface.
 
 ## Turn 29
 
-> Perform a final planning pass before the architectural change I will give you next. Check that every completion criterion is created by at least one task, every broad task has a meaningful outcome, research decisions occur before dependent choices, pilot and release work depend on adequate preservation and migration proof, and no important requirement has been reduced to a vague quality statement.
+> Run the focused automated suite and the nearest broader project check that can catch collateral behavior changes. Report the commands and outcomes without changing application behavior.
 
 ## Turn 30
 
-> Change the product architecture and revise the whole plan coherently. Instead of five separate mode-based working areas, ArchiveDesk should become one collection-centered workspace in which ingest, description, search, preservation status, and export tools appear around the selected collection and record context. Establish clear ownership for collection state, selected-record state, durable metadata, file operations, background jobs, review state, synchronization, and undo. Reorganize the broad tasks around this architecture without leaving the former mode-based structure as a competing owner, and reconcile every affected completion criterion.
+> Write a concise final handoff prompt for a fresh maintainer. It should name the verified BoxIndex behaviors, the focused checks to rerun first, and the deferred CSV-import boundary without inventing implementation instructions.

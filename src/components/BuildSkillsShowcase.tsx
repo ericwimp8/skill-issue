@@ -1,66 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
+import { DocumentReaderDialog } from './DocumentReaderDialog';
 import { showcaseSkills, type ShowcaseSkill } from '../data/showcaseSkills';
 import { siteData } from '../data/siteData';
-
-function SkillReader({
-  skill,
-  onClose,
-}: {
-  skill: ShowcaseSkill;
-  onClose: () => void;
-}) {
-  useEffect(() => {
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    document.body.classList.add('dialog-open');
-    window.addEventListener('keydown', closeOnEscape);
-
-    return () => {
-      document.body.classList.remove('dialog-open');
-      window.removeEventListener('keydown', closeOnEscape);
-    };
-  }, [onClose]);
-
-  return (
-    <div
-      className="skill-reader-backdrop"
-      role="presentation"
-      onMouseDown={onClose}
-    >
-      <section
-        className="skill-reader"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="skill-reader-title"
-        onMouseDown={(event) => event.stopPropagation()}
-      >
-        <header className="skill-reader-header">
-          <div>
-            <p className="eyebrow">Generated skill · SKILL.md</p>
-            <h2 id="skill-reader-title">{skill.title}</h2>
-          </div>
-          <button
-            className="skill-reader-close"
-            type="button"
-            onClick={onClose}
-            autoFocus
-          >
-            <span className="sr-only">Close skill reader</span>
-            <span aria-hidden="true">×</span>
-          </button>
-        </header>
-        <div className="skill-reader-body">
-          <pre>{skill.content}</pre>
-        </div>
-      </section>
-    </div>
-  );
-}
 
 export function BuildSkillsShowcase() {
   const [selectedSkill, setSelectedSkill] = useState<ShowcaseSkill | null>(
@@ -112,10 +54,13 @@ export function BuildSkillsShowcase() {
       </section>
 
       {selectedSkill ? (
-        <SkillReader
-          skill={selectedSkill}
+        <DocumentReaderDialog
+          title={selectedSkill.title}
+          eyebrow="Generated skill · SKILL.md"
           onClose={() => setSelectedSkill(null)}
-        />
+        >
+          <pre>{selectedSkill.content}</pre>
+        </DocumentReaderDialog>
       ) : null}
     </>
   );

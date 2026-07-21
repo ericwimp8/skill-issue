@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Code Implementation Discipline'
+  short_description: 'Implement at the behavior owner, not the nearest seam'
+
+policy:
+  allow_implicit_invocation: true

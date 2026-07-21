@@ -271,17 +271,15 @@ func structuredEnvironment(spec structuredRuntimeSpec, root, executable string) 
 	if err != nil {
 		return nil, fmt.Errorf("resolve %s home: %w", spec.name, err)
 	}
-	dataHome := os.Getenv("XDG_DATA_HOME")
-	if dataHome == "" {
-		dataHome = filepath.Join(home, ".local", "share")
-	}
 	environment := controlledEnvironment(home, filepath.Join(root, "tmp"), path, false)
 	environment = append(environment,
 		"XDG_CONFIG_HOME="+filepath.Join(root, "config"),
-		"XDG_DATA_HOME="+dataHome,
 		"XDG_STATE_HOME="+filepath.Join(root, "state"),
 		"XDG_CACHE_HOME="+filepath.Join(root, "cache"),
 	)
+	if dataHome := os.Getenv("XDG_DATA_HOME"); dataHome != "" {
+		environment = append(environment, "XDG_DATA_HOME="+dataHome)
+	}
 	return append(environment, spec.environment...), nil
 }
 

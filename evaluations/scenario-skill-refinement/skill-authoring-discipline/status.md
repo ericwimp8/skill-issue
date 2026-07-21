@@ -1,0 +1,23 @@
+# Campaign Status
+
+- Target: `evaluations/scenario-skill-refinement/skill-authoring-discipline/skill/`
+- Target version: unchanged; initial and final `SKILL.md` SHA-256 `7fcb2f074490433c6eb6dc3f288d3af1caf353f1cd86b8c65be91d6f017d8bb4`; initial and final metadata SHA-256 `0262113579c7fb0884333d09c47f27a9df9c7426c47688d34521457ae7f57fdf`
+- Environment qualification: `evaluations/skill-system-production-refinement/environment-qualification.md`
+- Refinement mode: automatic semantic refinement supported by retained evidence
+- Description state: `passed`
+- Description evidence: `description/round-1/trial-1.md`, `description/round-1/trial-2.md`, `description/round-1/trial-3.md`, `description/round-1/trial-4.md`
+- Reference state: `not-applicable`; the target has no `references/` files
+- Current loop: concluded
+- Completed body cycle: 2
+- Description failure count: 0 of 5
+- Body state: `passed`
+- Body evidence: cycle 2 case 1 plus cycle 1 cases 2 and 3, audited in `behavior/cycle-2/audit.md`
+- Historical unsuccessful body cycles: 1
+- Current body failure count: reset to 0 after target pass
+- Total campaign allowance: five unsuccessful description rounds and five unsuccessful body cycles before user-controlled extension; no extension was required
+- Remaining attempts: not applicable after pass
+- Last completed trial: body cycle 2 case 1 passed with transcript-confirmed isolation
+- Applied refinement: evaluation isolation only; the canonical target is unchanged because no target-owned semantic failure was established
+- Cleanup state: all presentation-worthy fixtures, outputs, native traces, full transcripts, audits, and cycle records retained; no transient agent files remain outside the campaign's owned fixtures and outputs
+- Next action: none; see `conclusion.md`
+- Campaign state: passed

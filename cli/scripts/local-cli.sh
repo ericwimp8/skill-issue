@@ -49,7 +49,7 @@ build_development() {
   short_commit=$(git -C "$repository_root" rev-parse --short=12 HEAD)
   build_date=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
   state=clean
-  if [ -n "$(git -C "$repository_root" status --porcelain -- cli bundle.go go.mod skills supporting-skills evaluations/skill-calling/built-ins)" ]; then
+  if [ -n "$(git -C "$repository_root" status --porcelain -- cli bundle.go go.mod skills supporting-skills evaluations/skill-calling/built-ins ':(glob)evaluations/scenario-skill-refinement/*/skill/**')" ]; then
     state=dirty
   fi
 

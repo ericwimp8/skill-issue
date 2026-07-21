@@ -1,0 +1,3 @@
+interface:
+  display_name: "Release Signing Readiness"
+  short_description: "Review mobile release signing readiness"

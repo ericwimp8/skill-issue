@@ -1,0 +1,29 @@
+$ node --test src/profileEndpoint.test.js
+✔ creates a profile from valid JSON (1.436917ms)
+✔ returns the stable client error for malformed JSON (0.401333ms)
+✔ returns the stable client error for a blank profile name (0.231708ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 161.149459
+
+$ npm test
+
+> test
+> node --test
+
+✔ creates a profile from valid JSON (1.244084ms)
+✔ returns the stable client error for malformed JSON (0.195625ms)
+✔ returns the stable client error for a blank profile name (0.23725ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 181.595167

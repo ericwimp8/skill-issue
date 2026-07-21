@@ -1,0 +1,27 @@
+# Document Update Discipline Campaign Status
+
+- Target: `evaluations/scenario-skill-refinement/document-update-discipline/skill/`
+- Initial target `SKILL.md` hash: `db8a2dc5853554082362bba63a0e22c247be0d4630a932f43530639550e6eb3d`
+- Current target `SKILL.md` hash: `03668f94fc4b0d3b5293bd2c5212c20563cb340a158b4daa99274c91af289ca4`
+- Target metadata hash: `5ef4a0bd10cc26e4c2237de0995590182f4c08ab4fd931ba858c84ef8cf8847e`
+- Environment qualification: `evaluations/skill-system-production-refinement/environment-qualification.md`
+- Qualified surface: Codex Desktop fresh sub-agents backed by Codex CLI `0.145.0-alpha.18`, `gpt-5.6-sol` with high reasoning, qualified 2026-07-19
+- Refinement mode: automatic semantic refinement authorized by the user
+- Description state: `passed`
+- Description evidence:
+  - `description/round-1/trial-1/evidence.md`
+  - `description/round-1/trial-2/evidence.md`
+  - `description/round-1/trial-3/evidence.md`
+  - `description/round-1/trial-4/evidence.md`
+- Reference state: `not-applicable` — the target contains no `references/` files
+- Current loop: concluded
+- Description failure count: 0
+- Body failure count: 0 after pass; 1 unsuccessful cycle retained in campaign history
+- Total campaign allowance: five unsuccessful description rounds and five unsuccessful body cycles before user-controlled continuation
+- Remaining automatic unsuccessful description rounds: 5
+- Remaining automatic unsuccessful body cycles: 4 at pass
+- Last completed trial: body cycle 2 case 3 and cycle audit
+- Applied refinement: `refinements/body-cycle-1.md`
+- Cleanup state: complete; retained evidence is isolated under the campaign directory and no transient campaign files remain elsewhere
+- Next action: none
+- Campaign state: passed

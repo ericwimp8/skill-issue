@@ -1,0 +1,3 @@
+interface:
+  display_name: "Dependency Upgrade Review"
+  short_description: "Review dependency upgrade risk and migration work"

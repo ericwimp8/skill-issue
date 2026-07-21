@@ -30,7 +30,7 @@ func TestMergedEnvironmentReplacesInheritedValues(t *testing.T) {
 func TestCodexCommandsUseBoundedNonInteractivePermissions(t *testing.T) {
 	for _, args := range [][]string{codexInitial("prompt"), codexResume("session", "prompt")} {
 		joined := strings.Join(args, " ")
-		if !strings.Contains(joined, "--ignore-user-config") || !strings.Contains(joined, "--ignore-rules") || !strings.Contains(joined, "--json") {
+		if !strings.Contains(joined, "--skip-git-repo-check") || !strings.Contains(joined, "--ignore-user-config") || !strings.Contains(joined, "--ignore-rules") || !strings.Contains(joined, "--json") {
 			t.Fatalf("Codex command lacks isolated structured execution: %v", args)
 		}
 		if strings.Contains(joined, "danger-full-access") || strings.Contains(joined, "dangerously-bypass") {

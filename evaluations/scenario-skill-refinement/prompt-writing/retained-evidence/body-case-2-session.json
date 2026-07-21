@@ -1,0 +1,9 @@
+{
+  "session_id": "019f8269-31a5-7e81-99ef-b724488e8b5a",
+  "agent_path": "/root/eval_prompt_writing/prompt_body_c2",
+  "cli_version": "0.145.0-alpha.18",
+  "target_version": "c6b7ff268497e3174cdf572ad6b1902d447c00ca4d5f02e43157a89fabe3e05f",
+  "fixture": "fixtures/body/case-2.md",
+  "output": "behavior/cycle-1/case-2/output.md"
+}
+

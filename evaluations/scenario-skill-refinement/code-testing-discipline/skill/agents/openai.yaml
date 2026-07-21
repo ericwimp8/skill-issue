@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Code Testing Discipline'
+  short_description: 'Test behavior through its owned interface'
+
+policy:
+  allow_implicit_invocation: true

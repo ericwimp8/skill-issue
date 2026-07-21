@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 
 import { ThemeToggle } from './components/ThemeToggle';
 import { LandingPage } from './pages/LandingPage';
+import { MethodologyPage } from './pages/MethodologyPage';
 import { ProjectPage } from './pages/ProjectPage';
 import { ResultsAnalysisPage } from './pages/ResultsAnalysisPage';
 import { siteData } from './data/siteData';
 
 export type ProductArm = 'build' | 'evaluate';
-type Destination = 'explore' | 'project' | 'analysis';
+type Destination = 'explore' | 'method' | 'project' | 'analysis';
 
 type RouteState = {
   destination: Destination;
@@ -16,6 +17,7 @@ type RouteState = {
 
 const destinationHashes: Record<Destination, string> = {
   explore: '#evaluate-environments',
+  method: '#method',
   project: '#project',
   analysis: '#analysis',
 };
@@ -27,6 +29,10 @@ function routeFromHash(): RouteState {
 
   if (window.location.hash === '#project') {
     return { destination: 'project', productArm: 'evaluate' };
+  }
+
+  if (window.location.hash === '#method') {
+    return { destination: 'method', productArm: 'evaluate' };
   }
 
   if (window.location.hash === '#analysis') {
@@ -59,6 +65,8 @@ export function App() {
   const page =
     route.destination === 'project' ? (
       <ProjectPage />
+    ) : route.destination === 'method' ? (
+      <MethodologyPage />
     ) : route.destination === 'analysis' ? (
       <ResultsAnalysisPage />
     ) : (

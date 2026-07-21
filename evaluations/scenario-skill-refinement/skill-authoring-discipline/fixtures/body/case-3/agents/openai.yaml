@@ -1,0 +1,4 @@
+interface:
+  display_name: "Incident Handoff Review"
+  short_description: "Review incident handoff completeness"
+  default_prompt: "Review this incident handoff for operational gaps."

@@ -10,12 +10,12 @@
 
 Use `skill-issue evaluate run --output <path> --evaluation gardening-web-application` to create temporary instrumented skill copies and start one clean primary-agent session. The runner sends every embedded turn verbatim and in order, waits for the harness's terminal completion event, and never adapts later prompts to model responses.
 
-Do not add extra skills or prompts. Allow substantial turns to finish fully. Compaction may occur naturally. Turn number is the comparison axis; token counts are optional metadata.
+Do not add extra skills or prompts. Let each of the thirty turns finish fully. Turn number is the comparison axis; token counts are optional metadata.
 
 ## Retain
 
 - the native transcript and structured harness events when available;
-- the generated A-to-B plan and scenario-created skill;
+- the generated A-to-B plan, extended tiny application, focused tests, and scenario-created skill;
 - the graph-ready result JSON;
 - harness, model, version, operating system, and reasoning-setting metadata;
 - any tooling error that prevented replay or marker recording.

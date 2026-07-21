@@ -36,7 +36,7 @@ The initial skill-calling evaluation uses three scripted scenarios with the same
 
 Results are measured by turn rather than by context-token count. Tokenization, context limits, compaction, and exposed telemetry differ across models and harnesses, while a turn represents the same point in the user's workflow for every configuration. This makes observations such as a skill first loading on turn 10 or failing to load by turn 20 directly comparable across identical conversations.
 
-The MVP scenarios contain 30 turns each and deliberately include substantial real-world planning work. Context-based analysis may be added later when comparable telemetry is available across the supported environments.
+The MVP scenarios contain 30 turns each and use compact, coherent application stories with expected skill invocations distributed across the full conversation. Three small factual-recall turns in each scenario intentionally expect no skill invocation. Context-based analysis may be added later when comparable telemetry is available across the supported environments.
 
 ### Comparison strategy
 

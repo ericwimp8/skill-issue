@@ -1,0 +1,25 @@
+# Code Testing Discipline Target Status
+
+- Target: `evaluations/scenario-skill-refinement/code-testing-discipline/skill/SKILL.md`
+- Target content hash: `72277b024cd12d7875792e3a677a73c9a13f294d266231c6fe5876930cfbdd55`
+- Metadata: `evaluations/scenario-skill-refinement/code-testing-discipline/skill/agents/openai.yaml`
+- Metadata content hash: `eef44875c8826814f763cd7183f81faa4c9c97a2de122defe685917a36b78fb0`
+- Environment qualification: `evaluations/skill-system-production-refinement/environment-qualification.md`
+- Refinement mode: automatic
+- Description state: `passed`
+- Description evidence: `description/round-1/trial-1/record.md`, `description/round-1/trial-2/record.md`, `description/round-1/trial-3/record.md`, `description/round-1/trial-4/record.md`
+- Reference state: `not-applicable`
+- Reference reason: target has no `references/` files
+- Reference evidence: `references/inventory.md`
+- Body state: `passed`
+- Body evidence: `behavior/cycle-1/case-1/record.md`, `behavior/cycle-1/case-2/record.md`, `behavior/cycle-1/case-3/record.md`, `behavior/cycle-1/audit.md`
+- Current loop: concluded
+- Description failure count: 0
+- Body failure count: 0
+- Total campaign allowance: 10 unsuccessful rounds or cycles before the evaluator stopping rules require authorization
+- Remaining attempts: 10
+- Last completed trial: body case 3, session `019f826c-da6f-7d81-81f8-25d7de5a1eba`
+- Applied refinement: none
+- Cleanup state: description fixtures restored clean; body outputs retained only inside isolated case workspaces; invalid preflight retained separately
+- Next action: none
+- State: passed

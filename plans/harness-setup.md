@@ -31,7 +31,7 @@ Codex evaluations launch the user's existing Codex CLI directly against a projec
 
 Resolve the absolute `codex` executable and record `codex --version` before the run. Use the user's normal `CODEX_HOME` so Codex retains its supported authentication path. Do not create a replacement home or copy authentication material.
 
-The configuration below was qualified on macOS with Codex CLI `0.144.1` through initial-session, resumed-session, workspace-write, ambient-skill isolation, automatic-review, structured-event, and tooling-complete one-turn evaluation probes. A complete 30-turn campaign remains separate qualification work.
+The configuration below was qualified on macOS with Codex CLI `0.144.1` through initial-session, resumed-session, workspace-write, ambient-skill isolation, automatic-review, structured-event, and tooling-complete one-turn evaluation probes. A complete governed campaign remains separate qualification work.
 
 #### Evaluation workspace
 
@@ -176,7 +176,7 @@ Do not count arbitrary mentions of the command, transcript text, or malformed co
 - Organization-managed requirements and system configuration remain authoritative and may prevent an evaluation from qualifying.
 - The controlled invocation excludes the documented user, compatibility, administrator, project-instruction, rule, app, plugin, hook, and MCP customization routes described above. It cannot remove Codex's compiled product behavior or override organization policy.
 - The instrumented skill contains an absolute executable path, a neutral signal instruction, an opaque token, and a private state path. These measures reduce evaluation clues but cannot guarantee that an agent inspecting its environment will not infer that instrumentation exists.
-- The configuration and replay controls are locally qualified. A complete built-in 30-turn evaluation and additional operating systems require separate campaign evidence before broader claims are made.
+- The configuration and replay controls are locally qualified. A complete built-in governed evaluation and additional operating systems require separate campaign evidence before broader claims are made.
 
 ### Platform
 
@@ -682,7 +682,7 @@ Resume later turns by adding `--session '<captured-sessionID>'`. Parse newline-d
 
 ### Platform
 
-This configuration was qualified on macOS ARM64 with OpenCode `1.18.4`, native OpenAI ChatGPT OAuth, `openai/gpt-5.6-sol`, and the `medium` variant. Governed 30-turn and additional-platform qualification remain separate work.
+This configuration was qualified on macOS ARM64 with OpenCode `1.18.4`, native OpenAI ChatGPT OAuth, `openai/gpt-5.6-sol`, and the `medium` variant. Full governed-campaign and additional-platform qualification remain separate work.
 
 ## Kilo Code
 
@@ -734,11 +734,11 @@ Resume later turns by adding `--session '<captured-sessionID>'`. Parse newline-d
 
 ### Platform
 
-This configuration was qualified on macOS ARM64 with Kilo `7.4.11`, native OpenAI ChatGPT OAuth, `openai/gpt-5.6-sol`, and the `medium` variant. Governed 30-turn and additional-platform qualification remain separate work.
+This configuration was qualified on macOS ARM64 with Kilo `7.4.11`, native OpenAI ChatGPT OAuth, `openai/gpt-5.6-sol`, and the `medium` variant. Full governed-campaign and additional-platform qualification remain separate work.
 
 ## Local Smoke Qualification
 
-The 2026-07-20 smoke campaign used only two-turn inputs and did not run any governed 30-turn evaluation. Codex `0.144.1` completed the built-in default route and the explicit `gpt-5.6-sol`/`medium` custom route through one resumable session each. The pre-run confirmation showed effective values; transcripts and signal events prove selected-skill loading, turn attribution, and argument propagation; output artifacts were written under the caller-selected roots; and temporary skill contents and private run state were removed after completion.
+The 2026-07-20 smoke campaign used only two-turn inputs and did not run any complete governed evaluation. Codex `0.144.1` completed the built-in default route and the explicit `gpt-5.6-sol`/`medium` custom route through one resumable session each. The pre-run confirmation showed effective values; transcripts and signal events prove selected-skill loading, turn attribution, and argument propagation; output artifacts were written under the caller-selected roots; and temporary skill contents and private run state were removed after completion.
 
 Cursor Agent `2026.07.16-899851b`, Claude Code `2.1.205`, and Pi `0.80.10` completed built-in and custom two-turn routes through their project-local or installed launchers. Cursor and Pi wrote directly in the caller-selected evaluation workspace. Claude received that workspace through its isolated settings and system prompt. Final Cursor and Claude runs left no detached worker or proxy, and every run removed private runtime and generated skill material. Pi reused its existing `openai-codex` authentication without the CLI modifying the auth directory. Custom smoke artifacts are local evidence only and require separate review before any publication claim.
 

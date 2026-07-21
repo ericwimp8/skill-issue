@@ -4,120 +4,120 @@ Send these turns exactly as written and in order. Wait for the agent to finish e
 
 ## Turn 1
 
-> I want to create and maintain a living A-to-B plan for a production-ready gardening web application called GardenFlow. It should help home gardeners decide what to plant, organize their growing spaces, follow care schedules, and keep useful records across multiple growing seasons. We are planning the complete product from the current idea through a public launch, but we are not implementing it during this conversation. Start the plan for this work.
+> Let's do Dictate Plan. I want to make SproutCheck, a tiny dependency-free browser app for one household to record plants and see which ones need watering. Start one living A-to-B plan for taking the empty workspace to a working, locally verified app.
 
 ## Turn 2
 
-> The main users are first-time gardeners, experienced home growers managing several beds, apartment gardeners using containers, and households where more than one person shares garden work. Add the important outcomes for each group, including confidence for beginners, speed for experienced users, clear collaboration, and useful continuity between seasons. The product should remain approachable without becoming simplistic.
+> The starting position is an empty folder on a computer with a current browser and Node.js. The finished app should let someone add a plant name and watering interval, mark a plant watered today, and show due today or the next due date after reload. It stores data locally and makes no network requests. Integrate that into the plan.
 
 ## Turn 3
 
-> Use a fixed technical baseline for the plan: React and TypeScript for the browser application, a responsive component system, a Python FastAPI service, PostgreSQL, object storage for photos, background workers for scheduled jobs, and deployment through managed cloud services. The application must support current desktop and mobile browsers. Record these as established constraints rather than reopening the stack choice later.
+> Keep the implementation deliberately small: plain HTML, CSS, and JavaScript, keyboard-usable controls, readable status text, a local-calendar-date rule, and automated checks for the date calculation. Put the broad work in dependency order and make the completion criteria observable.
 
 ## Turn 4
 
-> The initial product has five major product areas: a personalized dashboard, a plant library, a visual garden planner, a care calendar, and a seasonal journal. Describe what each area must enable, how users move between them, and which capabilities belong in the first public release. Include empty states and the experience for someone who has not created a garden yet.
+> That is the complete scope. Reconcile the whole plan so the empty-folder baseline, finished app, implementation path, and evidence agree without duplicated requirements. Mark the plan ready for execution.
 
 ## Turn 5
 
-> Add a complete interaction and visual-quality task covering responsive behavior, keyboard navigation, screen-reader support, color contrast, reduced motion, touch targets, loading and error states, printable views, and a calm visual language suitable for outdoor and household use. Include an observable accessibility and usability standard in the completion criteria.
+> Write a self-contained prompt for a fresh agent to inspect this empty project and recommend the smallest file structure that supports the planned app and its date tests. Ask for only the decision and concise rationale, without implementation. Add that delegated inspection as the first execution input in the living plan.
 
 ## Turn 6
 
-> The core data needs to represent users, households, gardens, growing areas, beds, containers, plants, varieties, plantings, care tasks, observations, harvests, photos, weather references, reminders, and seasonal summaries. Integrate the domain-model work into the plan, including relationships, history, deletion behavior, import and export needs, and the difference between shared reference data and user-owned records.
+> Planning is complete. Implement the smallest working SproutCheck app from the approved plan now. Keep it dependency-free and stop after the add, water, status, and reload behaviors work.
 
 ## Turn 7
 
-> Add the backend work needed for account management, garden configuration, plant search, planting records, care scheduling, journal entries, photo handling, notifications, household collaboration, data export, and administrative support. Include API evolution, background processing, rate limits, validation, failure recovery, and operational visibility without turning the plan into endpoint-by-endpoint implementation instructions.
+> Add focused automated tests for the owned date-status behavior: a plant not yet due, a plant due today, and a plant overdue. Use the smallest test layer that proves the rule, then run those tests.
 
 ## Turn 8
 
-> Map the important end-to-end user journeys into the plan: onboarding and creating a first garden, choosing suitable plants, laying out a bed, recording a planting, receiving and completing care work, adding observations and photos, recording a harvest, reviewing a season, inviting another household member, and returning after several months away. Make sure the task order supports proving these journeys before launch.
+> A user reports that a one-day interval can show tomorrow when the plant should be due today. Reproduce the report with the smallest failing test, trace the actual cause through the current date path, fix the causal owner, and rerun the focused checks.
 
 ## Turn 9
 
-> Gardeners often work where connectivity is poor. Add realistic offline and unreliable-network expectations for viewing the current garden, recording completed care, adding observations, and queuing photos. Include conflict behavior, synchronization visibility, recovery after failed uploads, and clear limits on what the first release will support.
+> Strengthen the automated checks with only the nearest useful calendar boundaries exposed by that fix. Keep the assertions on observable status behavior and run the focused suite again.
 
 ## Turn 10
 
-> Add the security, privacy, and account-safety work. Cover household permissions, personal location data, private garden photos, password and session security, abuse prevention, account recovery, auditability of sensitive actions, retention, export, deletion, backups, and incident response. The finished plan should make these properties observable rather than treating them as general aspirations.
+> Create a reusable agent skill named concise-interface-copy in this workspace. It should guide agents editing short labels, buttons, validation messages, and status text to keep them direct, specific, and understandable without surrounding explanation. Keep the skill portable and include only files it genuinely needs.
 
 ## Turn 11
 
-> Write a self-contained prompt that I can give to a research agent to investigate authoritative horticultural datasets suitable for GardenFlow. The researcher should compare plant taxonomy, regional growing guidance, sowing and harvest windows, climate-zone coverage, licensing, attribution, update cadence, machine-readable access, and risks in combining multiple sources. Add the research and its decision point to the living plan, but do not perform the research now.
+> The date-status rule now needs one authoritative owner shared by the interface and automated checks. Restructure the small app so that responsibility is clearly owned rather than duplicated, update affected callers, and verify behavior remains unchanged.
 
 ## Turn 12
 
-> Add the work for bringing approved horticultural reference data into the product. Include source review, normalization, taxonomy reconciliation, regional variants, attribution, correction workflows, update handling, provenance, administrator review, and a safe way to distinguish general guidance from advice tailored to a user's garden.
+> Write a concise handoff prompt for a fresh agent to add a one-day snooze later without widening the current product. Then update the living plan to distinguish completed work from that deferred follow-up and reconcile its completion evidence with what was actually verified.
 
 ## Turn 13
 
-> The care calendar should turn plantings and seasonal conditions into understandable work without overwhelming users. Add planning for recurring and one-off tasks, postponement, dependencies, household assignment, reminders, quiet periods, weather-aware suggestions, overdue work, bulk completion, calendar export, and explanations showing why a recommendation appeared.
+> Before we continue, remind me what we called the app and whether it sends any garden information over the network.
 
 ## Turn 14
 
-> The visual planner must support multiple gardens, beds, containers, dimensions, orientation, notes, drag-and-drop placement, spacing guidance, succession planting, companion and conflict warnings, historical layouts, and printable plans. Add the significant product, data, interaction, and validation work needed to make that useful on both desktop and touch devices.
+> The one-day snooze is no longer deferred. Implement it as a small action for a plant that is due today, keep the existing watering behavior unchanged, and preserve the local-calendar-date rule.
 
 ## Turn 15
 
-> Add a photo-assisted observation workflow. Users should be able to attach photos to plants or garden areas, compare changes over time, describe symptoms, and receive carefully bounded guidance without the product claiming certainty. Include upload resilience, image privacy, metadata handling, accessibility, unsafe-content controls, human-readable limitations, and escalation to authoritative resources.
+> Add focused automated tests for the snooze behavior: snoozing a due plant moves it to tomorrow, watering still starts a fresh interval, and reloading preserves the snooze. Run the focused tests.
 
 ## Turn 16
 
-> Add optional community features for sharing a garden snapshot, publishing a seasonal lesson, following a public garden, and reporting unsuitable content. Include privacy defaults, consent, moderation, blocking, rate limits, copyright and attribution considerations, youth safety, administrator tooling, and a release boundary that keeps community risk from delaying the core private gardening experience.
+> A gardener reports that watering a snoozed plant can leave the old snooze active and make the next due date wrong. Reproduce that report with the smallest failing test, trace the schedule state through the actual code, fix the causal owner, and rerun the focused checks.
 
 ## Turn 17
 
-> Define the operational workflows for customer support and administration. Cover account investigation with appropriate safeguards, data corrections, plant-data corrections, notification troubleshooting, content moderation, feature flags, service status, support escalation, audit logs, and the evidence operators need to diagnose problems without casually exposing private user data.
+> Update the living plan so the snooze is recorded as completed rather than deferred. Reconcile the completion evidence with the behaviors and tests that now exist without introducing unrelated future work.
 
 ## Turn 18
 
-> Write a detailed prompt for a research agent to study how real home gardeners plan and maintain gardens over a season. The research should examine paper and digital workflows, planning frequency, forgotten tasks, collaboration, accessibility barriers, motivation, record keeping, regional differences, and reasons people abandon gardening tools. Add this research to the plan as an input to product validation without conducting it now.
+> Quick reminder: what status categories can a plant currently show to the gardener?
 
 ## Turn 19
 
-> Add analytics and observability work that can show whether onboarding, garden creation, planning, care completion, journaling, collaboration, and seasonal return are functioning. Include privacy-respecting product analytics, service metrics, structured logs, traces, alerting, dashboard ownership, data-quality checks, and rules preventing sensitive garden or account information from entering telemetry.
+> Revise the concise-interface-copy skill created earlier so it also covers short error and empty-state messages. Preserve its narrow interface-copy purpose, keep the guidance portable, and remove anything the skill does not genuinely need.
 
 ## Turn 20
 
-> Build out the quality strategy as a broad dependency-ordered part of the plan. It should cover domain and service tests, browser behavior, responsive layouts, accessibility, synchronization and retry behavior, migrations, background jobs, security checks, performance, representative user journeys, release-candidate testing, and production monitoring. Distinguish automated proof from checks that need people or real devices.
+> Write a self-contained prompt for a fresh accessibility reviewer to inspect SproutCheck's keyboard flow, focus visibility, and status announcements. Ask only for prioritized findings with concise evidence, and do not ask the reviewer to edit files.
 
 ## Turn 21
 
-> Add the release and deployment path from internal development through preview environments, seeded demonstrations, beta users, production migration, rollback, staged rollout, support readiness, release notes, incident response, and post-launch observation. Include the evidence required before widening access and the conditions that should pause or reverse a release.
+> Inspect the current interface and implement the smallest keyboard, focus, and status-announcement improvements that are clearly needed. Keep the visual design and product scope otherwise unchanged.
 
 ## Turn 22
 
-> Add the commercial and ongoing-service considerations without choosing a final business model. The plan should allow evaluation of a useful free product, optional paid household features, storage and notification costs, third-party data costs, customer support load, data portability, account cancellation, and the effect that monetization choices could have on privacy and trust.
+> Add focused automated checks for the interaction behavior changed in the accessibility pass. Assert observable keyboard and status outcomes rather than internal event wiring, then run the focused checks.
 
 ## Turn 23
 
-> Write a self-contained research prompt comparing weather, frost-date, climate-zone, and geocoding services that could support GardenFlow. It should investigate geographic coverage, forecast and historical data, reliability, licensing, attribution, privacy implications of location queries, caching rights, rate limits, pricing growth, failure behavior, and the risks of presenting uncertain environmental guidance. Add the resulting research decision to the plan without selecting a provider.
+> Watering, snoozing, reload, and due-date display now depend on the same schedule transition rules. Restructure the app so those transitions have one authoritative owner, update every affected caller, and verify the visible behavior remains unchanged.
 
 ## Turn 24
 
-> Review the entire living plan now. Reconcile duplicated ideas, make sure existing constraints remain in the starting position, ensure the desired position describes the finished product, correct the dependency order of the broad tasks, and strengthen completion criteria for the major user journeys, accessibility, privacy, reliability, operations, data provenance, and public launch. Keep unresolved implementation choices visible without turning them into user questions.
+> Where does SproutCheck keep its plant data between browser sessions?
 
 ## Turn 25
 
-> Pause the planning update long enough to create a reusable agent skill called garden-content-quality inside the scenario workspace. It should guide agents that write GardenFlow plant descriptions and care guidance so the content is clear, region-aware, source-conscious, accessible to beginners, explicit about uncertainty, and careful around toxic plants, chemicals, pets, children, and situations requiring authoritative advice. Create the complete skill now with only the files it genuinely needs, then record its use in the living plan.
+> A gardener reports that plant names differing only by surrounding spaces or letter case can create confusing duplicates. Reproduce the behavior with the smallest failing test, trace where names enter and are compared, fix the causal owner, and rerun the focused checks.
 
 ## Turn 26
 
-> Integrate the new garden-content-quality skill into the product plan. Identify which content-production, plant-data review, administrator, testing, and release activities should use it, what evidence would show it was applied effectively, and how the product avoids treating generated wording as a substitute for horticultural review or safety decisions.
+> Add the nearest useful name-validation boundaries exposed by that fix, including a blank trimmed name and a unique name that should still be accepted. Keep assertions on visible outcomes and run the focused suite.
 
 ## Turn 27
 
-> Add a substantial content-governance task covering editorial standards, source attribution, regional review, change history, corrections, translations, seasonal updates, safety review, administrator approval, user reports, emergency withdrawal of bad guidance, and communication when previously published advice changes. Reconcile this with the imported data and garden-content-quality work rather than creating parallel owners.
+> Write a concise prompt for a fresh agent to assess a future CSV export without implementing it. Ask for the smallest compatible data shape and exact boundaries with current local storage, then update the living plan to retain that work as deferred.
 
 ## Turn 28
 
-> Review the garden-content-quality skill against the need we just established. Improve it if necessary so its description identifies the correct use boundary and its instructions remain general enough to work across plant profiles, care reminders, warnings, seasonal explanations, and administrator corrections. Do not tailor it to the wording of this scenario; keep the skill reusable.
+> Run the focused automated suite and the nearest broader project check that can catch collateral behavior changes. Report the commands and outcomes without changing application behavior.
 
 ## Turn 29
 
-> Perform a final planning pass before the architectural change I will give you next. Check that every completion criterion is created by at least one task, every broad task has a meaningful outcome, research decisions occur before dependent implementation choices, beta and release work depend on adequate product and operational proof, and no important requirement has been reduced to a vague quality statement.
+> Reconcile the living plan with the final retained evidence. Mark only demonstrated behavior complete, keep CSV export deferred, and remove any stale claim that the workspace no longer supports.
 
 ## Turn 30
 
-> Change the product architecture and revise the whole plan coherently. Instead of five route-level product areas, GardenFlow should become one adaptive workspace with panels that reveal planning, care, reference, and journal functions around the selected garden context. Establish clear ownership for workspace state, navigation state, server data, offline changes, synchronization, notifications, and shared household updates. Reorganize the broad tasks into logical blocks that implement this architecture without leaving the former page-based structure as a competing owner, and reconcile every affected completion criterion.
+> Write a concise final handoff prompt for a fresh maintainer. It should name the verified SproutCheck behaviors, the focused checks to rerun first, and the deferred CSV boundary without inventing implementation instructions.

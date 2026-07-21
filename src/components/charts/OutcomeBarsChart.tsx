@@ -11,16 +11,11 @@ import {
   type TooltipContentProps,
 } from 'recharts';
 
-import {
-  scenarioOptions,
-  type EvaluationResult,
-} from '../../data/evaluationData';
+import type { EvaluationResult } from '../../data/evaluationData';
 import { chartColorForCell, resultCalled, resultTotal } from './chartTheme';
 
 type OutcomeBarsChartProps = {
-  onToggleScenario: (scenarioId: string) => void;
   results: EvaluationResult[];
-  selectedScenarioIds: string[];
 };
 
 type OutcomeDatum = {
@@ -111,11 +106,7 @@ function aggregateResults(results: EvaluationResult[]) {
     );
 }
 
-export function OutcomeBarsChart({
-  onToggleScenario,
-  results,
-  selectedScenarioIds,
-}: OutcomeBarsChartProps) {
+export function OutcomeBarsChart({ results }: OutcomeBarsChartProps) {
   const data = aggregateResults(results);
   const chartHeight = Math.max(320, data.length * 48 + 72);
 
@@ -127,43 +118,13 @@ export function OutcomeBarsChart({
           <p className="card-kicker">Success ranking</p>
           <h3>Which setups call skills reliably?</h3>
         </div>
-        <details className="chart-scenario-picker">
-          <summary>
-            Scenarios · {selectedScenarioIds.length} of {scenarioOptions.length}
-          </summary>
-          <div className="chart-scenario-panel">
-            {scenarioOptions.map((scenario) => {
-              const checked = selectedScenarioIds.includes(scenario.id);
-
-              return (
-                <label key={scenario.id}>
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    disabled={checked && selectedScenarioIds.length === 1}
-                    onChange={() => onToggleScenario(scenario.id)}
-                  />
-                  <span>{scenario.label}</span>
-                </label>
-              );
-            })}
-          </div>
-        </details>
+        <span className="chart-purpose">Aggregate</span>
       </header>
       <p className="chart-description-wide">
         Every expected call in the selected scenarios contributes to one success
         or failure rate. Bars rank the selected setups from strongest to
         weakest.
       </p>
-      <div className="raster-legend" aria-label="Success ranking legend">
-        <span>
-          <i className="legend-block legend-block-model" /> Model color =
-          success
-        </span>
-        <span>
-          <i className="legend-block legend-block-missed" /> Failure
-        </span>
-      </div>
       <div className="chart-canvas" style={{ height: chartHeight }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
@@ -196,6 +157,7 @@ export function OutcomeBarsChart({
             />
             <Tooltip
               content={OutcomeTooltip}
+              cursor={false}
               isAnimationActive={false}
               wrapperStyle={{ transition: 'none' }}
             />
@@ -204,6 +166,10 @@ export function OutcomeBarsChart({
               name="Success"
               stackId="outcome"
               radius={[5, 0, 0, 5]}
+              activeBar={{
+                stroke: 'var(--color-text-muted)',
+                strokeWidth: 1,
+              }}
               isAnimationActive={false}
             >
               {data.map((result) => (
@@ -222,6 +188,10 @@ export function OutcomeBarsChart({
               stackId="outcome"
               fill="var(--color-neutral-failure)"
               radius={[0, 5, 5, 0]}
+              activeBar={{
+                stroke: 'var(--color-text-muted)',
+                strokeWidth: 1,
+              }}
               isAnimationActive={false}
             >
               <LabelList

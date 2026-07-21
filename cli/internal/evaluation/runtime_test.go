@@ -173,6 +173,22 @@ func TestPrepareKiloRuntimeOwnsConfigurationAndSkillPermissions(t *testing.T) {
 	}
 }
 
+func TestStructuredEnvironmentLeavesUnselectedDataRootToExecutable(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("XDG_DATA_HOME", "")
+
+	environment, err := structuredEnvironment(openCodeRuntimeSpec(), t.TempDir(), "/bin/sh")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, entry := range environment {
+		if strings.HasPrefix(entry, "XDG_DATA_HOME=") {
+			t.Fatalf("runtime replaced the executable's native data-root default: %v", environment)
+		}
+	}
+}
+
 func TestControlledEnvironmentForwardsOnlyAllowlistedCredentials(t *testing.T) {
 	t.Setenv("OPENAI_API_KEY", "forwarded")
 	t.Setenv("MY_PRIVATE_TOKEN", "secret")

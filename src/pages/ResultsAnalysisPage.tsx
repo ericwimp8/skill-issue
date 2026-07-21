@@ -12,12 +12,12 @@ export function ResultsAnalysisPage() {
         <h1>{siteData.analysis.title}</h1>
         <p>{siteData.analysis.introduction}</p>
         <a className="button button-secondary" href="#evaluate-environments">
-          Explore the mock charts
+          Explore the charts
           <span aria-hidden="true">→</span>
         </a>
       </header>
 
-      <section className="analysis-outline" aria-label="Planned analysis">
+      <section className="analysis-outline" aria-label="Results analysis">
         {siteData.analysis.sections.map((section, index) => (
           <article key={section.title}>
             <span>0{index + 1}</span>

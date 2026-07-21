@@ -1,3 +1,14 @@
+import {
+  Bar,
+  BarChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+  type BarShapeProps,
+  type TooltipContentProps,
+} from 'recharts';
+
 import type {
   EvaluationResult,
   WebsiteEvaluationPoint,
@@ -10,6 +21,28 @@ type TurnRasterChartProps = {
 
 type Outcome = 'called' | 'missed';
 
+type OutcomeTurn = {
+  outcomes: Outcome[];
+  turn: number;
+};
+
+type OutcomeStripDatum = {
+  called: number;
+  cellId: string;
+  color: string;
+  expected: number;
+  failureRate: number;
+  finalTurn?: number;
+  firstTurn?: number;
+  label: string;
+  missed: number;
+  scenarioLabel: string;
+  scoredTurns: number;
+  stripWidth: number;
+  successRate: number;
+  turns: OutcomeTurn[];
+};
+
 function outcomesForPoint(point: WebsiteEvaluationPoint): Outcome[] {
   return [
     ...Array.from({ length: point.called }, () => 'called' as const),
@@ -17,11 +50,142 @@ function outcomesForPoint(point: WebsiteEvaluationPoint): Outcome[] {
   ];
 }
 
-function outcomeSummary(point: WebsiteEvaluationPoint) {
-  return `Turn ${point.turn}: ${point.called} called, ${point.missed} missed`;
+function toOutcomeStripDatum(result: EvaluationResult): OutcomeStripDatum {
+  const points = [...result.points].sort(
+    (left, right) => left.turn - right.turn,
+  );
+  const called = points.reduce((total, point) => total + point.called, 0);
+  const missed = points.reduce((total, point) => total + point.missed, 0);
+  const expected = called + missed;
+
+  return {
+    called,
+    cellId: result.cellId,
+    color: chartColorForCell(result.cellId),
+    expected,
+    failureRate: expected === 0 ? 0 : (missed / expected) * 100,
+    finalTurn: points.at(-1)?.turn,
+    firstTurn: points.at(0)?.turn,
+    label: result.cellLabel,
+    missed,
+    scenarioLabel: result.scenarioLabel,
+    scoredTurns: points.length,
+    stripWidth: 100,
+    successRate: expected === 0 ? 0 : (called / expected) * 100,
+    turns: points.map((point) => ({
+      outcomes: outcomesForPoint(point),
+      turn: point.turn,
+    })),
+  };
+}
+
+function clipPathId(cellId: string) {
+  return `outcome-strip-${cellId.replace(/[^a-zA-Z0-9_-]/g, '-')}`;
+}
+
+function SegmentedOutcomeBar({
+  height,
+  isActive,
+  payload,
+  width,
+  x,
+  y,
+}: BarShapeProps) {
+  const result = payload as OutcomeStripDatum;
+  const turnWidth = result.turns.length === 0 ? 0 : width / result.turns.length;
+  const pathId = clipPathId(result.cellId);
+
+  return (
+    <g className="outcome-bar-shape">
+      <defs>
+        <clipPath id={pathId}>
+          <rect x={x} y={y} width={width} height={height} rx={5} />
+        </clipPath>
+      </defs>
+      <g clipPath={`url(#${pathId})`} pointerEvents="none">
+        {result.turns.flatMap((turn, turnIndex) => {
+          const outcomeWidth =
+            turn.outcomes.length === 0
+              ? turnWidth
+              : turnWidth / turn.outcomes.length;
+
+          return turn.outcomes.map((outcome, outcomeIndex) => (
+            <rect
+              key={`${turn.turn}-${outcome}-${outcomeIndex}`}
+              x={x + turnIndex * turnWidth + outcomeIndex * outcomeWidth}
+              y={y}
+              width={outcomeWidth}
+              height={height}
+              fill={
+                outcome === 'called'
+                  ? result.color
+                  : 'var(--color-neutral-failure)'
+              }
+            />
+          ));
+        })}
+      </g>
+      <rect
+        x={x}
+        y={y}
+        width={width}
+        height={height}
+        rx={5}
+        fill="transparent"
+        stroke={isActive ? 'var(--color-text-muted)' : 'transparent'}
+        strokeWidth={1}
+      />
+      <text
+        className="outcome-bar-range-label"
+        x={x}
+        y={y + height + 16}
+        textAnchor="start"
+        pointerEvents="none"
+      >
+        {result.firstTurn === undefined ? '' : `Turn ${result.firstTurn}`}
+      </text>
+      <text
+        className="outcome-bar-range-label"
+        x={x + width}
+        y={y + height + 16}
+        textAnchor="end"
+        pointerEvents="none"
+      >
+        {result.finalTurn === undefined ? '' : `Turn ${result.finalTurn}`}
+      </text>
+    </g>
+  );
+}
+
+function OutcomeStripTooltip({ active, payload }: TooltipContentProps) {
+  const result = payload?.[0]?.payload as OutcomeStripDatum | undefined;
+
+  if (!active || !result) {
+    return null;
+  }
+
+  return (
+    <div className="chart-tooltip">
+      <strong>{result.label}</strong>
+      <span>{result.scenarioLabel}</span>
+      <span>
+        {result.successRate.toFixed(0)}% success · {result.called} called
+      </span>
+      <span>
+        {result.failureRate.toFixed(0)}% failure · {result.missed} missed
+      </span>
+      <span>
+        {result.expected} expected calls across {result.scoredTurns} scored turn
+        {result.scoredTurns === 1 ? '' : 's'}
+      </span>
+    </div>
+  );
 }
 
 export function TurnRasterChart({ results }: TurnRasterChartProps) {
+  const data = results.map(toOutcomeStripDatum);
+  const chartHeight = Math.max(320, data.length * 72 + 36);
+
   return (
     <article className="exploration-chart exploration-chart-featured">
       <header className="exploration-chart-header">
@@ -37,73 +201,43 @@ export function TurnRasterChart({ results }: TurnRasterChartProps) {
         More gray toward the right reveals reliability falling later in the
         conversation.
       </p>
-      <div className="raster-legend" aria-label="Outcome strip legend">
-        <span>
-          <i className="legend-block legend-block-model" /> Model color = called
-        </span>
-        <span>
-          <i className="legend-block legend-block-missed" /> Missed
-        </span>
-      </div>
-      <div className="outcome-strips">
-        {results.map((result) => {
-          const points = [...result.points].sort(
-            (left, right) => left.turn - right.turn,
-          );
-          const firstTurn = points.at(0)?.turn;
-          const finalTurn = points.at(-1)?.turn;
-
-          return (
-            <section className="outcome-strip-row" key={result.cellId}>
-              <div className="outcome-strip-heading">
-                <strong>{result.cellLabel}</strong>
-                <span>{points.length} scored turns</span>
-              </div>
-              <div
-                className="outcome-strip"
-                aria-label={`${result.cellLabel} scored outcomes`}
-              >
-                {points.map((point) => {
-                  const outcomes = outcomesForPoint(point);
-                  const summary = outcomeSummary(point);
-
-                  return (
-                    <div
-                      className="outcome-turn"
-                      key={point.turn_id}
-                      title={summary}
-                      aria-label={summary}
-                    >
-                      {outcomes.map((outcome, index) => (
-                        <span
-                          className={`outcome-call outcome-call-${outcome}`}
-                          key={`${outcome}-${index}`}
-                          style={
-                            outcome === 'called'
-                              ? {
-                                  backgroundColor: chartColorForCell(
-                                    result.cellId,
-                                  ),
-                                }
-                              : undefined
-                          }
-                        />
-                      ))}
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="outcome-strip-range" aria-hidden="true">
-                <span>
-                  {firstTurn === undefined ? '' : `Turn ${firstTurn}`}
-                </span>
-                <span>
-                  {finalTurn === undefined ? '' : `Turn ${finalTurn}`}
-                </span>
-              </div>
-            </section>
-          );
-        })}
+      <div
+        className="chart-canvas outcome-chart-canvas"
+        style={{ height: chartHeight }}
+      >
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            data={data}
+            layout="vertical"
+            margin={{ top: 4, right: 20, bottom: 8, left: 10 }}
+            barCategoryGap="42%"
+          >
+            <XAxis type="number" domain={[0, 100]} hide />
+            <YAxis
+              type="category"
+              dataKey="label"
+              width={230}
+              interval={0}
+              stroke="var(--color-chart-label)"
+              tickLine={false}
+              axisLine={false}
+            />
+            <Tooltip
+              content={OutcomeStripTooltip}
+              cursor={false}
+              isAnimationActive={false}
+              wrapperStyle={{ transition: 'none' }}
+            />
+            <Bar
+              dataKey="stripWidth"
+              name="Outcome"
+              shape={SegmentedOutcomeBar}
+              activeBar={SegmentedOutcomeBar}
+              barSize={38}
+              isAnimationActive={false}
+            />
+          </BarChart>
+        </ResponsiveContainer>
       </div>
     </article>
   );

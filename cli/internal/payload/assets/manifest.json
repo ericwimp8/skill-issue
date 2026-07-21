@@ -4,25 +4,48 @@
   "payload_version": "development",
   "components": [
     {
-      "id": "skill-evaluation-and-refinement"
+      "id": "skill-evaluation-and-refinement",
+      "source": "skills/skill-evaluation-and-refinement"
     },
     {
-      "id": "skill-generation"
+      "id": "skill-generation",
+      "source": "skills/skill-generation"
     },
     {
-      "id": "skill-intake"
+      "id": "skill-intake",
+      "source": "skills/skill-intake"
     },
     {
-      "id": "document-update-discipline"
+      "id": "document-update-discipline",
+      "source": "evaluations/scenario-skill-refinement/document-update-discipline/skill"
     },
     {
-      "id": "prompt-writing"
+      "id": "code-implementation-discipline",
+      "source": "evaluations/scenario-skill-refinement/code-implementation-discipline/skill"
     },
     {
-      "id": "skill-authoring-discipline"
+      "id": "code-testing-discipline",
+      "source": "evaluations/scenario-skill-refinement/code-testing-discipline/skill"
     },
     {
-      "id": "system-change-ownership"
+      "id": "dictate-plan",
+      "source": "supporting-skills/dictate-plan"
+    },
+    {
+      "id": "prompt-writing",
+      "source": "evaluations/scenario-skill-refinement/prompt-writing/skill"
+    },
+    {
+      "id": "skill-authoring-discipline",
+      "source": "evaluations/scenario-skill-refinement/skill-authoring-discipline/skill"
+    },
+    {
+      "id": "system-change-ownership",
+      "source": "evaluations/scenario-skill-refinement/system-change-ownership/skill"
+    },
+    {
+      "id": "systematic-debugging",
+      "source": "evaluations/scenario-skill-refinement/systematic-debugging/skill"
     }
   ]
 }

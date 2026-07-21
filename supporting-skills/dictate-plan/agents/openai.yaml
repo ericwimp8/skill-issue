@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Dictate Plan'
+  short_description: 'Develop a living plan through dictation'
+
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Incident Brief"
+  short_description: "Prepare an incident brief"
+  default_prompt: "Use this skill to summarize the incident."

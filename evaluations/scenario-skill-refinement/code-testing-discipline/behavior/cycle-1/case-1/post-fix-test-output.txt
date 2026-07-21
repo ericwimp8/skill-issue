@@ -1,0 +1,29 @@
+$ node --test src/pageSize.test.js
+✔ uses the default for a missing value (0.84925ms)
+✔ uses the default for non-positive values (0.066583ms)
+✔ caps large page sizes (0.199666ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 147.578792
+
+$ npm test
+
+> test
+> node --test
+
+✔ uses the default for a missing value (0.8255ms)
+✔ uses the default for non-positive values (0.139542ms)
+✔ caps large page sizes (0.172292ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 178.880375

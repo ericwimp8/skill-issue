@@ -156,14 +156,6 @@ export function HarnessOutcomeChart({
           harness
         </span>
       </div>
-      <div className="raster-legend" aria-label="Harness ranking legend">
-        <span>
-          <i className="legend-block legend-block-harness" /> Successful
-        </span>
-        <span>
-          <i className="legend-block legend-block-missed" /> Missed
-        </span>
-      </div>
       <div className="chart-canvas" style={{ height: chartHeight }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
@@ -196,6 +188,7 @@ export function HarnessOutcomeChart({
             />
             <Tooltip
               content={HarnessTooltip}
+              cursor={false}
               isAnimationActive={false}
               wrapperStyle={{ transition: 'none' }}
             />
@@ -205,6 +198,10 @@ export function HarnessOutcomeChart({
               stackId="outcome"
               fill="var(--color-harness-success)"
               radius={[5, 0, 0, 5]}
+              activeBar={{
+                stroke: 'var(--color-text-muted)',
+                strokeWidth: 1,
+              }}
               isAnimationActive={false}
             >
               <LabelList
@@ -220,6 +217,10 @@ export function HarnessOutcomeChart({
               stackId="outcome"
               fill="var(--color-neutral-failure)"
               radius={[0, 5, 5, 0]}
+              activeBar={{
+                stroke: 'var(--color-text-muted)',
+                strokeWidth: 1,
+              }}
               isAnimationActive={false}
             >
               <LabelList

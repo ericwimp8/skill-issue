@@ -56,12 +56,15 @@ func TestCustomInputsUseExistingScenarioAndAnswerShapes(t *testing.T) {
 }
 
 func TestBuiltInIdentifierLoadsScenarioAndAnswerTogether(t *testing.T) {
-	identifiers := []string{
-		"gardening-web-application",
-		"community-archive-desktop-application",
-		"neighborhood-emergency-preparedness-program",
+	shapes := map[string]struct {
+		turns    int
+		expected int
+	}{
+		"gardening-web-application":                   {turns: 30, expected: 44},
+		"community-archive-desktop-application":       {turns: 30, expected: 44},
+		"neighborhood-emergency-preparedness-program": {turns: 30, expected: 43},
 	}
-	for _, identifier := range identifiers {
+	for identifier, shape := range shapes {
 		t.Run(identifier, func(t *testing.T) {
 			scenario, answer, err := loadInputs(RunRequest{EvaluationID: identifier})
 			if err != nil {
@@ -70,7 +73,7 @@ func TestBuiltInIdentifierLoadsScenarioAndAnswerTogether(t *testing.T) {
 			if scenario.ID != identifier || answer.ScenarioID != scenario.ID {
 				t.Fatalf("built-in parts do not match: %#v %#v", scenario, answer)
 			}
-			if len(scenario.Turns) != 30 || len(answer.Expected) != 4 {
+			if len(scenario.Turns) != shape.turns || len(answer.Expected) != shape.expected {
 				t.Fatalf("unexpected built-in shape: %d turns, %d expected calls", len(scenario.Turns), len(answer.Expected))
 			}
 		})
@@ -119,7 +122,7 @@ func TestWebsiteResultPreservesOrderAndDoesNotInflateRepeatedCalls(t *testing.T)
 	}
 }
 
-func TestGardeningWebsitePointsUseExpectedTurnPositions(t *testing.T) {
+func TestGardeningWebsitePointsUseEveryExpectedTurn(t *testing.T) {
 	scenario, answer, err := loadInputs(RunRequest{EvaluationID: "gardening-web-application"})
 	if err != nil {
 		t.Fatal(err)
@@ -131,17 +134,17 @@ func TestGardeningWebsitePointsUseExpectedTurnPositions(t *testing.T) {
 		Model:      "model",
 		Expected:   answer.Expected,
 	}, scenario)
-	if website.TotalTurns != 30 || len(website.Points) != 4 {
+	if website.TotalTurns != 30 || len(website.Points) != 27 {
 		t.Fatalf("unexpected gardening website shape: %#v", website)
 	}
-	wantTurns := []int{1, 11, 25, 30}
-	for index, turn := range wantTurns {
+	expectedTurns := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 19, 20, 21, 22, 23, 25, 26, 27, 28, 29, 30}
+	for index, turn := range expectedTurns {
 		if website.Points[index].Turn != turn {
 			t.Fatalf("point %d uses turn %d", index, website.Points[index].Turn)
 		}
 	}
-	if website.Points[0].Called != 0 || website.Points[0].Missed != 1 {
-		t.Fatalf("turn 1 did not retain its expected call: %#v", website.Points[0])
+	if website.Points[0].Called != 0 || website.Points[0].Missed != 2 {
+		t.Fatalf("turn 1 did not retain its expected calls: %#v", website.Points[0])
 	}
 }
 

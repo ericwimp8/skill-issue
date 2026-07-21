@@ -1,0 +1,28 @@
+$ node --test src/orderTotal.test.js
+✔ applies a percentage discount to the order total (0.752917ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 145.286667
+
+$ npm test
+
+> test
+> node --test
+
+✔ applies a percentage discount to the order total (0.665459ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 174.41625
+
+focused_exit=0
+broader_exit=0

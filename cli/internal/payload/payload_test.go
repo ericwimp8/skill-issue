@@ -17,6 +17,9 @@ func TestSkillsMatchCanonicalManifest(t *testing.T) {
 		names = append(names, skill.Name)
 	}
 	expected := []string{
+		"code-implementation-discipline",
+		"code-testing-discipline",
+		"dictate-plan",
 		"document-update-discipline",
 		"prompt-writing",
 		"skill-authoring-discipline",
@@ -24,19 +27,51 @@ func TestSkillsMatchCanonicalManifest(t *testing.T) {
 		"skill-generation",
 		"skill-intake",
 		"system-change-ownership",
+		"systematic-debugging",
 	}
 	if !slices.Equal(names, expected) {
 		t.Fatalf("unexpected canonical skills: %v", names)
 	}
 }
 
-func TestBuiltInEvaluationsAreComplete(t *testing.T) {
-	identifiers := []string{
-		"gardening-web-application",
-		"community-archive-desktop-application",
-		"neighborhood-emergency-preparedness-program",
+func TestCanonicalManifestSources(t *testing.T) {
+	manifest, err := ReadManifest()
+	if err != nil {
+		t.Fatal(err)
 	}
-	for _, identifier := range identifiers {
+	expected := map[string]string{
+		"code-implementation-discipline":  "evaluations/scenario-skill-refinement/code-implementation-discipline/skill",
+		"code-testing-discipline":         "evaluations/scenario-skill-refinement/code-testing-discipline/skill",
+		"dictate-plan":                    "supporting-skills/dictate-plan",
+		"document-update-discipline":      "evaluations/scenario-skill-refinement/document-update-discipline/skill",
+		"prompt-writing":                  "evaluations/scenario-skill-refinement/prompt-writing/skill",
+		"skill-authoring-discipline":      "evaluations/scenario-skill-refinement/skill-authoring-discipline/skill",
+		"skill-evaluation-and-refinement": "skills/skill-evaluation-and-refinement",
+		"skill-generation":                "skills/skill-generation",
+		"skill-intake":                    "skills/skill-intake",
+		"system-change-ownership":         "evaluations/scenario-skill-refinement/system-change-ownership/skill",
+		"systematic-debugging":            "evaluations/scenario-skill-refinement/systematic-debugging/skill",
+	}
+	if len(manifest.Components) != len(expected) {
+		t.Fatalf("unexpected manifest component count: %d", len(manifest.Components))
+	}
+	for _, component := range manifest.Components {
+		if expected[component.ID] != component.Source {
+			t.Fatalf("unexpected source for %q: %q", component.ID, component.Source)
+		}
+	}
+}
+
+func TestBuiltInEvaluationsAreComplete(t *testing.T) {
+	shapes := map[string]struct {
+		turns    int
+		expected int
+	}{
+		"gardening-web-application":                   {turns: 30, expected: 44},
+		"community-archive-desktop-application":       {turns: 30, expected: 44},
+		"neighborhood-emergency-preparedness-program": {turns: 30, expected: 43},
+	}
+	for identifier, shape := range shapes {
 		t.Run(identifier, func(t *testing.T) {
 			data, err := BuiltInEvaluation(identifier)
 			if err != nil {
@@ -69,12 +104,24 @@ func TestBuiltInEvaluationsAreComplete(t *testing.T) {
 			if unit.Scenario.ScenarioID != identifier || unit.AnswerSheet.ScenarioID != identifier {
 				t.Fatalf("scenario and answer sheet do not match identifier")
 			}
-			if len(unit.Scenario.Turns) != 30 || len(unit.AnswerSheet.Expected) != 4 {
+			if len(unit.Scenario.Turns) != shape.turns || len(unit.AnswerSheet.Expected) != shape.expected {
 				t.Fatalf("unexpected governed evaluation shape: %d turns, %d expected calls", len(unit.Scenario.Turns), len(unit.AnswerSheet.Expected))
 			}
 			for turnIndex, turn := range unit.Scenario.Turns {
 				if turn.TurnID != fmt.Sprintf("turn-%d", turnIndex+1) || turn.Prompt == "" {
 					t.Fatalf("embedded turn is incomplete or unordered: %#v", turn)
+				}
+			}
+			scoredTurns := make(map[string]bool, len(unit.Scenario.Turns))
+			for _, expected := range unit.AnswerSheet.Expected {
+				scoredTurns[expected.TurnID] = true
+			}
+			if len(scoredTurns) != 27 {
+				t.Fatalf("unexpected scored-turn count: %d", len(scoredTurns))
+			}
+			for _, turnID := range []string{"turn-13", "turn-18", "turn-24"} {
+				if scoredTurns[turnID] {
+					t.Fatalf("factual reminder turn %s is scored", turnID)
 				}
 			}
 		})

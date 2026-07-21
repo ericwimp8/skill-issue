@@ -1,0 +1,7 @@
+# Architecture Decision
+
+Place retry orchestration in `JobDispatcher`, with the export-specific retry policy carried by `ExportJob`. The failure was observed in `AdminExportPage`, but that page owns presentation rather than job execution. `JobDispatcher` already owns queue selection and dispatch state, so it should evaluate each reported attempt failure, schedule the next attempt with exponential backoff, and mark the job terminally failed only after the policy is exhausted. `WorkerRunner` should continue to execute one queued attempt and report its result.
+
+Set the export policy to three retries when `ExportCoordinator` creates the `ExportJob`, alongside its existing timeout and priority settings. Extend the job contract to express retry count and backoff, extend dispatch state to track attempts and the next eligible run time, and ensure each queue implementation can delay or schedule redispatch consistently. Update the controller and `AdminExportPage` to expose and display retrying or scheduled state instead of resubmitting the export. Other job types retain their own policies through the same job contract, avoiding a second retry owner.
+
+Verify that an export failing three times is redispatched after the expected exponential delays and becomes terminal only after the fourth failed attempt; success on any retry stops further dispatch. Also verify attempt state survives polling, each queue implementation follows the same policy, other job types keep their configured behavior, and the admin page never creates a replacement job or retry timer.

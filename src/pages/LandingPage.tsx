@@ -102,7 +102,7 @@ export function LandingPage({ activeArm, onSelectArm }: LandingPageProps) {
             >
               <header className="section-heading">
                 <div>
-                  <p className="eyebrow">Illustrative mock data</p>
+                  <p className="eyebrow">Evaluation data</p>
                   <h2 id="results-title">Compare every expected call.</h2>
                 </div>
                 <p>

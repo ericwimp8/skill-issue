@@ -75,7 +75,8 @@ export function LandingPage({ activeArm, onSelectArm }: LandingPageProps) {
 
       <div
         id={`${activeArm}-panel`}
-        className="product-panel content-shell"
+        className="product-panel content-shell content-transition"
+        key={activeArm}
         role="tabpanel"
         aria-labelledby={`${activeArm}-tab`}
       >

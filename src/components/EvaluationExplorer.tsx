@@ -299,17 +299,19 @@ export function EvaluationExplorer() {
       </div>
 
       {comparisonView === 'harnesses' ? (
-        <HarnessOutcomeChart
-          results={evaluationResults.filter(
-            (result) =>
-              result.model === 'codex-sol' &&
-              harnessScenarioIds.includes(result.scenario_id),
-          )}
-          selectedScenarioIds={harnessScenarioIds}
-          onToggleScenario={toggleHarnessScenario}
-        />
+        <div className="comparison-content content-transition" key="harnesses">
+          <HarnessOutcomeChart
+            results={evaluationResults.filter(
+              (result) =>
+                result.model === 'codex-sol' &&
+                harnessScenarioIds.includes(result.scenario_id),
+            )}
+            selectedScenarioIds={harnessScenarioIds}
+            onToggleScenario={toggleHarnessScenario}
+          />
+        </div>
       ) : (
-        <>
+        <div className="comparison-content content-transition" key="models">
           <div
             className="explorer-controls"
             aria-label="Evaluation chart controls"
@@ -407,7 +409,7 @@ export function EvaluationExplorer() {
               <OutcomeBarsChart results={rankingResults} />
             )}
           </section>
-        </>
+        </div>
       )}
     </div>
   );

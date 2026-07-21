@@ -132,7 +132,9 @@ export function App() {
         ))}
       </nav>
 
-      <main id="top">{page}</main>
+      <main id="top" className="page-transition" key={route.destination}>
+        {page}
+      </main>
 
       <footer className="site-footer content-shell">
         <span>{siteData.footer}</span>

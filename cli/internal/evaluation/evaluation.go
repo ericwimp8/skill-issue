@@ -387,6 +387,16 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 					return err
 				}
 			}
+			if request.Harness == harness.ClaudeCode && boundary.Capture != nil {
+				if err := service.validateClaudeSignals(runID, boundary.TurnID, *boundary.Capture, tokens, cliPath); err != nil {
+					return err
+				}
+			}
+			if request.Harness == harness.Pi && boundary.Capture != nil {
+				if err := service.validatePiSignals(runID, boundary.TurnID, *boundary.Capture, tokens, cliPath); err != nil {
+					return err
+				}
+			}
 			if (request.Harness == harness.OpenCode || request.Harness == harness.KiloCode) && boundary.Capture != nil {
 				if err := service.validateStructuredSignals(string(request.Harness), runID, boundary.TurnID, *boundary.Capture, tokens, cliPath); err != nil {
 					return err
@@ -569,6 +579,145 @@ func (service Service) validateCursorSignals(runID, turnID string, capture repla
 		}
 	}
 	return nil
+}
+
+func (service Service) validateClaudeSignals(runID, turnID string, capture replay.Capture, tokens map[string]string, cliPath string) error {
+	existing, err := service.runs.Events(runID)
+	if err != nil {
+		return err
+	}
+	observed := map[string]bool{}
+	for _, event := range existing {
+		if event.TurnID == turnID {
+			observed[event.Skill] = true
+		}
+	}
+	for _, event := range capture.Events {
+		var value struct {
+			Type    string `json:"type"`
+			Message struct {
+				Content []struct {
+					Type  string `json:"type"`
+					Name  string `json:"name"`
+					ID    string `json:"id"`
+					Input struct {
+						Command string `json:"command"`
+					} `json:"input"`
+				} `json:"content"`
+			} `json:"message"`
+		}
+		if json.Unmarshal(event, &value) != nil || value.Type != "assistant" {
+			continue
+		}
+		for _, item := range value.Message.Content {
+			if item.Type != "tool_use" || item.Name != "Bash" {
+				continue
+			}
+			for token, skill := range tokens {
+				if observed[skill] || !isSignalCommand(item.Input.Command, cliPath, token, service.stateRoot) {
+					continue
+				}
+				detail := claudeSignalCompletionDetail(capture.Events, item.ID)
+				return fmt.Errorf("Claude Code attempted the instrumented signal for skill %q but no marker was recorded: %s", skill, detail)
+			}
+		}
+	}
+	return nil
+}
+
+func claudeSignalCompletionDetail(events []json.RawMessage, toolUseID string) string {
+	for _, event := range events {
+		var value struct {
+			Type    string `json:"type"`
+			Message struct {
+				Content []struct {
+					Type      string `json:"type"`
+					ToolUseID string `json:"tool_use_id"`
+					Content   string `json:"content"`
+				} `json:"content"`
+			} `json:"message"`
+			ToolUseResult struct {
+				Stderr string `json:"stderr"`
+				Stdout string `json:"stdout"`
+			} `json:"tool_use_result"`
+		}
+		if json.Unmarshal(event, &value) != nil || value.Type != "user" {
+			continue
+		}
+		for _, item := range value.Message.Content {
+			if item.Type != "tool_result" || item.ToolUseID != toolUseID {
+				continue
+			}
+			detail := strings.TrimSpace(value.ToolUseResult.Stderr)
+			if detail == "" {
+				detail = strings.TrimSpace(item.Content)
+			}
+			if detail == "" {
+				detail = strings.TrimSpace(value.ToolUseResult.Stdout)
+			}
+			if detail != "" {
+				return detail
+			}
+		}
+	}
+	return "the command did not record its marker"
+}
+
+func (service Service) validatePiSignals(runID, turnID string, capture replay.Capture, tokens map[string]string, cliPath string) error {
+	existing, err := service.runs.Events(runID)
+	if err != nil {
+		return err
+	}
+	observed := map[string]bool{}
+	for _, event := range existing {
+		if event.TurnID == turnID {
+			observed[event.Skill] = true
+		}
+	}
+	for _, event := range capture.Events {
+		var value struct {
+			Type       string `json:"type"`
+			ToolName   string `json:"toolName"`
+			ToolCallID string `json:"toolCallId"`
+			Args       struct {
+				Command string `json:"command"`
+			} `json:"args"`
+		}
+		if json.Unmarshal(event, &value) != nil || value.Type != "tool_execution_start" || value.ToolName != "bash" {
+			continue
+		}
+		for token, skill := range tokens {
+			if observed[skill] || !isSignalCommand(value.Args.Command, cliPath, token, service.stateRoot) {
+				continue
+			}
+			detail := piSignalCompletionDetail(capture.Events, value.ToolCallID)
+			return fmt.Errorf("Pi attempted the instrumented signal for skill %q but no marker was recorded: %s", skill, detail)
+		}
+	}
+	return nil
+}
+
+func piSignalCompletionDetail(events []json.RawMessage, toolCallID string) string {
+	for _, event := range events {
+		var value struct {
+			Type       string `json:"type"`
+			ToolCallID string `json:"toolCallId"`
+			Result     struct {
+				Content []struct {
+					Text string `json:"text"`
+				} `json:"content"`
+			} `json:"result"`
+		}
+		if json.Unmarshal(event, &value) != nil || value.Type != "tool_execution_end" || value.ToolCallID != toolCallID {
+			continue
+		}
+		for _, content := range value.Result.Content {
+			if detail := strings.TrimSpace(content.Text); detail != "" {
+				return detail
+			}
+		}
+	}
+	return "the command did not record its marker"
 }
 
 // validateStructuredSignals classifies errored OpenCode and Kilo bash events

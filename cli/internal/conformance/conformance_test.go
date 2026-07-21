@@ -442,7 +442,7 @@ func TestCodexConfigurationRejectionIsDiagnosed(t *testing.T) {
 }
 
 func TestUnrecoveredMarkerFailureIsToolingFailure(t *testing.T) {
-	for _, harnessID := range []string{"opencode", "kilo-code"} {
+	for _, harnessID := range []string{"claude-code", "opencode", "kilo-code", "pi"} {
 		t.Run(harnessID, func(t *testing.T) {
 			t.Parallel()
 			run := newConformanceRun(t, harnessID, "marker-failure")

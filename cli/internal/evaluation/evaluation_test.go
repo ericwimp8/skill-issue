@@ -455,6 +455,78 @@ func TestStructuredSignalValidationRequiresARecordedMarker(t *testing.T) {
 	}
 }
 
+func TestClaudeSignalValidationRequiresARecordedMarker(t *testing.T) {
+	directory := t.TempDir()
+	service := New(filepath.Join(directory, "state"))
+	cliPath := filepath.Join(directory, "skill-issue")
+	token, err := runstate.NewToken()
+	if err != nil {
+		t.Fatal(err)
+	}
+	tokens := map[string]string{token: "prompt-writing"}
+	command := fmt.Sprintf("%q signal %q %q", cliPath, token, service.stateRoot)
+	capture := replay.Capture{Events: []json.RawMessage{
+		json.RawMessage(fmt.Sprintf(`{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Bash","id":"tool-1","input":{"command":%q}}]}}`, command)),
+		json.RawMessage(`{"type":"user","message":{"content":[{"type":"tool_result","tool_use_id":"tool-1","content":"permission denied by rule","is_error":true}]},"tool_use_result":{"stderr":"permission denied by rule"}}`),
+	}}
+	runID := createSignalValidationRun(t, service, "claude-code", tokens)
+	err = service.validateClaudeSignals(runID, "turn-1", capture, tokens, cliPath)
+	if err == nil || !strings.Contains(err.Error(), "no marker was recorded") || !strings.Contains(err.Error(), "permission denied by rule") {
+		t.Fatalf("unrecovered Claude signal denial was accepted: %v", err)
+	}
+	markSignalForTurn(t, service, runID, token)
+	if err := service.validateClaudeSignals(runID, "turn-1", capture, tokens, cliPath); err != nil {
+		t.Fatalf("recorded Claude signal was classified as a tooling failure: %v", err)
+	}
+}
+
+func TestPiSignalValidationRequiresARecordedMarker(t *testing.T) {
+	directory := t.TempDir()
+	service := New(filepath.Join(directory, "state"))
+	cliPath := filepath.Join(directory, "skill-issue")
+	token, err := runstate.NewToken()
+	if err != nil {
+		t.Fatal(err)
+	}
+	tokens := map[string]string{token: "prompt-writing"}
+	command := fmt.Sprintf("%q signal %q %q", cliPath, token, service.stateRoot)
+	capture := replay.Capture{Events: []json.RawMessage{
+		json.RawMessage(fmt.Sprintf(`{"type":"tool_execution_start","toolName":"bash","toolCallId":"tool-1","args":{"command":%q}}`, command)),
+		json.RawMessage(`{"type":"tool_execution_end","toolName":"bash","toolCallId":"tool-1","isError":true,"result":{"content":[{"type":"text","text":"permission denied by rule"}]}}`),
+	}}
+	runID := createSignalValidationRun(t, service, "pi", tokens)
+	err = service.validatePiSignals(runID, "turn-1", capture, tokens, cliPath)
+	if err == nil || !strings.Contains(err.Error(), "no marker was recorded") || !strings.Contains(err.Error(), "permission denied by rule") {
+		t.Fatalf("unrecovered Pi signal denial was accepted: %v", err)
+	}
+	markSignalForTurn(t, service, runID, token)
+	if err := service.validatePiSignals(runID, "turn-1", capture, tokens, cliPath); err != nil {
+		t.Fatalf("recorded Pi signal was classified as a tooling failure: %v", err)
+	}
+}
+
+func createSignalValidationRun(t *testing.T, service Service, harnessName string, tokens map[string]string) string {
+	t.Helper()
+	runID, err := runstate.NewRunID()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := service.runs.Create(runstate.Run{SchemaVersion: 1, ID: runID, Harness: harnessName, Scenario: "custom", Status: runstate.StatusRunning, Tokens: tokens}); err != nil {
+		t.Fatal(err)
+	}
+	return runID
+}
+
+func markSignalForTurn(t *testing.T, service Service, runID, token string) {
+	t.Helper()
+	if err := service.runs.SetActiveTurn(runID, "turn-1"); err != nil {
+		t.Fatal(err)
+	}
+	if err := service.runs.Mark(token); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestToolingFailureWritesFailureRecord(t *testing.T) {
 	directory := t.TempDir()
 	service := New(filepath.Join(directory, "state"))

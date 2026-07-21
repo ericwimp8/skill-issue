@@ -150,9 +150,16 @@ func runClaude(configuration settings) {
 	if configuration.Mode == modeHideSkills {
 		visible = append(visible, "unrelated-skill")
 	} else {
-		executeSignals(skillRoot)
 		for _, entrypoint := range skillEntrypoints(skillRoot) {
 			visible = append(visible, filepath.Base(filepath.Dir(entrypoint)))
+		}
+		if configuration.Mode == modeMarkerFailure {
+			toolUseID := "claude-marker-failure"
+			command := firstSignalCommand(skillRoot)
+			emit(map[string]any{"type": "assistant", "message": map[string]any{"content": []map[string]any{{"type": "tool_use", "name": "Bash", "id": toolUseID, "input": map[string]any{"command": command}}}}})
+			emit(map[string]any{"type": "user", "message": map[string]any{"content": []map[string]any{{"type": "tool_result", "tool_use_id": toolUseID, "content": "permission denied by rule", "is_error": true}}}, "tool_use_result": map[string]any{"stderr": "permission denied by rule"}})
+		} else {
+			executeSignals(skillRoot)
 		}
 	}
 	emit(map[string]any{"type": "system", "subtype": "init", "session_id": sessionID, "skills": visible})
@@ -386,8 +393,15 @@ func runPi(configuration settings) {
 			if configuration.Mode == modeDieOnResume && prompts == 2 {
 				fail("fake pi died mid-turn")
 			}
-			for _, skill := range skills {
-				executeSignalEntrypoint(filepath.Join(skill, "SKILL.md"))
+			if configuration.Mode == modeMarkerFailure {
+				toolCallID := "pi-marker-failure"
+				command := firstSignalCommand(filepath.Dir(skills[0]))
+				emit(map[string]any{"type": "tool_execution_start", "toolName": "bash", "toolCallId": toolCallID, "args": map[string]any{"command": command}})
+				emit(map[string]any{"type": "tool_execution_end", "toolName": "bash", "toolCallId": toolCallID, "isError": true, "result": map[string]any{"content": []map[string]any{{"type": "text", "text": "permission denied by rule"}}}})
+			} else {
+				for _, skill := range skills {
+					executeSignalEntrypoint(filepath.Join(skill, "SKILL.md"))
+				}
 			}
 			emit(map[string]any{"id": id, "type": "response", "command": "prompt", "success": true})
 			if configuration.Mode == modeAgentError {

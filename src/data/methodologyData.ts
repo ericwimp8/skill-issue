@@ -79,6 +79,10 @@ function formatTitle(name: string) {
 }
 
 export const methodologyScenarios = Object.values(scenarioFiles)
+  .filter(
+    (evaluation) =>
+      evaluation.evaluation_id in siteData.methodology.scenarioMetadata,
+  )
   .map((evaluation) => {
     const metadata =
       siteData.methodology.scenarioMetadata[

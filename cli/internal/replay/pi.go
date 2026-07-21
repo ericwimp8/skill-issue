@@ -83,6 +83,7 @@ func (adapter *piAdapter) Start(ctx context.Context) (Session, error) {
 	}
 	session := &piSession{
 		command:        command,
+		commandLine:    strings.Join(append([]string{adapter.path}, args...), " "),
 		stdin:          stdin,
 		stdout:         bufio.NewReader(stdout),
 		stderr:         &stderr,
@@ -95,13 +96,14 @@ func (adapter *piAdapter) Start(ctx context.Context) (Session, error) {
 	}
 	if err := session.preflight(ctx); err != nil {
 		_ = session.Close()
-		return nil, err
+		return nil, session.failure(err, "")
 	}
 	return session, nil
 }
 
 type piSession struct {
 	command        *exec.Cmd
+	commandLine    string
 	stdin          io.WriteCloser
 	stdout         *bufio.Reader
 	stderr         *lockedBuffer
@@ -131,6 +133,15 @@ func (buffer *lockedBuffer) String() string {
 	buffer.mutex.Lock()
 	defer buffer.mutex.Unlock()
 	return buffer.data.String()
+}
+
+// failure wraps a Pi error with the launch command, the transcript captured
+// so far, and Pi's stderr for post-mortem diagnostics.
+func (session *piSession) failure(err error, transcript string) error {
+	return &DiagnosticError{
+		Diagnostic: Diagnostic{Command: session.commandLine, Stdout: transcript, Stderr: session.stderr.String()},
+		Err:        err,
+	}
 }
 
 func (session *piSession) preflight(ctx context.Context) error {
@@ -189,19 +200,19 @@ func (session *piSession) Wait(ctx context.Context) (Capture, error) {
 			if ctx.Err() != nil {
 				session.abort()
 			}
-			return Capture{}, err
+			return Capture{}, session.failure(err, transcript.String())
 		}
 		transcript.Write(event)
 		transcript.WriteByte('\n')
 		events = append(events, append(json.RawMessage(nil), bytes.TrimSpace(event)...))
 		var value map[string]any
 		if json.Unmarshal(event, &value) != nil {
-			return Capture{}, fmt.Errorf("%w: invalid Pi RPC event", ErrProtocol)
+			return Capture{}, session.failure(fmt.Errorf("%w: invalid Pi RPC event", ErrProtocol), transcript.String())
 		}
 		if value["type"] == "response" {
 			if success, ok := value["success"].(bool); ok && !success {
 				session.abort()
-				return Capture{}, fmt.Errorf("Pi RPC command failed: %s", strings.TrimSpace(string(event)))
+				return Capture{}, session.failure(fmt.Errorf("Pi RPC command failed: %s", strings.TrimSpace(string(event))), transcript.String())
 			}
 			if value["id"] == session.pendingID && value["command"] == "prompt" {
 				accepted = true
@@ -217,18 +228,18 @@ func (session *piSession) Wait(ctx context.Context) (Capture, error) {
 		}
 		if value["type"] == "error" {
 			session.abort()
-			return Capture{}, fmt.Errorf("Pi RPC reported an error: %s", strings.TrimSpace(string(event)))
+			return Capture{}, session.failure(fmt.Errorf("Pi RPC reported an error: %s", strings.TrimSpace(string(event))), transcript.String())
 		}
 	}
 	if agentError != "" {
-		return Capture{}, errors.New(agentError)
+		return Capture{}, session.failure(errors.New(agentError), transcript.String())
 	}
 	state, err := session.request(ctx, "get_state")
 	if err != nil {
-		return Capture{}, fmt.Errorf("Pi get_state after turn failed: %w", err)
+		return Capture{}, session.failure(fmt.Errorf("Pi get_state after turn failed: %w", err), transcript.String())
 	}
 	if err := validatePiState(state, session.sessionID, session.provider, session.model, session.reasoning); err != nil {
-		return Capture{}, err
+		return Capture{}, session.failure(err, transcript.String())
 	}
 	transcript.Write(state)
 	transcript.WriteByte('\n')

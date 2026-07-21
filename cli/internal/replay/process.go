@@ -125,13 +125,23 @@ func (adapter *processAdapter) Start(context.Context) (Session, error) {
 }
 
 type processSession struct {
-	adapter   *processAdapter
-	sessionID string
-	pending   *exec.Cmd
-	stdout    bytes.Buffer
-	stderr    bytes.Buffer
-	closed    bool
-	started   bool
+	adapter     *processAdapter
+	sessionID   string
+	pending     *exec.Cmd
+	lastCommand string
+	stdout      bytes.Buffer
+	stderr      bytes.Buffer
+	closed      bool
+	started     bool
+}
+
+// failure wraps a turn error with the failed command and its full native
+// output for post-mortem diagnostics.
+func (session *processSession) failure(err error) error {
+	return &DiagnosticError{
+		Diagnostic: Diagnostic{Command: session.lastCommand, Stdout: session.stdout.String(), Stderr: session.stderr.String()},
+		Err:        err,
+	}
 }
 
 func (session *processSession) SendPrompt(ctx context.Context, prompt string) error {
@@ -142,6 +152,7 @@ func (session *processSession) SendPrompt(ctx context.Context, prompt string) er
 		return errors.New("previous prompt is still running")
 	}
 	args := session.adapter.spec.buildArgs(session.adapter, session.sessionID, session.started, prompt)
+	session.lastCommand = strings.Join(append([]string{session.adapter.path}, args...), " ")
 	session.stdout.Reset()
 	session.stderr.Reset()
 	command := exec.CommandContext(ctx, session.adapter.path, args...)
@@ -167,27 +178,27 @@ func (session *processSession) Wait(_ context.Context) (Capture, error) {
 	err := command.Wait()
 	stopOwnedProcessGroup(command)
 	if err != nil {
-		return Capture{}, fmt.Errorf("harness exited unsuccessfully: %w: %s", err, strings.TrimSpace(session.stderr.String()))
+		return Capture{}, session.failure(fmt.Errorf("harness exited unsuccessfully: %w: %s", err, strings.TrimSpace(session.stderr.String())))
 	}
 	events, err := parseEvents(session.stdout.Bytes())
 	if err != nil {
-		return Capture{}, fmt.Errorf("%s harness produced invalid structured output: %w: %s", session.adapter.harnessID, err, strings.TrimSpace(session.stderr.String()))
+		return Capture{}, session.failure(fmt.Errorf("%s harness produced invalid structured output: %w: %s", session.adapter.harnessID, err, strings.TrimSpace(session.stderr.String())))
 	}
 	if session.adapter.harnessID == HarnessKilo {
 		events = collapseAdjacentExactDuplicateEvents(events)
 	}
 	requireSessionStart := session.sessionID == ""
 	if err := validateHarnessOutput(session.adapter.harnessID, events, session.stderr.String(), requireSessionStart); err != nil {
-		return Capture{}, err
+		return Capture{}, session.failure(err)
 	}
 	if session.sessionID == "" {
 		session.sessionID = findSessionID(events)
 		if session.sessionID == "" {
-			return Capture{}, fmt.Errorf("%w: missing session ID: %s", ErrProtocol, strings.TrimSpace(session.stderr.String()))
+			return Capture{}, session.failure(fmt.Errorf("%w: missing session ID: %s", ErrProtocol, strings.TrimSpace(session.stderr.String())))
 		}
 	}
 	if err := validateSessionID(session.adapter.harnessID, session.sessionID, events); err != nil {
-		return Capture{}, err
+		return Capture{}, session.failure(err)
 	}
 	return Capture{SessionID: session.sessionID, Transcript: session.stdout.String(), Stderr: session.stderr.String(), Events: events}, nil
 }

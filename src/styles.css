@@ -46,7 +46,6 @@
   --content-wide: 82rem;
   --content-readable: 46rem;
   --display-title-max: 3.8rem;
-  --hmr-probe: 1;
   --transition-fast: 160ms ease;
   font-family: var(--font-sans);
   color: var(--color-text);

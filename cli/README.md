@@ -13,6 +13,8 @@ skill-issue evaluate run --workspace <path> --output <path> --harness <id> [--ex
 skill-issue evaluate cleanup --output <path> --run <id>
 ```
 
+Codex evaluations pass `--skip-git-repo-check` so non-git workspaces are supported: the operator explicitly selects and confirms the workspace, and Codex's `workspace-write` sandbox still constrains writes to it.
+
 Ordinary install and uninstall operations retain project and user scopes. Evaluation runs are always project-local: their interface has no scope argument, `--workspace` is required, and temporary skills use the selected harness's researched native project skill directory. Every evaluation also requires `--output`; the CLI stores its two default result artifacts under a unique `<output>/<harness>-<UTC-timestamp>-<run-prefix>/` directory and rejects an output root inside the evaluated workspace.
 
 Installation and evaluation support `claude-code`, `codex`, `cursor`, `opencode`, `kilo-code`, and `pi`.
@@ -34,7 +36,7 @@ Model identifiers and supported reasoning values are passed to the selected nati
 
 Use `--executable` when the required harness command is intentionally absent from `PATH`. The pre-run summary displays the selected executable or launcher. The local qualification environments use this for the project-local Cursor agent, the Claude Code launcher that owns its local Codex proxy, the qualified OpenCode and Kilo executables, and Pi's installed runtime entrypoint.
 
-If a harness rejects a model, reasoning value, session, permission, or protocol step, the CLI reports a tooling error and retains the useful native stderr or structured error text.
+If a harness rejects a model, reasoning value, session, permission, or protocol step, the CLI reports a tooling error and retains the useful native stderr or structured error text. Failed runs also write `failure.json` under the run's output directory recording the failed harness command, active turn, and full native stdout and stderr; this diagnostic is not sanitized (it includes local paths and the turn prompt), so review it before sharing.
 
 Use the optional positive integer `--turns` argument to run only that many turns from the beginning of any built-in or custom scenario. Omitting it runs the complete scenario. A value above the scenario length runs every available turn. Scenario truncation also removes later-turn expectations from the active answer sheet, so unrun turns are not reported as missing calls.
 

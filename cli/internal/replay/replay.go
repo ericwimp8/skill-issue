@@ -21,6 +21,26 @@ const (
 
 var ErrProtocol = errors.New("malformed harness protocol")
 
+// Diagnostic carries the raw native context of a failed harness interaction —
+// the exact command and its full stdout and stderr — so callers can persist
+// it for post-mortem inspection instead of relying on the error string alone.
+type Diagnostic struct {
+	Command string `json:"command,omitempty"`
+	Stdout  string `json:"stdout,omitempty"`
+	Stderr  string `json:"stderr,omitempty"`
+}
+
+// DiagnosticError attaches a Diagnostic to a harness failure; retrieve it
+// with errors.As.
+type DiagnosticError struct {
+	Diagnostic Diagnostic
+	Err        error
+}
+
+func (failure *DiagnosticError) Error() string { return failure.Err.Error() }
+
+func (failure *DiagnosticError) Unwrap() error { return failure.Err }
+
 type Scenario struct {
 	SchemaVersion int    `json:"schema_version"`
 	ID            string `json:"scenario_id"`

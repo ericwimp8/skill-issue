@@ -278,7 +278,7 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 	}
 	defer os.RemoveAll(privateRuntimeRunRoot(runID))
 	if err := replay.CheckAuthentication(ctx, replay.HarnessID(request.Harness), request.Executable, request.Model, runtime.environment, harnessSpec.CleanAuthenticationEnvironment); err != nil {
-		return Result{}, fmt.Errorf("evaluation encountered a tooling error: %w", err)
+		return Result{}, service.toolingFailure(outputDirectory, runID, request, err)
 	}
 	installationState, _, err := service.installer.PrepareEvaluation(installer.Request{
 		Harness:              request.Harness,
@@ -320,7 +320,7 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 	runtime.environment = append(runtime.environment, "PWD="+runtime.workingDirectory)
 	if request.Harness == harness.OpenCode {
 		if err := replay.CheckOpenCodeSkills(ctx, request.Executable, runtime.workingDirectory, runtime.environment, false, skillNames); err != nil {
-			return Result{}, fmt.Errorf("evaluation encountered a tooling error: %w", err)
+			return Result{}, service.toolingFailure(outputDirectory, runID, request, err)
 		}
 	}
 	run.InstallationState = installationStatePath
@@ -346,8 +346,7 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 		SkillIssueExecutable:  cliPath,
 	})
 	if err != nil {
-		service.setStatus(runID, runstate.StatusToolingFailed)
-		return Result{}, fmt.Errorf("evaluation encountered a tooling error: %w", err)
+		return Result{}, service.toolingFailure(outputDirectory, runID, request, err)
 	}
 	var turnStartedAt time.Time
 	runner := replay.Runner{
@@ -399,8 +398,7 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 	}
 	replayResult, err := runner.Run(ctx, scenario)
 	if err != nil {
-		service.setStatus(runID, runstate.StatusToolingFailed)
-		return Result{}, fmt.Errorf("evaluation encountered a tooling error: %w", err)
+		return Result{}, service.toolingFailure(outputDirectory, runID, request, err)
 	}
 	if request.IncludeTranscript {
 		sanitizer, err := newTranscriptSanitizer(transcriptSanitizerConfig{
@@ -963,6 +961,53 @@ func skillTokens(skills []payload.Skill) (map[string]string, error) {
 		tokens[token] = skill.Name
 	}
 	return tokens, nil
+}
+
+// FailureRecord is the post-mortem artifact written to a failed run's output
+// directory. It preserves the failed harness command and its full native
+// output, which the error string alone cannot carry.
+type FailureRecord struct {
+	SchemaVersion int       `json:"schema_version"`
+	RunID         string    `json:"run_id"`
+	Harness       string    `json:"harness"`
+	Model         string    `json:"model"`
+	Reasoning     string    `json:"reasoning"`
+	TurnID        string    `json:"turn_id,omitempty"`
+	FailedAt      time.Time `json:"failed_at"`
+	Error         string    `json:"error"`
+	Command       string    `json:"command,omitempty"`
+	Stdout        string    `json:"stdout,omitempty"`
+	Stderr        string    `json:"stderr,omitempty"`
+}
+
+// toolingFailure marks the run failed and persists diagnostics best-effort;
+// when the record is written, the returned error names its location.
+func (service Service) toolingFailure(outputDirectory, runID string, request RunRequest, failure error) error {
+	service.setStatus(runID, runstate.StatusToolingFailed)
+	wrapped := fmt.Errorf("evaluation encountered a tooling error: %w", failure)
+	record := FailureRecord{
+		SchemaVersion: 1,
+		RunID:         runID,
+		Harness:       string(request.Harness),
+		Model:         request.Model,
+		Reasoning:     request.Reasoning,
+		FailedAt:      time.Now().UTC(),
+		Error:         failure.Error(),
+	}
+	if run, err := service.runs.Load(runID); err == nil {
+		record.TurnID = run.ActiveTurn
+	}
+	var diagnostic *replay.DiagnosticError
+	if errors.As(failure, &diagnostic) {
+		record.Command = diagnostic.Diagnostic.Command
+		record.Stdout = diagnostic.Diagnostic.Stdout
+		record.Stderr = diagnostic.Diagnostic.Stderr
+	}
+	failurePath := filepath.Join(outputDirectory, "failure.json")
+	if err := writeJSON(failurePath, record); err != nil {
+		return wrapped
+	}
+	return fmt.Errorf("%w; failure diagnostics: %s", wrapped, failurePath)
 }
 
 func deriveResult(runID string, request RunRequest, evaluationID, scenarioID string, startedAt time.Time, expected []SkillCall, events []runstate.Event) Result {

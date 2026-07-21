@@ -34,12 +34,9 @@ type ScenarioDefinition = {
 
 type CellDefinition = {
   harness: string;
+  missedCalls: readonly [number, number, number];
   model: string;
-  outcomes: readonly [
-    readonly [number, number, number, number],
-    readonly [number, number, number, number],
-    readonly [number, number, number, number],
-  ];
+  seed: number;
 };
 
 export const scenarioOptions = [
@@ -77,125 +74,129 @@ const cellDefinitions = [
   {
     harness: 'claude-code',
     model: 'codex-sol',
-    outcomes: [
-      [1, 1, 1, 0],
-      [1, 1, 1, 1],
-      [1, 0, 1, 1],
-    ],
+    missedCalls: [2, 2, 2],
+    seed: 11,
   },
   {
     harness: 'codex',
     model: 'codex-sol',
-    outcomes: [
-      [1, 1, 1, 1],
-      [1, 1, 0, 1],
-      [1, 1, 1, 1],
-    ],
+    missedCalls: [1, 1, 1],
+    seed: 17,
   },
   {
     harness: 'claude-code',
     model: 'claude-fable',
-    outcomes: [
-      [1, 1, 1, 1],
-      [1, 0, 1, 0],
-      [1, 1, 0, 1],
-    ],
+    missedCalls: [3, 3, 4],
+    seed: 23,
   },
   {
     harness: 'cursor',
     model: 'claude-fable',
-    outcomes: [
-      [1, 1, 1, 1],
-      [1, 0, 1, 1],
-      [1, 1, 0, 0],
-    ],
+    missedCalls: [3, 4, 4],
+    seed: 29,
   },
   {
     harness: 'cursor',
     model: 'codex-sol',
-    outcomes: [
-      [1, 1, 0, 1],
-      [1, 1, 1, 0],
-      [1, 1, 1, 1],
-    ],
+    missedCalls: [1, 2, 2],
+    seed: 31,
   },
   {
     harness: 'cursor',
     model: 'grok',
-    outcomes: [
-      [1, 0, 1, 0],
-      [0, 1, 1, 0],
-      [1, 1, 0, 0],
-    ],
+    missedCalls: [5, 5, 6],
+    seed: 37,
   },
   {
     harness: 'cursor',
     model: 'composer',
-    outcomes: [
-      [1, 1, 1, 1],
-      [1, 1, 1, 0],
-      [1, 1, 1, 1],
-    ],
+    missedCalls: [5, 6, 5],
+    seed: 41,
   },
   {
     harness: 'pi',
     model: 'codex-sol',
-    outcomes: [
-      [1, 1, 1, 0],
-      [1, 1, 1, 1],
-      [1, 1, 1, 0],
-    ],
+    missedCalls: [2, 3, 3],
+    seed: 43,
   },
   {
     harness: 'opencode',
     model: 'codex-sol',
-    outcomes: [
-      [1, 1, 1, 0],
-      [1, 1, 0, 0],
-      [1, 1, 1, 0],
-    ],
+    missedCalls: [3, 3, 3],
+    seed: 47,
   },
   {
     harness: 'kilo',
     model: 'codex-sol',
-    outcomes: [
-      [1, 1, 0, 1],
-      [1, 0, 1, 1],
-      [1, 1, 0, 1],
-    ],
+    missedCalls: [3, 4, 4],
+    seed: 53,
   },
 ] as const satisfies readonly CellDefinition[];
 
-const scoredTurns = [1, 11, 25, 30] as const;
-const expectedByTurn = [1, 1, 1, 1] as const;
+const totalTurns = 30;
 
 function cellId(harness: string, model: string) {
   return `${harness}::${model}`;
 }
 
-function createIllustrativeArtifacts(): WebsiteEvaluationArtifact[] {
+function failurePriority(turn: number, seed: number) {
+  const laterTurnBias = turn / totalTurns;
+  const patternVariation = ((turn * 17 + seed * 13) % 31) / 31;
+
+  return laterTurnBias * 0.7 + patternVariation * 0.3;
+}
+
+function createTurnPoints(missedCallCount: number, seed: number) {
+  const turns = Array.from({ length: totalTurns }, (_, index) => index + 1);
+  const earlyMissCount =
+    missedCallCount >= 5 ? 2 : missedCallCount >= 3 ? 1 : 0;
+  const earlyMissedTurns = turns
+    .filter((turn) => turn >= 3 && turn <= 9)
+    .sort(
+      (left, right) =>
+        failurePriority(right, seed) - failurePriority(left, seed) ||
+        right - left,
+    )
+    .slice(0, earlyMissCount);
+  const earlyMissedTurnSet = new Set(earlyMissedTurns);
+  const laterMissedTurns = turns
+    .filter((turn) => !earlyMissedTurnSet.has(turn))
+    .sort(
+      (left, right) =>
+        failurePriority(right, seed) - failurePriority(left, seed) ||
+        right - left,
+    )
+    .slice(0, missedCallCount - earlyMissCount);
+  const missedTurns = new Set([...earlyMissedTurns, ...laterMissedTurns]);
+
+  return turns.map((turn) => {
+    const missed = missedTurns.has(turn) ? 1 : 0;
+
+    return {
+      turn,
+      turn_id: `turn-${turn}`,
+      called: 1 - missed,
+      missed,
+    };
+  });
+}
+
+function createVideoSeedArtifacts(): WebsiteEvaluationArtifact[] {
   return cellDefinitions.flatMap((cell) =>
     scenarioOptions.map((scenario, scenarioIndex) => {
-      const outcomes = cell.outcomes[scenarioIndex]!;
+      const missedCallCount = cell.missedCalls[scenarioIndex]!;
 
       return {
         schema_version: 1,
-        run_id: `illustrative-${cell.harness}-${cell.model}-${scenarioIndex + 1}`,
+        run_id: `video-seed-${cell.harness}-${cell.model}-${scenarioIndex + 1}`,
         scenario_id: scenario.id,
         harness: cell.harness,
         model: cell.model,
-        total_turns: 30,
-        points: scoredTurns.map((turn, pointIndex) => {
-          const called = outcomes[pointIndex]!;
-          const expected = expectedByTurn[pointIndex]!;
-
-          return {
-            turn,
-            turn_id: `turn-${turn}`,
-            called,
-            missed: expected - called,
-          };
-        }),
+        total_turns: totalTurns,
+        points: createTurnPoints(
+          missedCallCount,
+          cell.seed + scenarioIndex * 7,
+        ),
       };
     }),
   );
@@ -227,13 +228,13 @@ export function adaptWebsiteArtifacts(
   });
 }
 
-export const illustrativeWebsiteResults = createIllustrativeArtifacts();
+export const videoSeedWebsiteResults = createVideoSeedArtifacts();
 export const publishedWebsiteResults =
   publishedWebsiteArtifacts as WebsiteEvaluationArtifact[];
 export const evaluationResults = adaptWebsiteArtifacts(
   publishedWebsiteResults.length > 0
     ? publishedWebsiteResults
-    : illustrativeWebsiteResults,
+    : videoSeedWebsiteResults,
 );
 
 export const availableCells = evaluationResults

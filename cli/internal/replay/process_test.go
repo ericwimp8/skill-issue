@@ -3,6 +3,7 @@ package replay
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -235,5 +236,40 @@ func TestRequireQualifiedVersionEscapeHatch(t *testing.T) {
 	t.Setenv(allowUnqualifiedHarnessEnv, "1")
 	if err := requireQualifiedVersion("Kilo", "9.9.9", qualifiedKiloVersion); err != nil {
 		t.Fatalf("escape hatch did not downgrade the mismatch: %v", err)
+	}
+}
+
+func TestWaitFailureCarriesDiagnostics(t *testing.T) {
+	directory := t.TempDir()
+	executable := filepath.Join(directory, "fake-harness")
+	script := "#!/bin/sh\necho harness-stdout-line\necho harness-stderr-line >&2\nexit 1\n"
+	if err := os.WriteFile(executable, []byte(script), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	adapter := &processAdapter{
+		harnessID: HarnessClaude,
+		path:      executable,
+		directory: directory,
+		spec: commandSpec{buildArgs: func(_ *processAdapter, _ string, _ bool, prompt string) []string {
+			return []string{"-p", prompt}
+		}},
+	}
+	session := &processSession{adapter: adapter}
+	if err := session.SendPrompt(context.Background(), "prompt"); err != nil {
+		t.Fatal(err)
+	}
+	_, err := session.Wait(context.Background())
+	if err == nil {
+		t.Fatal("failing harness was accepted")
+	}
+	var diagnostic *DiagnosticError
+	if !errors.As(err, &diagnostic) {
+		t.Fatalf("failure carries no diagnostics: %v", err)
+	}
+	if diagnostic.Diagnostic.Command != executable+" -p prompt" {
+		t.Fatalf("unexpected failed command: %q", diagnostic.Diagnostic.Command)
+	}
+	if !strings.Contains(diagnostic.Diagnostic.Stdout, "harness-stdout-line") || !strings.Contains(diagnostic.Diagnostic.Stderr, "harness-stderr-line") {
+		t.Fatalf("diagnostics lack native output: %#v", diagnostic.Diagnostic)
 	}
 }

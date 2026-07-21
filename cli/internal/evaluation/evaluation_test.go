@@ -3,8 +3,11 @@ package evaluation
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -393,5 +396,32 @@ func TestCustomInputPathsMayBeRelative(t *testing.T) {
 	t.Chdir(directory)
 	if _, _, err := loadInputs(RunRequest{Workspace: workspace, SkillsPath: "skills", ScenarioPath: "scenario.json", AnswerSheet: "answer.json"}); err != nil {
 		t.Fatalf("relative custom input paths were rejected: %v", err)
+	}
+}
+
+func TestToolingFailureWritesFailureRecord(t *testing.T) {
+	directory := t.TempDir()
+	service := New(filepath.Join(directory, "state"))
+	failure := &replay.DiagnosticError{
+		Diagnostic: replay.Diagnostic{Command: "/tmp/harness --run", Stdout: "captured stdout", Stderr: "captured stderr"},
+		Err:        errors.New("harness exited unsuccessfully"),
+	}
+	wrapped := service.toolingFailure(directory, "run-id", RunRequest{Harness: harness.Codex, Model: "gpt-5.6-sol", Reasoning: "medium"}, fmt.Errorf("wait for turn %q: %w", "turn-1", failure))
+	if wrapped == nil || !strings.Contains(wrapped.Error(), "failure diagnostics: ") {
+		t.Fatalf("failure error does not name the diagnostics file: %v", wrapped)
+	}
+	data, err := os.ReadFile(filepath.Join(directory, "failure.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var record FailureRecord
+	if err := json.Unmarshal(data, &record); err != nil {
+		t.Fatal(err)
+	}
+	if record.RunID != "run-id" || record.Harness != "codex" || record.Command != "/tmp/harness --run" {
+		t.Fatalf("unexpected failure record: %#v", record)
+	}
+	if record.Stdout != "captured stdout" || record.Stderr != "captured stderr" || !strings.Contains(record.Error, "turn-1") {
+		t.Fatalf("failure record lacks native output: %#v", record)
 	}
 }

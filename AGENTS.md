@@ -61,6 +61,8 @@ Treat working documents in `plans/` and `research/` as temporary unless they pro
 
 For repository development or testing, use repository-root `output/` as the CLI `--output` root unless the user requests that specific output be retained. Put separate runs or campaigns in descriptive subdirectories when useful. Keep evaluation workspaces outside this repository so the output root remains outside the evaluated workspace.
 
+The skill-calling evaluation campaign under `plans/skill-calling-evaluation-campaign/` is an explicit exception: its authoritative output root is the `output/` directory inside each neutral `<repository-parent>/chats/chat-<n>/` container. Follow the campaign orchestration prompt for allocation, cleanup, and same-container retries.
+
 Keep `output/` ignored and untracked; its disposable artifacts include `result.json`, `website.json`, optional `events.jsonl` and `transcript.json`, and temporary `.skill-issue/` recovery state. Never place disposable CLI output elsewhere in the repository or force-add `output/`. Put explicitly retained output in an appropriate non-ignored location for review and commit.
 
 # Local State

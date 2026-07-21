@@ -40,8 +40,10 @@ Use one reasoning target across the campaign, or the closest documented harness-
 
 - Check an evaluation only after the complete governed scenario and its instrumentation finish successfully and the required result artifacts are retained.
 - A tooling-complete run with zero observed skill calls is a completed evaluation and may be checked.
-- Leave an exhausted tooling failure unchecked, set its status to `Failed`, and record it in the failure log; the adjacent orchestration prompt owns the diagnosed fresh-container retry budget and same-cause systemic lane closure.
+- Keep a tooling failure unchecked while it is being diagnosed and rerun. Use `Failed` only when a concrete diagnosis shows that no safe, authorized corrective path remains, never because an attempt count was reached.
 - Use `Blocked` when an evaluation cannot start because access, authentication, model availability, or another prerequisite is unavailable.
+- When resolving a blocker or tooling defect requires changing authentication or session state, user configuration, a harness installation, or product source, request the operator's explicit approval before making that specific mutation.
+- Record every attempt number for history; attempt counts are informational and never limit troubleshooting, restarts, or retries.
 - Check a configuration heading only after all three scenario evaluations beneath it are complete.
 - Update the configuration table and progress summary whenever an evaluation status changes.
 
@@ -49,13 +51,14 @@ Status values: `Pending`, `Running`, `Complete`, `Failed`, or `Blocked`.
 
 ## Execution Dependencies
 
-- OpenAI Codex — Sol, Pi — Codex, OpenCode — Codex, Kilo — Codex, Claude Code — Codex, and all four Cursor lanes start immediately in parallel, subject to the campaign-wide limit of ten simultaneous evaluation runs and at most one active `claude-code`-harness run.
-- Each configuration lane runs its three scenarios sequentially. A tooling failure may receive up to two diagnosed fresh-container retries, and every later scenario remains eligible unless two runs in the lane fail from the same systemic cause.
-- All four Cursor lanes start concurrently. Recurrent concurrent rate limits reduce Cursor concurrency for later retries and runs.
+- Eligible lanes may run concurrently, but the orchestrator chooses concurrency adaptively according to active monitoring capacity, harness health, and account limits. Ten simultaneous evaluations is the campaign-wide ceiling, not a required launch count.
+- Each configuration lane runs its three scenarios sequentially. Tooling failures remain eligible for diagnosis and rerun while a reasonable corrective path exists; neither attempts nor repeated causes impose a numerical cutoff on a run or lane.
+- Cursor lanes may overlap when healthy, but they are not required to start together; rate limits or instability reduce Cursor concurrency.
+- At most one `claude-code`-harness run may be active campaign-wide. All Claude Code — Codex scenarios therefore run serially and never overlap Claude Code — Fable.
 - Claude Code — Fable runs last, alone, only after every other lane is terminal and the Claude Code — Codex proxy is stopped and verified gone.
-- The campaign orchestrator starts and monitors evaluation commands directly and is the only writer of this progress document.
-- Every evaluation uses its own external workspace and its own retained output location.
-- Orchestrator-environment failures consume no run attempt budget. Before launch, the orchestrator must prove direct read-write cleanup access under `<chats>` and prove that a detached long-lived process survives its launching command group.
+- The campaign orchestrator starts every evaluation in a directly attached foreground session, monitors it to a terminal result, and is the only writer of this progress document.
+- Every evaluation uses its own external `chat-<n>` container. A failed or incomplete attempt is diagnosed in place; before rerun, its entire container is deleted and recreated under the same number with an empty workspace and output directory.
+- Before launch, the orchestrator must prove direct read-write cleanup access under `<chats>`. Concurrent runs use separate foreground sessions.
 
 The adjacent `campaign-orchestration-prompt.md` owns scheduling, command launch contracts, model-identifier resolution, troubleshooting, continuation and halt rules, and the progress-update procedure.
 
@@ -133,7 +136,7 @@ The adjacent `campaign-orchestration-prompt.md` owns scheduling, command launch 
 
 ## Failure And Blocker Log
 
-Add one row for every failed or blocked attempt. Retain earlier rows after a successful rerun so the campaign history remains visible.
+Add one row for every failed or blocked attempt before deleting its container for a rerun. Retain the tracker row after a successful rerun so the diagnosis and correction history remain visible even though failed-attempt artifacts are replaced.
 
 | Evaluation ID | Date | Attempt | Status | Failure or blocker | Resolution or next action | Rerun result |
 | ------------- | ---- | ------: | ------ | ------------------ | ------------------------- | ------------ |

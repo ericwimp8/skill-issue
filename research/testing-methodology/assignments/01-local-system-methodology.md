@@ -173,7 +173,7 @@ The interactive CLI prints the selected evaluation, effective turn count, harnes
 
 Current progress is 0/30 complete. `CLA-COD-01` has one failed attempt because the operator interrupted it during Turn 7; cleanup completed, and the whole 12-turn scenario must be rerun in a fresh workspace. Exact model identifiers remain unresolved for most matrix cells. The only current campaign note with exact values is Claude Code through the Codex proxy: `gpt-5.6-sol`, Claude Code `2.1.205`, CLIProxyAPI `7.2.91`.
 
-**Evidence:** `cli/internal/evaluation/evaluation.go:351-459`; `README.md:55-61`; `plans/skill-calling-evaluation-campaign/evaluation-progress.md:22-154`; `plans/build-week-definitive-completion-plan.md:124-143, 268-273`.
+**Evidence:** `cli/internal/evaluation/evaluation.go:351-459`; `README.md:55-61`; `plans/skill-calling-evaluation-campaign/evaluation-progress.md:22-154`; `plans/skill-calling-evaluation-campaign/campaign-orchestration-prompt.md:3-75`.
 
 **Implication:** The methodology can be published before results if clearly labeled as the designed method. Observed-result claims, comparative conclusions, and accepted run links remain blocked.
 

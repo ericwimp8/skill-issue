@@ -37,6 +37,10 @@ worked. With a little fiddling.
 
 You can see the reseasrch files in the research folder. Most of it is still there.
 
+## Install Skill Issue
+
+[Read the complete installation instructions.](INSTALL.md)
+
 ## Why Skill Issue exists
 
 When a skill fails, the cause is often unclear:

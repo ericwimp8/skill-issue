@@ -1,3 +1,49 @@
+type ReleaseDownload = {
+  architecture: string;
+  id: string;
+  platform: string;
+  url: string | null;
+};
+
+const releaseDownloads: ReleaseDownload[] = [
+  {
+    architecture: 'Apple silicon',
+    id: 'darwin-arm64',
+    platform: 'macOS',
+    url: null,
+  },
+  {
+    architecture: 'Intel',
+    id: 'darwin-amd64',
+    platform: 'macOS',
+    url: null,
+  },
+  {
+    architecture: 'x64',
+    id: 'windows-amd64',
+    platform: 'Windows',
+    url: null,
+  },
+  {
+    architecture: 'ARM64',
+    id: 'windows-arm64',
+    platform: 'Windows',
+    url: null,
+  },
+  {
+    architecture: 'x64',
+    id: 'linux-amd64',
+    platform: 'Linux',
+    url: null,
+  },
+  {
+    architecture: 'ARM64',
+    id: 'linux-arm64',
+    platform: 'Linux',
+    url: null,
+  },
+];
+
 export const siteData = {
   status: 'Open-source · Local-first',
   hero: {
@@ -7,6 +53,7 @@ export const siteData = {
       'Create skills that work, then find out whether your model and harness can be trusted to call them. Skill Issue makes agent skills easier to create, evaluate, and trust.',
   },
   release: {
+    downloads: releaseDownloads,
     label: 'Download CLI',
     url: 'https://github.com/ericwimp8/skill-issue/releases/latest',
   },

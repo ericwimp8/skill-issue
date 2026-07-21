@@ -235,14 +235,6 @@ Private run state and token mappings use restrictive permissions. A successful r
 
 The runner uses headless resumable commands for Codex, Cursor, and OpenCode, Claude streaming JSON, and Pi RPC mode. Model access and the underlying harness login remain user-provided prerequisites. Every supported harness has CLI-owned runtime preparation. A launch, required permission, session, marker, timeout, cancellation, or protocol failure is a tooling failure rather than a model result.
 
-## Local Smoke Qualification
-
-On 2026-07-20, the standalone CLI completed two-turn built-in and custom-skill smokes through Codex `0.144.1`, Cursor Agent `2026.07.16-899851b`, Claude Code `2.1.205` through the project-local Codex proxy, and Pi `0.80.10`. The runs exercised defaults, explicit model and reasoning values where supported, executable overrides, supplied skills, scenarios, answer sheets, output selection, one continuous session, result generation, selected-workspace writes, and cleanup. Cursor correctly rejects an explicit reasoning override because its CLI exposes no independent reasoning flag. Missing expected skill calls remain evaluation data rather than tooling failures only when the run's instrumentation is corroborated: the run recorded at least one attributed skill signal, and the missing skill is proven visible to the harness through its own evidence or an observed invocation on the same harness and build. A completed run whose expected skills were never observed warrants a `--transcript` visibility check before its misses are read as model behavior, because a silently unloaded skill produces a miss identical to a genuine model choice.
-
-The final Cursor and Claude runs left no detached Cursor worker, Claude proxy, or private runtime. Pi reused its existing authenticated `PI_CODING_AGENT_DIR` without Skill Issue copying or overwriting it while keeping evaluation sessions and supplied skills temporary. Qualification results, observed calls, cleanup evidence, and useful native errors are recorded in `evaluations/skill-calling/smoke/real-harness-smoke-report.md`.
-
-On 2026-07-21, OpenCode `1.18.4` passed the bounded local configuration qualification with native OpenAI ChatGPT OAuth, `openai/gpt-5.6-sol`, the `medium` variant, exclusive supplied-skill discovery apart from one compiled built-in skill, two-turn continuation, marker attribution, permission denial, interruption cleanup, and explicit session deletion. The retained evidence is recorded in `research/harness-portability-qualification/opencode-local-configuration-qualification.md`; full governed-campaign and additional-platform qualification remain separate work.
-
 ## Development
 
 ```sh

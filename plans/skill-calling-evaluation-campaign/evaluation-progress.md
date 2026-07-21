@@ -64,7 +64,7 @@ The adjacent `campaign-orchestration-prompt.md` owns scheduling, command launch 
 ## 1. Claude Code — Codex
 
 - [ ] **Configuration complete:** Claude Code — Codex — 0/3
-- [ ] **CLA-COD-01:** Gardening Web Application — Status: `Running` — Attempts: 2 — Result: `<chats>/chat-37` — Notes: The attempt-1 evidence container (`<chats>/chat-5`) was removed during operator cleanup. Attempt 2 runs in `<chats>/chat-37` in parallel with CLA-COD-03 after the operator relaxed the one-claudex rule; parallel safety was verified against the launcher's idempotent shared proxy and the three concurrent Claude Code — Fable runs.
+- [x] **CLA-COD-01:** Gardening Web Application — Status: `Complete` — Attempts: 2 — Result: `<chats>/chat-37` — Notes: Tooling-clean, all 30 turns; `gpt-5.6-sol` through the claudex proxy, medium reasoning; 46 expected, 12 expected hits, 34 missing, 5 additional. Attempt 1's evidence container (`<chats>/chat-5`) was removed during operator cleanup; attempt 2 ran in `<chats>/chat-37` in parallel with CLA-COD-03 after the operator relaxed the one-claudex rule.
 - [x] **CLA-COD-02:** Community Archive Desktop Application — Status: `Complete` — Attempts: 1 — Result: `<chats>/chat-31` — Notes: Tooling-clean, all 30 turns; `gpt-5.6-sol` through the claudex proxy, medium reasoning; 46 expected, 4 expected hits, 42 missing, 2 additional; per-turn skill visibility verified in-run.
 - [ ] **CLA-COD-03:** Neighborhood Emergency Preparedness Program — Status: `Running` — Attempts: 2 — Result: `<chats>/chat-32` — Notes: `gpt-5.6-sol` through the claudex proxy, medium reasoning. Attempt 1 was killed at turn 15 when the orchestrator session closed; cleanup verified and the container was recreated for attempt 2.
 

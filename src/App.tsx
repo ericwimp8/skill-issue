@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import { DownloadDialog } from './components/DownloadDialog';
 import { ThemeToggle } from './components/ThemeToggle';
 import { LandingPage } from './pages/LandingPage';
 import { MethodologyPage } from './pages/MethodologyPage';
@@ -50,6 +51,7 @@ function routeFromHash(): RouteState {
 
 export function App() {
   const [route, setRoute] = useState<RouteState>(routeFromHash);
+  const [downloadDialogOpen, setDownloadDialogOpen] = useState(false);
 
   useEffect(() => {
     const syncRoute = () => setRoute(routeFromHash());
@@ -87,6 +89,7 @@ export function App() {
     ) : (
       <LandingPage
         activeArm={route.productArm}
+        onOpenDownload={() => setDownloadDialogOpen(true)}
         onSelectArm={selectProductArm}
       />
     );
@@ -108,14 +111,13 @@ export function App() {
         </a>
 
         <div className="header-actions">
-          <a
+          <button
             className="button button-compact"
-            href={siteData.release.url}
-            target="_blank"
-            rel="noreferrer"
+            type="button"
+            onClick={() => setDownloadDialogOpen(true)}
           >
             {siteData.release.label}
-          </a>
+          </button>
         </div>
       </header>
 
@@ -143,6 +145,10 @@ export function App() {
           <span aria-hidden="true">↗</span>
         </a>
       </footer>
+
+      {downloadDialogOpen ? (
+        <DownloadDialog onClose={() => setDownloadDialogOpen(false)} />
+      ) : null}
     </div>
   );
 }

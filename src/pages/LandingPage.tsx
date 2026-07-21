@@ -6,10 +6,15 @@ import type { ProductArm } from '../App';
 
 type LandingPageProps = {
   activeArm: ProductArm;
+  onOpenDownload: () => void;
   onSelectArm: (arm: ProductArm) => void;
 };
 
-export function LandingPage({ activeArm, onSelectArm }: LandingPageProps) {
+export function LandingPage({
+  activeArm,
+  onOpenDownload,
+  onSelectArm,
+}: LandingPageProps) {
   const activeContent = siteData.arms[activeArm];
 
   return (
@@ -25,15 +30,10 @@ export function LandingPage({ activeArm, onSelectArm }: LandingPageProps) {
         </h1>
         <p className="hero-description">{siteData.hero.description}</p>
         <div className="hero-actions">
-          <a
-            className="button"
-            href={siteData.release.url}
-            target="_blank"
-            rel="noreferrer"
-          >
+          <button className="button" type="button" onClick={onOpenDownload}>
             {siteData.release.label}
             <span aria-hidden="true">↓</span>
-          </a>
+          </button>
           <a
             className="button button-secondary"
             href={siteData.repositoryUrl}

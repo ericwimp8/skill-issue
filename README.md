@@ -63,8 +63,8 @@ The evaluation supports five harnesses:
 The comparison campaign tests models across harnesses and multiple models
 within the same harness where those combinations are available. Each
 configuration uses the same scenarios, prompts, skill payload, scoring rules,
-and reasoning target or closest supported equivalent. Results record the exact
-model, harness version, operating system, and effective reasoning setting.
+and reasoning target or closest supported equivalent. Detailed results record
+the selected harness, exact model identifier, and effective reasoning setting.
 
 Cross-harness comparisons can expose harness-level patterns. Within-harness
 comparisons can expose model-level patterns. Unsupported or unrun combinations
@@ -82,9 +82,9 @@ project customization. It uses:
 - cryptographically random marker tokens; and
 - run-owned external event storage.
 
-Temporary instrumentation is removed during cleanup. When complete isolation
-is unavailable, the result records the prepared environment and the remaining
-uncertainty.
+Temporary instrumentation is removed during cleanup. Isolation is applied
+where each harness permits it; residual ambient influence remains a limit on
+interpretation rather than a field recorded in the result.
 
 Each completed run writes:
 
@@ -153,8 +153,9 @@ go run ./cli/cmd/skill-issue help
 ```
 
 The build script produces standalone Darwin, Linux, and Windows binaries for
-`amd64` and `arm64`. Cross-compilation confirms that the binaries build; native
-runtime qualification is still required on each released platform.
+`amd64` and `arm64`. Evaluation currently runs on macOS and Linux only.
+Cross-compilation confirms that the binaries build; native runtime
+qualification is still required on each released platform.
 
 ## Website
 

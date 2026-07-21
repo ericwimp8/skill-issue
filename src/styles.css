@@ -62,6 +62,13 @@
   --content-wide: 82rem;
   --content-readable: 46rem;
   --display-title-max: 3.8rem;
+  --reading-page-title-size: clamp(2.35rem, 4vw, 3.35rem);
+  --reading-page-copy-size: 1.05rem;
+  --reading-section-title-size: clamp(1.65rem, 2.2vw, 2rem);
+  --reading-section-copy-size: 1rem;
+  --reading-eyebrow-size: 0.72rem;
+  --reading-summary-label-size: 0.62rem;
+  --reading-summary-value-size: 1.4rem;
   --transition-fast: 160ms ease;
   font-family: var(--font-sans);
   color: var(--color-text);
@@ -663,7 +670,7 @@ h1 {
   border-top: 1px solid var(--color-line);
 }
 
-.skill-reader-backdrop {
+.content-dialog-backdrop {
   position: fixed;
   inset: 0;
   z-index: 100;
@@ -672,15 +679,15 @@ h1 {
   padding: var(--space-5);
   background: color-mix(in srgb, var(--color-canvas) 42%, transparent);
   backdrop-filter: blur(14px);
-  animation: skill-reader-backdrop-enter 180ms ease-out;
+  animation: content-dialog-backdrop-enter 180ms ease-out;
 }
 
-.skill-reader-backdrop.is-closing {
+.content-dialog-backdrop.is-closing {
   pointer-events: none;
-  animation: skill-reader-backdrop-exit 160ms ease-in forwards;
+  animation: content-dialog-backdrop-exit 160ms ease-in forwards;
 }
 
-.skill-reader {
+.content-dialog {
   display: grid;
   width: min(58rem, 100%);
   max-height: min(52rem, calc(100vh - 3rem));
@@ -689,43 +696,43 @@ h1 {
   border-radius: var(--radius-surface);
   background: var(--color-surface-elevated);
   box-shadow: 0 2rem 7rem rgb(0 0 0 / 24%);
-  animation: skill-reader-enter 200ms cubic-bezier(0.22, 0.7, 0.3, 1);
+  animation: content-dialog-enter 200ms cubic-bezier(0.22, 0.7, 0.3, 1);
   grid-template-rows: auto minmax(0, 1fr);
 }
 
-.skill-reader-backdrop.is-closing .skill-reader {
-  animation: skill-reader-exit 160ms ease-in forwards;
+.content-dialog-backdrop.is-closing .content-dialog {
+  animation: content-dialog-exit 160ms ease-in forwards;
 }
 
-@keyframes skill-reader-backdrop-enter {
+@keyframes content-dialog-backdrop-enter {
   from {
     background: transparent;
     backdrop-filter: blur(0);
   }
 }
 
-@keyframes skill-reader-backdrop-exit {
+@keyframes content-dialog-backdrop-exit {
   to {
     background: transparent;
     backdrop-filter: blur(0);
   }
 }
 
-@keyframes skill-reader-enter {
+@keyframes content-dialog-enter {
   from {
     opacity: 0;
     transform: translateY(0.65rem);
   }
 }
 
-@keyframes skill-reader-exit {
+@keyframes content-dialog-exit {
   to {
     opacity: 0;
     transform: translateY(0.45rem);
   }
 }
 
-.skill-reader-header {
+.content-dialog-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -734,23 +741,23 @@ h1 {
   border-bottom: 1px solid var(--color-line);
 }
 
-.skill-reader-header .eyebrow {
+.content-dialog-header .eyebrow {
   margin-bottom: var(--space-2);
 }
 
-.skill-reader-header h2 {
+.content-dialog-header h2 {
   margin-bottom: 0;
   font-size: clamp(1.5rem, 3vw, 2.4rem);
   font-weight: 590;
 }
 
-.skill-reader-actions {
+.content-dialog-actions {
   display: flex;
   align-items: center;
   gap: var(--space-3);
 }
 
-.skill-reader-actions > a {
+.content-dialog-actions > a {
   color: var(--color-text-muted);
   font-family: var(--font-mono);
   font-size: 0.68rem;
@@ -758,11 +765,11 @@ h1 {
   text-transform: uppercase;
 }
 
-.skill-reader-actions > a:hover {
+.content-dialog-actions > a:hover {
   color: var(--color-text);
 }
 
-.skill-reader-close {
+.content-dialog-close {
   display: grid;
   width: 2.6rem;
   height: 2.6rem;
@@ -776,12 +783,12 @@ h1 {
   font-size: 1.4rem;
 }
 
-.skill-reader-body {
+.content-dialog-body {
   overflow: auto;
   padding: var(--space-6);
 }
 
-.skill-reader-body pre {
+.content-dialog-body pre {
   max-width: 48rem;
   margin: 0 auto;
   color: var(--color-text);
@@ -790,6 +797,86 @@ h1 {
   line-height: 1.75;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
+}
+
+.download-dialog {
+  width: min(44rem, 100%);
+  max-height: min(46rem, calc(100vh - 3rem));
+}
+
+.download-dialog .content-dialog-body {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.download-dialog-copy {
+  max-width: 36rem;
+}
+
+.download-dialog-copy p {
+  margin-bottom: var(--space-3);
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+.download-dialog-copy p:first-child {
+  color: var(--color-text);
+  font-size: 1.02rem;
+}
+
+.download-dialog-copy p:last-child {
+  margin-bottom: 0;
+}
+
+.download-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.download-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: 4.8rem;
+  padding: var(--space-4);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  text-align: left;
+  transition:
+    border-color var(--transition-fast),
+    background var(--transition-fast);
+}
+
+a.download-option:hover {
+  border-color: var(--color-codex-blue-hover);
+  background: var(--color-surface-elevated);
+}
+
+button.download-option:disabled {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.download-option > span:first-child {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.download-option strong {
+  font-size: 0.95rem;
+  font-weight: 620;
+}
+
+.download-option small {
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.02em;
 }
 
 .metrics-grid {
@@ -1511,7 +1598,7 @@ h1 {
 .methodology-introduction h1 {
   max-width: 44rem;
   margin-bottom: var(--space-4);
-  font-size: clamp(2.35rem, 4vw, 3.35rem);
+  font-size: var(--reading-page-title-size);
   line-height: 1.02;
 }
 
@@ -1519,7 +1606,7 @@ h1 {
   max-width: 45rem;
   margin-bottom: var(--space-5);
   color: var(--color-text-muted);
-  font-size: 1.05rem;
+  font-size: var(--reading-page-copy-size);
   line-height: 1.75;
 }
 
@@ -1566,14 +1653,14 @@ h1 {
 .methodology-summary dt {
   color: var(--color-text-muted);
   font-family: var(--font-mono);
-  font-size: 0.62rem;
+  font-size: var(--reading-summary-label-size);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .methodology-summary dd {
   margin: 0;
-  font-size: 1.4rem;
+  font-size: var(--reading-summary-value-size);
   font-weight: 580;
 }
 
@@ -1596,14 +1683,14 @@ h1 {
 .methodology-section h2 {
   max-width: 42rem;
   margin-bottom: var(--space-4);
-  font-size: clamp(1.65rem, 2.2vw, 2rem);
+  font-size: var(--reading-section-title-size);
   font-weight: 580;
   line-height: 1.12;
 }
 
 .methodology-section .eyebrow {
   margin-bottom: var(--space-3);
-  font-size: 0.72rem;
+  font-size: var(--reading-eyebrow-size);
   font-weight: 560;
   letter-spacing: 0.09em;
 }
@@ -1612,7 +1699,7 @@ h1 {
   max-width: 46rem;
   margin-bottom: var(--space-4);
   color: var(--color-text-muted);
-  font-size: 1rem;
+  font-size: var(--reading-section-copy-size);
   line-height: 1.72;
 }
 
@@ -1802,7 +1889,7 @@ h1 {
 .project-introduction h1 {
   max-width: 42rem;
   margin-bottom: var(--space-4);
-  font-size: clamp(2.35rem, 4vw, 3.35rem);
+  font-size: var(--reading-page-title-size);
   line-height: 1.02;
 }
 
@@ -1810,7 +1897,7 @@ h1 {
   max-width: 42rem;
   margin-bottom: 0;
   color: var(--color-text-muted);
-  font-size: 1.05rem;
+  font-size: var(--reading-page-copy-size);
   line-height: 1.75;
 }
 
@@ -1832,14 +1919,14 @@ h1 {
 .project-section h2 {
   max-width: 38rem;
   margin-bottom: var(--space-4);
-  font-size: clamp(1.65rem, 2.2vw, 2rem);
+  font-size: var(--reading-section-title-size);
   font-weight: 580;
   line-height: 1.12;
 }
 
 .project-section .eyebrow {
   margin-bottom: var(--space-3);
-  font-size: 0.72rem;
+  font-size: var(--reading-eyebrow-size);
   font-weight: 560;
   letter-spacing: 0.09em;
 }
@@ -1849,7 +1936,7 @@ h1 {
   max-width: 43rem;
   margin-bottom: var(--space-4);
   color: var(--color-text-muted);
-  font-size: 1rem;
+  font-size: var(--reading-section-copy-size);
   line-height: 1.72;
 }
 
@@ -1888,26 +1975,24 @@ h1 {
 .analysis-reading {
   max-width: var(--content-readable);
   margin-inline: auto;
-  padding: var(--space-9) 0;
+  padding: var(--space-8) var(--space-6) var(--space-9);
 }
 
 .analysis-introduction {
-  margin-bottom: var(--space-7);
+  padding-bottom: var(--space-6);
 }
 
 .analysis-introduction h1 {
   max-width: 43rem;
-  margin-bottom: var(--space-5);
-  font-size: clamp(2.75rem, 6vw, 5.25rem);
-  font-weight: 570;
-  line-height: 0.98;
-  letter-spacing: -0.055em;
+  margin-bottom: var(--space-4);
+  font-size: var(--reading-page-title-size);
+  line-height: 1.02;
 }
 
 .analysis-introduction > p:not(.eyebrow) {
   max-width: 43rem;
   color: var(--color-text-muted);
-  font-size: 1.08rem;
+  font-size: var(--reading-page-copy-size);
   line-height: 1.75;
 }
 
@@ -1919,14 +2004,15 @@ h1 {
 }
 
 .analysis-actions a {
-  border-bottom: 1px solid var(--color-accent-soft);
+  border-bottom: 1px solid var(--color-codex-blue-underline);
   color: var(--color-text);
-  font-size: 0.9rem;
-  font-weight: 580;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.8;
 }
 
 .analysis-actions a:hover {
-  border-bottom-color: var(--color-accent);
+  border-bottom-color: var(--color-codex-blue);
 }
 
 .analysis-summary {
@@ -1950,15 +2036,15 @@ h1 {
   margin-bottom: var(--space-2);
   color: var(--color-text-muted);
   font-family: var(--font-mono);
-  font-size: 0.69rem;
+  font-size: var(--reading-summary-label-size);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .analysis-summary dd {
   margin: 0;
-  font-size: clamp(1.5rem, 3vw, 2rem);
-  font-weight: 600;
+  font-size: var(--reading-summary-value-size);
+  font-weight: 580;
 }
 
 .analysis-section {
@@ -1976,25 +2062,24 @@ h1 {
 
 .analysis-section h2 {
   max-width: 43rem;
-  margin-bottom: var(--space-5);
-  font-size: clamp(2rem, 4.25vw, 3.35rem);
-  font-weight: 570;
-  line-height: 1.04;
-  letter-spacing: -0.045em;
+  margin-bottom: var(--space-4);
+  font-size: var(--reading-section-title-size);
+  font-weight: 580;
+  line-height: 1.12;
 }
 
 .analysis-section .eyebrow {
   margin-bottom: var(--space-3);
-  font-size: 0.76rem;
+  font-size: var(--reading-eyebrow-size);
   font-weight: 560;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.09em;
 }
 
 .analysis-section > p:not(.eyebrow) {
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-4);
   color: var(--color-text-muted);
-  font-size: 1.02rem;
-  line-height: 1.8;
+  font-size: var(--reading-section-copy-size);
+  line-height: 1.72;
 }
 
 .analysis-section > p:last-child {
@@ -2248,17 +2333,25 @@ h1 {
     font-size: 2.65rem;
   }
 
-  .skill-reader-backdrop {
+  .content-dialog-backdrop {
     padding: var(--space-2);
   }
 
-  .skill-reader {
+  .content-dialog {
     max-height: calc(100vh - 1rem);
   }
 
-  .skill-reader-header,
-  .skill-reader-body {
+  .content-dialog-header,
+  .content-dialog-body {
     padding: var(--space-4);
+  }
+
+  .content-dialog-header {
+    align-items: flex-start;
+  }
+
+  .download-options {
+    grid-template-columns: 1fr;
   }
 
   .metrics-grid {

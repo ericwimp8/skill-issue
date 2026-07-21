@@ -10,37 +10,37 @@ const releaseDownloads: ReleaseDownload[] = [
     architecture: 'Apple silicon',
     id: 'darwin-arm64',
     platform: 'macOS',
-    url: null,
+    url: 'https://github.com/ericwimp8/skill-issue/releases/latest/download/skill-issue_darwin_arm64.tar.gz',
   },
   {
     architecture: 'Intel',
     id: 'darwin-amd64',
     platform: 'macOS',
-    url: null,
+    url: 'https://github.com/ericwimp8/skill-issue/releases/latest/download/skill-issue_darwin_amd64.tar.gz',
   },
   {
     architecture: 'x64',
     id: 'windows-amd64',
     platform: 'Windows',
-    url: null,
+    url: 'https://github.com/ericwimp8/skill-issue/releases/latest/download/skill-issue_windows_amd64.zip',
   },
   {
     architecture: 'ARM64',
     id: 'windows-arm64',
     platform: 'Windows',
-    url: null,
+    url: 'https://github.com/ericwimp8/skill-issue/releases/latest/download/skill-issue_windows_arm64.zip',
   },
   {
     architecture: 'x64',
     id: 'linux-amd64',
     platform: 'Linux',
-    url: null,
+    url: 'https://github.com/ericwimp8/skill-issue/releases/latest/download/skill-issue_linux_amd64.tar.gz',
   },
   {
     architecture: 'ARM64',
     id: 'linux-arm64',
     platform: 'Linux',
-    url: null,
+    url: 'https://github.com/ericwimp8/skill-issue/releases/latest/download/skill-issue_linux_arm64.tar.gz',
   },
 ];
 

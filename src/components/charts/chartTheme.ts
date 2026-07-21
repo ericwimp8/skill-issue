@@ -16,10 +16,13 @@ const modelVisuals: Record<
   string,
   { color: string; marker: SeriesMarkerShape }
 > = {
-  'codex-sol': { color: 'var(--color-series-1)', marker: 'circle' },
-  'claude-fable': { color: 'var(--color-series-2)', marker: 'diamond' },
-  grok: { color: 'var(--color-series-3)', marker: 'square' },
-  composer: { color: 'var(--color-series-4)', marker: 'triangle' },
+  'codex-sol': { color: 'var(--color-model-openai)', marker: 'circle' },
+  'claude-fable': {
+    color: 'var(--color-model-anthropic)',
+    marker: 'diamond',
+  },
+  grok: { color: 'var(--color-model-spacexai)', marker: 'square' },
+  composer: { color: 'var(--color-model-cursor)', marker: 'triangle' },
 };
 
 function modelForCell(cellId: string) {
@@ -28,7 +31,7 @@ function modelForCell(cellId: string) {
 
 export function chartColorForCell(cellId: string) {
   const model = modelForCell(cellId);
-  return modelVisuals[model ?? '']?.color ?? 'var(--color-series-1)';
+  return modelVisuals[model ?? '']?.color ?? 'var(--color-model-openai)';
 }
 
 export function chartMarkerForCell(cellId: string): SeriesMarkerShape {

@@ -399,6 +399,62 @@ func TestCustomInputPathsMayBeRelative(t *testing.T) {
 	}
 }
 
+func TestStructuredSignalValidationRequiresARecordedMarker(t *testing.T) {
+	directory := t.TempDir()
+	service := New(filepath.Join(directory, "state"))
+	cliPath := filepath.Join(directory, "skill-issue")
+	token, err := runstate.NewToken()
+	if err != nil {
+		t.Fatal(err)
+	}
+	tokens := map[string]string{token: "prompt-writing"}
+	signalCommand := fmt.Sprintf("%q signal %q %q && mkdir -p plans", cliPath, token, service.stateRoot)
+	deniedEvent, err := json.Marshal(map[string]any{"type": "tool_use", "part": map[string]any{"tool": "bash", "state": map[string]any{"status": "error", "error": "denied by rule", "input": map[string]any{"command": signalCommand}}}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	deniedCompound := replay.Capture{Events: []json.RawMessage{deniedEvent}}
+
+	// No recorded marker for the turn: the attempted signal is a tooling failure.
+	unrecoveredRunID, err := runstate.NewRunID()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := service.runs.Create(runstate.Run{SchemaVersion: 1, ID: unrecoveredRunID, Harness: "opencode", Scenario: "custom", Status: runstate.StatusRunning, Tokens: tokens}); err != nil {
+		t.Fatal(err)
+	}
+	err = service.validateStructuredSignals("opencode", unrecoveredRunID, "turn-1", deniedCompound, tokens, cliPath)
+	if err == nil || !strings.Contains(err.Error(), "no marker was recorded") || !strings.Contains(err.Error(), "denied by rule") {
+		t.Fatalf("unrecovered signal denial was accepted: %v", err)
+	}
+
+	// A recorded marker for the same skill and turn means the model recovered;
+	// the denied compound command is model behavior.
+	recoveredRunID, err := runstate.NewRunID()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := service.runs.Create(runstate.Run{SchemaVersion: 1, ID: recoveredRunID, Harness: "opencode", Scenario: "custom", Status: runstate.StatusRunning, Tokens: tokens}); err != nil {
+		t.Fatal(err)
+	}
+	if err := service.runs.SetActiveTurn(recoveredRunID, "turn-1"); err != nil {
+		t.Fatal(err)
+	}
+	if err := service.runs.Mark(token); err != nil {
+		t.Fatal(err)
+	}
+	if err := service.validateStructuredSignals("opencode", recoveredRunID, "turn-1", deniedCompound, tokens, cliPath); err != nil {
+		t.Fatalf("recovered signal denial was classified as a tooling failure: %v", err)
+	}
+
+	// Unrelated denied commands never fail the turn.
+	unrelated := replay.Capture{Events: []json.RawMessage{json.RawMessage(
+		`{"type":"tool_use","part":{"tool":"bash","state":{"status":"error","error":"denied","input":{"command":"rm -rf /"}}}}`)}}
+	if err := service.validateStructuredSignals("opencode", unrecoveredRunID, "turn-1", unrelated, tokens, cliPath); err != nil {
+		t.Fatalf("unrelated denied command was classified as a tooling failure: %v", err)
+	}
+}
+
 func TestToolingFailureWritesFailureRecord(t *testing.T) {
 	directory := t.TempDir()
 	service := New(filepath.Join(directory, "state"))

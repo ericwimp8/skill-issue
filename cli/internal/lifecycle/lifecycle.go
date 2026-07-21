@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -137,7 +138,7 @@ func (service Service) evaluate(args []string) (Result, error) {
 }
 
 func (service Service) evaluationRun(args []string, reviewer EvaluationReviewer, confirmReplacement SkillReplacementConfirmer) (Result, error) {
-	options, err := parseOptions(args, "events", "transcript", "replace-preexisting-skills")
+	options, err := parseOptions(args, "events", "transcript", "replace-preexisting-skills", "yes")
 	if err != nil {
 		return Result{}, err
 	}
@@ -148,10 +149,15 @@ func (service Service) evaluationRun(args []string, reviewer EvaluationReviewer,
 	request.ConfirmPreexisting = confirmReplacement
 	if reviewer != nil {
 		confirmed, err := reviewer(request)
-		if err != nil {
-			return Result{}, err
-		}
-		if !confirmed {
+		if err != nil || !confirmed {
+			if request.WorkspaceCreated {
+				// The created workspace is still empty; leave no trace behind
+				// a cancelled or failed confirmation.
+				_ = os.Remove(request.Workspace)
+			}
+			if err != nil {
+				return Result{}, err
+			}
 			return Result{Action: ActionEvaluate, Status: "cancelled"}, nil
 		}
 	}
@@ -184,6 +190,10 @@ func (service Service) mark(args []string) (Result, error) {
 	return Result{Action: ActionMark, Status: "recorded"}, nil
 }
 
+// defaultEvaluationID is the built-in scenario an evaluation runs when the
+// caller selects none.
+const defaultEvaluationID = "gardening-web-application"
+
 func evaluationRunRequest(options map[string]string) (evaluation.RunRequest, error) {
 	harnessValue, err := required(options, "harness")
 	if err != nil {
@@ -193,17 +203,13 @@ func evaluationRunRequest(options map[string]string) (evaluation.RunRequest, err
 	if err != nil {
 		return evaluation.RunRequest{}, err
 	}
-	workspace, err := required(options, "workspace")
-	if err != nil {
-		return evaluation.RunRequest{}, err
+	output := options["output"]
+	if output == "" {
+		output = "skill-issue-output"
 	}
-	workspace, err = filepath.Abs(workspace)
+	output, err = filepath.Abs(output)
 	if err != nil {
-		return evaluation.RunRequest{}, fmt.Errorf("resolve workspace: %w", err)
-	}
-	output, err := requiredOutput(options)
-	if err != nil {
-		return evaluation.RunRequest{}, err
+		return evaluation.RunRequest{}, fmt.Errorf("resolve output directory: %w", err)
 	}
 	evaluationID := options["evaluation"]
 	skills, err := optionalAbsolutePath(options, "skills")
@@ -222,14 +228,27 @@ func evaluationRunRequest(options map[string]string) (evaluation.RunRequest, err
 	if err != nil {
 		return evaluation.RunRequest{}, err
 	}
+	executable, err := resolvedExecutableOption(options["executable"])
+	if err != nil {
+		return evaluation.RunRequest{}, err
+	}
 	if evaluationID != "" && (skills != "" || scenario != "" || answer != "") {
 		return evaluation.RunRequest{}, errors.New("--evaluation cannot be combined with --skills, --scenario, or --answer-sheet")
 	}
-	if evaluationID == "" && (skills == "" || scenario == "" || answer == "") {
-		return evaluation.RunRequest{}, errors.New("use --evaluation or supply --skills, --scenario, and --answer-sheet")
+	if evaluationID == "" {
+		if skills == "" && scenario == "" && answer == "" {
+			evaluationID = defaultEvaluationID
+		} else if skills == "" || scenario == "" || answer == "" {
+			return evaluation.RunRequest{}, errors.New("use --evaluation or supply --skills, --scenario, and --answer-sheet")
+		}
+	}
+	workspace, workspaceCreated, err := preparedWorkspace(options["workspace"])
+	if err != nil {
+		return evaluation.RunRequest{}, err
 	}
 	request := evaluation.RunRequest{
 		Workspace:          workspace,
+		WorkspaceCreated:   workspaceCreated,
 		OutputRoot:         output,
 		Harness:            id,
 		Model:              options["model"],
@@ -240,14 +259,69 @@ func evaluationRunRequest(options map[string]string) (evaluation.RunRequest, err
 		SkillsPath:         skills,
 		ScenarioPath:       scenario,
 		AnswerSheet:        answer,
-		Executable:         options["executable"],
+		Executable:         executable,
 		CLIPath:            options["cli-path"],
 		IncludeEvents:      options["events"] == "true",
 		IncludeTranscript:  options["transcript"] == "true",
 		ReplacePreexisting: options["replace-preexisting-skills"] == "true",
+		AssumeYes:          options["yes"] == "true",
 		TurnLimit:          turnLimit,
 	}
-	return evaluation.PrepareRequest(request)
+	prepared, err := evaluation.PrepareRequest(request)
+	if err != nil {
+		if workspaceCreated {
+			_ = os.Remove(workspace)
+		}
+		return evaluation.RunRequest{}, err
+	}
+	return prepared, nil
+}
+
+// preparedWorkspace resolves the evaluation workspace. Without a --workspace
+// the CLI creates a fresh uniquely named directory adjacent to the invocation
+// directory, so every defaulted run starts clean; a named workspace that does
+// not exist yet is created for the caller.
+func preparedWorkspace(configured string) (string, bool, error) {
+	if configured == "" {
+		created, err := os.MkdirTemp(".", "skill-issue-workspace-")
+		if err != nil {
+			return "", false, fmt.Errorf("create default workspace: %w", err)
+		}
+		absolute, err := filepath.Abs(created)
+		if err != nil {
+			return "", false, fmt.Errorf("resolve default workspace: %w", err)
+		}
+		return absolute, true, nil
+	}
+	absolute, err := filepath.Abs(configured)
+	if err != nil {
+		return "", false, fmt.Errorf("resolve workspace: %w", err)
+	}
+	if _, statErr := os.Stat(absolute); statErr == nil {
+		return absolute, false, nil
+	} else if !errors.Is(statErr, fs.ErrNotExist) {
+		return "", false, fmt.Errorf("inspect workspace: %w", statErr)
+	}
+	if err := os.MkdirAll(absolute, 0o700); err != nil {
+		return "", false, fmt.Errorf("create workspace: %w", err)
+	}
+	return absolute, true, nil
+}
+
+// resolvedExecutableOption absolutizes a path-form --executable against the
+// invocation working directory at parse time. The evaluator later launches
+// the harness from a run-owned directory, where a caller-relative path would
+// fail at turn 1 with a cryptic fork/exec error. Bare command names keep
+// resolving through PATH.
+func resolvedExecutableOption(value string) (string, error) {
+	if value == "" || !strings.ContainsRune(value, os.PathSeparator) {
+		return value, nil
+	}
+	absolute, err := filepath.Abs(value)
+	if err != nil {
+		return "", fmt.Errorf("resolve --executable: %w", err)
+	}
+	return absolute, nil
 }
 
 func optionalAbsolutePath(options map[string]string, key string) (string, error) {

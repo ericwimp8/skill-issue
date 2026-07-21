@@ -43,6 +43,13 @@ type Spec struct {
 	// CleanAuthenticationEnvironment runs the pre-run authentication check
 	// with only the controlled environment.
 	CleanAuthenticationEnvironment bool
+	// TestedVersion is the harness version this CLI was qualified against.
+	// When VersionPinned is set the evaluator requires that exact version
+	// before side effects; otherwise drift is reported as a warning.
+	TestedVersion string
+	// VersionPinned marks TestedVersion as an exact requirement rather than
+	// a recorded reference.
+	VersionPinned bool
 	// Evaluation holds the harness's evaluation defaults; a nil value means
 	// the harness cannot run evaluations.
 	Evaluation *EvaluationDefaults
@@ -56,12 +63,12 @@ type EvaluationDefaults struct {
 // orderedSpecs is the single registry of supported harnesses; every lookup,
 // listing, and capability check derives from it.
 var orderedSpecs = []Spec{
-	{ID: ClaudeCode, Executable: "claude", ProjectSkillDir: ".claude/skills", UserSkillDir: claudeUserPath, DisableModelInvocation: true, Evaluation: &EvaluationDefaults{Model: "opus", Reasoning: "medium"}},
-	{ID: Codex, Executable: "codex", ProjectSkillDir: ".agents/skills", UserSkillDir: homePath(".agents", "skills"), HarnessSkillFiles: []string{"agents/openai.yaml"}, Evaluation: &EvaluationDefaults{Model: "gpt-5.6-sol", Reasoning: "medium"}},
-	{ID: Cursor, Executable: "cursor-agent", ProjectSkillDir: ".cursor/skills", UserSkillDir: homePath(".cursor", "skills"), DisableModelInvocation: true, CleanEvaluationEnvironment: true, CleanAuthenticationEnvironment: true, Evaluation: &EvaluationDefaults{Model: "auto", Reasoning: "medium"}},
-	{ID: OpenCode, Executable: "opencode", ProjectSkillDir: ".opencode/skills", UserSkillDir: homePath(".config", "opencode", "skills"), CleanAuthenticationEnvironment: true, Evaluation: &EvaluationDefaults{Model: "openai/gpt-5.6-sol", Reasoning: "medium"}},
-	{ID: KiloCode, Executable: "kilo", ProjectSkillDir: ".kilo/skills", UserSkillDir: homePath(".kilo", "skills"), CleanEvaluationEnvironment: true, CleanAuthenticationEnvironment: true, Evaluation: &EvaluationDefaults{Model: "openai/gpt-5.6-sol", Reasoning: "medium"}},
-	{ID: Pi, Executable: "pi", ProjectSkillDir: ".pi/skills", UserSkillDir: homePath(".pi", "agent", "skills"), DisableModelInvocation: true, CleanEvaluationEnvironment: true, CleanAuthenticationEnvironment: true, Evaluation: &EvaluationDefaults{Model: "openai-codex/gpt-5.6-sol", Reasoning: "medium"}},
+	{ID: ClaudeCode, Executable: "claude", ProjectSkillDir: ".claude/skills", UserSkillDir: claudeUserPath, DisableModelInvocation: true, TestedVersion: "2.1.205", Evaluation: &EvaluationDefaults{Model: "opus", Reasoning: "medium"}},
+	{ID: Codex, Executable: "codex", ProjectSkillDir: ".agents/skills", UserSkillDir: homePath(".agents", "skills"), HarnessSkillFiles: []string{"agents/openai.yaml"}, TestedVersion: "0.144.6", Evaluation: &EvaluationDefaults{Model: "gpt-5.6-sol", Reasoning: "medium"}},
+	{ID: Cursor, Executable: "cursor-agent", ProjectSkillDir: ".cursor/skills", UserSkillDir: homePath(".cursor", "skills"), DisableModelInvocation: true, CleanEvaluationEnvironment: true, CleanAuthenticationEnvironment: true, TestedVersion: "2026.07.16-899851b", Evaluation: &EvaluationDefaults{Model: "auto", Reasoning: "medium"}},
+	{ID: OpenCode, Executable: "opencode", ProjectSkillDir: ".opencode/skills", UserSkillDir: homePath(".config", "opencode", "skills"), CleanAuthenticationEnvironment: true, TestedVersion: "1.18.4", VersionPinned: true, Evaluation: &EvaluationDefaults{Model: "openai/gpt-5.6-sol", Reasoning: "medium"}},
+	{ID: KiloCode, Executable: "kilo", ProjectSkillDir: ".kilo/skills", UserSkillDir: homePath(".kilo", "skills"), CleanEvaluationEnvironment: true, CleanAuthenticationEnvironment: true, TestedVersion: "7.4.11", VersionPinned: true, Evaluation: &EvaluationDefaults{Model: "openai/gpt-5.6-sol", Reasoning: "medium"}},
+	{ID: Pi, Executable: "pi", ProjectSkillDir: ".pi/skills", UserSkillDir: homePath(".pi", "agent", "skills"), DisableModelInvocation: true, CleanEvaluationEnvironment: true, CleanAuthenticationEnvironment: true, TestedVersion: "0.80.10", Evaluation: &EvaluationDefaults{Model: "openai-codex/gpt-5.6-sol", Reasoning: "medium"}},
 }
 
 var specs = func() map[ID]Spec {
@@ -167,6 +174,16 @@ func IncludeSkillFile(id ID, relative string) (bool, error) {
 		}
 	}
 	return true, nil
+}
+
+// TestedVersion reports the harness version this CLI was qualified against
+// and whether that version is an exact requirement.
+func TestedVersion(id ID) (string, bool, error) {
+	spec, err := Lookup(id)
+	if err != nil {
+		return "", false, err
+	}
+	return spec.TestedVersion, spec.VersionPinned, nil
 }
 
 func SupportsDisableModelInvocation(id ID) (bool, error) {

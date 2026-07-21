@@ -2,6 +2,7 @@ package command
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ericwimp8/skill-issue/cli/internal/doctor"
 	"github.com/ericwimp8/skill-issue/cli/internal/evaluation"
 	"github.com/ericwimp8/skill-issue/cli/internal/harness"
 	"github.com/ericwimp8/skill-issue/cli/internal/lifecycle"
@@ -58,6 +60,8 @@ func (app App) Run(args []string) int {
 		return app.writeJSON(app.buildInfo)
 	case "install":
 		return app.runInstall(args[1:])
+	case "doctor":
+		return app.runDoctor(args[1:])
 	case "uninstall", "evaluate":
 		return app.runLifecycle(lifecycle.Action(args[0]), args[1:])
 	case "signal":
@@ -301,6 +305,41 @@ func readConfirmation(reader *bufio.Reader, output io.Writer, prompt string) (bo
 	}
 }
 
+func (app App) runDoctor(args []string) int {
+	var harnessValue, executable string
+	for index := 0; index < len(args); index++ {
+		argument := args[index]
+		key, inlineValue, hasInline := strings.Cut(strings.TrimPrefix(argument, "--"), "=")
+		if !strings.HasPrefix(argument, "--") || (key != "harness" && key != "executable") {
+			return app.fail(fmt.Errorf("doctor accepts only --harness and --executable; got %q", argument))
+		}
+		value := inlineValue
+		if !hasInline {
+			if index+1 >= len(args) {
+				return app.fail(fmt.Errorf("%s requires a value", argument))
+			}
+			value = args[index+1]
+			index++
+		}
+		if key == "harness" {
+			harnessValue = value
+		} else {
+			executable = value
+		}
+	}
+	report, err := doctor.Run(context.Background(), harness.ID(harnessValue), executable, app.stderr)
+	if err != nil {
+		return app.fail(err)
+	}
+	if code := app.writeJSON(report); code != 0 {
+		return code
+	}
+	if !report.Healthy {
+		return 1
+	}
+	return 0
+}
+
 func (app App) runMarker(args []string) int {
 	_, err := app.lifecycle.Execute(lifecycle.ActionMark, args)
 	if err != nil {
@@ -362,7 +401,11 @@ func (app App) reviewEvaluation(request evaluation.RunRequest) (bool, error) {
 	fmt.Fprintf(app.stderr, "  harness: %s\n", request.Harness)
 	fmt.Fprintf(app.stderr, "  model: %s\n", request.Model)
 	fmt.Fprintf(app.stderr, "  reasoning: %s\n", request.Reasoning)
-	fmt.Fprintf(app.stderr, "  workspace: %s\n", request.Workspace)
+	if request.WorkspaceCreated {
+		fmt.Fprintf(app.stderr, "  workspace: %s (created for this run)\n", request.Workspace)
+	} else {
+		fmt.Fprintf(app.stderr, "  workspace: %s\n", request.Workspace)
+	}
 	fmt.Fprintf(app.stderr, "  output: %s\n", request.OutputRoot)
 	if request.Executable != "" {
 		fmt.Fprintf(app.stderr, "  executable: %s\n", request.Executable)
@@ -372,6 +415,10 @@ func (app App) reviewEvaluation(request evaluation.RunRequest) (bool, error) {
 		fmt.Fprintf(app.stderr, "  scenario: %s\n", request.ScenarioPath)
 		fmt.Fprintf(app.stderr, "  answer-sheet: %s\n", request.AnswerSheet)
 		fmt.Fprintln(app.stderr, "warning: answer-sheet correctness is caller-owned; an incorrect key can make the result invalid or misleading")
+	}
+	if request.AssumeYes {
+		fmt.Fprintln(app.stderr, "start evaluation? confirmed by --yes")
+		return true, nil
 	}
 	fmt.Fprint(app.stderr, "start evaluation? [y/N]: ")
 	answer, err := app.prompts.ReadString('\n')
@@ -437,6 +484,7 @@ Usage:
 Foundation commands:
   help        Show this help
   version     Show build metadata
+  doctor      Diagnose harness readiness with zero model cost
 
 Lifecycle commands:
   install     Install canonical skills into a supported harness

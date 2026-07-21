@@ -34,7 +34,18 @@ const (
 	modeConfigReject      = "config-reject"
 	modeAgentError        = "agent-error"
 	modeMarkerFailure     = "marker-failure"
+	modeMarkerRecovered   = "marker-recovered"
+	modeHideSkills        = "hide-skills"
 )
+
+var defaultVersions = map[string]string{
+	"claude-code": "2.1.205 (Claude Code)",
+	"codex":       "codex-cli 0.144.6",
+	"cursor":      "2026.07.16-899851b",
+	"opencode":    "1.18.4",
+	"kilo-code":   "7.4.11",
+	"pi":          "0.80.10",
+}
 
 func main() {
 	directory, err := filepath.Abs(filepath.Dir(os.Args[0]))
@@ -48,6 +59,14 @@ func main() {
 	var configuration settings
 	if err := json.Unmarshal(data, &configuration); err != nil {
 		fail("decode fake-mode.json: %v", err)
+	}
+	if slices.Contains(os.Args[1:], "--version") {
+		version := configuration.Version
+		if version == "" {
+			version = defaultVersions[configuration.Harness]
+		}
+		fmt.Println(version)
+		return
 	}
 	switch configuration.Harness {
 	case "codex":
@@ -67,7 +86,7 @@ func main() {
 
 func runCodex(configuration settings) {
 	arguments := os.Args[1:]
-	if len(arguments) >= 2 && arguments[0] == "login" && arguments[1] == "status" {
+	if slices.Contains(arguments, "login") && slices.Contains(arguments, "status") {
 		os.Exit(0)
 	}
 	if configuration.Mode == modeConfigReject {
@@ -103,7 +122,7 @@ func runCodex(configuration settings) {
 }
 
 func runClaude(configuration settings) {
-	if len(os.Args) > 1 && os.Args[1] == "project" {
+	if len(os.Args) > 1 && (os.Args[1] == "project" || os.Args[1] == "auth") {
 		os.Exit(0)
 	}
 	skillsBase := argumentValue("--add-dir")
@@ -126,8 +145,17 @@ func runClaude(configuration settings) {
 	if resumed && configuration.Mode == modeSessionChange {
 		sessionID = "claude-session-changed"
 	}
-	executeSignals(filepath.Join(skillsBase, ".claude", "skills"))
-	emit(map[string]any{"type": "system", "subtype": "init", "session_id": sessionID})
+	skillRoot := filepath.Join(skillsBase, ".claude", "skills")
+	visible := []string{}
+	if configuration.Mode == modeHideSkills {
+		visible = append(visible, "unrelated-skill")
+	} else {
+		executeSignals(skillRoot)
+		for _, entrypoint := range skillEntrypoints(skillRoot) {
+			visible = append(visible, filepath.Base(filepath.Dir(entrypoint)))
+		}
+	}
+	emit(map[string]any{"type": "system", "subtype": "init", "session_id": sessionID, "skills": visible})
 	if configuration.Mode == modeMissingCompletion {
 		return
 	}
@@ -185,6 +213,10 @@ func runStructured(configuration settings, directory string) {
 	case "models":
 		fmt.Println("openai/gpt-5.6-sol")
 	case "debug":
+		if configuration.Mode == modeHideSkills {
+			fmt.Println("[]")
+			return
+		}
 		listSkills(structuredSkillRoot(kilo))
 	case "session":
 		handleStructuredSession(directory, arguments, kilo)
@@ -273,8 +305,11 @@ func runStructuredTurn(configuration settings, directory string, kilo bool) {
 		executeSignals(structuredSkillRoot(kilo))
 	}
 	emitEvent(map[string]any{"type": "step_start", "sessionID": sessionID})
-	if configuration.Mode == modeMarkerFailure {
-		emitEvent(map[string]any{"type": "tool_use", "sessionID": sessionID, "part": map[string]any{"tool": "bash", "state": map[string]any{"status": "error", "error": "permission denied", "input": map[string]any{"command": "/denied/skill-issue signal token state"}}}})
+	if configuration.Mode == modeMarkerFailure || configuration.Mode == modeMarkerRecovered {
+		// A compound command chaining the real signal with another action,
+		// denied by the deny-first policy — the live failure shape.
+		command := firstSignalCommand(structuredSkillRoot(kilo)) + ` && mkdir -p "plans/fake"`
+		emitEvent(map[string]any{"type": "tool_use", "sessionID": sessionID, "part": map[string]any{"tool": "bash", "state": map[string]any{"status": "error", "error": "permission denied by rule", "input": map[string]any{"command": command}}}})
 	}
 	reason := "stop"
 	if configuration.Mode == modeMissingCompletion {
@@ -407,6 +442,22 @@ func executeSignalEntrypoint(entrypoint string) {
 	if err != nil {
 		fail("signal command failed: %v: %s", err, output)
 	}
+}
+
+func firstSignalCommand(root string) string {
+	entrypoints := skillEntrypoints(root)
+	if len(entrypoints) == 0 {
+		fail("no skills available for a signal command")
+	}
+	data, err := os.ReadFile(entrypoints[0])
+	if err != nil {
+		fail("read instrumented skill %s: %v", entrypoints[0], err)
+	}
+	match := signalInstruction.FindSubmatch(data)
+	if match == nil {
+		fail("no signal instruction in %s", entrypoints[0])
+	}
+	return fmt.Sprintf("%q signal %q %q", match[1], match[2], match[3])
 }
 
 func captureTokens(root string) []string {

@@ -46,6 +46,13 @@ type RunRequest struct {
 	IncludeEvents      bool
 	IncludeTranscript  bool
 	ReplacePreexisting bool
+	// WorkspaceCreated marks a workspace directory the CLI itself created
+	// while preparing the request, so the confirmation summary can say so and
+	// cancellation can remove the empty directory again.
+	WorkspaceCreated bool
+	// AssumeYes accepts the pre-run confirmation for scripted callers; the
+	// summary is still printed for the record.
+	AssumeYes          bool
 	TurnLimit          int
 	AvailableTurns     int
 	EffectiveTurns     int
@@ -323,6 +330,11 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 			return Result{}, service.toolingFailure(outputDirectory, runID, request, err)
 		}
 	}
+	if request.Harness == harness.KiloCode {
+		if err := replay.CheckKiloSkills(ctx, request.Executable, runtime.workingDirectory, runtime.environment, true, skillNames); err != nil {
+			return Result{}, service.toolingFailure(outputDirectory, runID, request, err)
+		}
+	}
 	run.InstallationState = installationStatePath
 	run.Status = runstate.StatusRunning
 	if err := service.runs.Save(run); err != nil {
@@ -344,6 +356,7 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 		ClaudeWorkspacePrompt: runtime.claudeWorkspacePrompt,
 		PiSkillsRoot:          runtime.piSkillsRoot,
 		SkillIssueExecutable:  cliPath,
+		ExpectedSkills:        skillNames,
 	})
 	if err != nil {
 		return Result{}, service.toolingFailure(outputDirectory, runID, request, err)
@@ -371,6 +384,11 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 			}
 			if request.Harness == harness.Cursor && boundary.Capture != nil {
 				if err := service.validateCursorSignals(runID, boundary.TurnID, *boundary.Capture, tokens, cliPath); err != nil {
+					return err
+				}
+			}
+			if (request.Harness == harness.OpenCode || request.Harness == harness.KiloCode) && boundary.Capture != nil {
+				if err := service.validateStructuredSignals(string(request.Harness), runID, boundary.TurnID, *boundary.Capture, tokens, cliPath); err != nil {
 					return err
 				}
 			}
@@ -547,6 +565,54 @@ func (service Service) validateCursorSignals(runID, turnID string, capture repla
 			}
 			detail := cursorSignalCompletionDetail(capture.Events, command)
 			return fmt.Errorf("Cursor attempted the instrumented signal for skill %q but no marker was recorded: %s", skill, detail)
+		}
+	}
+	return nil
+}
+
+// validateStructuredSignals classifies errored OpenCode and Kilo bash events
+// that carry the instrumented signal. A denied compound command whose signal
+// the model retried — so the marker was recorded for the turn — is model
+// behavior; an attempted signal whose marker was never recorded is a tooling
+// failure, because the instrumentation cannot be trusted from that point.
+func (service Service) validateStructuredSignals(harnessName, runID, turnID string, capture replay.Capture, tokens map[string]string, cliPath string) error {
+	existing, err := service.runs.Events(runID)
+	if err != nil {
+		return err
+	}
+	observed := map[string]bool{}
+	for _, event := range existing {
+		if event.TurnID == turnID {
+			observed[event.Skill] = true
+		}
+	}
+	for _, event := range capture.Events {
+		var value struct {
+			Type string `json:"type"`
+			Part struct {
+				Tool  string `json:"tool"`
+				State struct {
+					Status string `json:"status"`
+					Error  string `json:"error"`
+					Input  struct {
+						Command string `json:"command"`
+					} `json:"input"`
+				} `json:"state"`
+			} `json:"part"`
+		}
+		if json.Unmarshal(event, &value) != nil || value.Type != "tool_use" || value.Part.Tool != "bash" || value.Part.State.Status != "error" {
+			continue
+		}
+		command := value.Part.State.Input.Command
+		for token, skill := range tokens {
+			if observed[skill] || !isSignalCommand(command, cliPath, token, service.stateRoot) {
+				continue
+			}
+			detail := strings.TrimSpace(value.Part.State.Error)
+			if detail == "" {
+				detail = "the command did not record its marker"
+			}
+			return fmt.Errorf("%s attempted the instrumented signal for skill %q but no marker was recorded: %s", harnessName, skill, detail)
 		}
 	}
 	return nil

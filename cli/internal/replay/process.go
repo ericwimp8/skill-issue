@@ -10,6 +10,8 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/ericwimp8/skill-issue/cli/internal/harness"
 )
 
 type Options struct {
@@ -28,6 +30,9 @@ type Options struct {
 	ClaudeWorkspacePrompt string
 	PiSkillsRoot          string
 	SkillIssueExecutable  string
+	// ExpectedSkills names the installed evaluation skills a harness must
+	// report as visible where its protocol exposes that evidence.
+	ExpectedSkills []string
 }
 
 type commandSpec struct {
@@ -52,11 +57,9 @@ type processAdapter struct {
 	claudeWorkspacePrompt string
 	piSkillsRoot          string
 	skillIssueExecutable  string
+	expectedSkills        []string
 	cleanup               func() error
 }
-
-const qualifiedOpenCodeVersion = "1.18.4"
-const qualifiedKiloVersion = "7.4.11"
 
 func NewAdapter(harnessID HarnessID, options Options) (Adapter, error) {
 	if harnessID == HarnessPi {
@@ -90,6 +93,7 @@ func NewAdapter(harnessID HarnessID, options Options) (Adapter, error) {
 		claudeWorkspacePrompt: options.ClaudeWorkspacePrompt,
 		piSkillsRoot:          options.PiSkillsRoot,
 		skillIssueExecutable:  options.SkillIssueExecutable,
+		expectedSkills:        options.ExpectedSkills,
 	}
 	if harnessID == HarnessClaude {
 		adapter.cleanup = func() error {
@@ -200,7 +204,43 @@ func (session *processSession) Wait(_ context.Context) (Capture, error) {
 	if err := validateSessionID(session.adapter.harnessID, session.sessionID, events); err != nil {
 		return Capture{}, session.failure(err)
 	}
+	if session.adapter.harnessID == HarnessClaude && len(session.adapter.expectedSkills) > 0 {
+		if err := validateClaudeVisibleSkills(events, session.adapter.expectedSkills); err != nil {
+			return Capture{}, session.failure(err)
+		}
+	}
 	return Capture{SessionID: session.sessionID, Transcript: session.stdout.String(), Stderr: session.stderr.String(), Events: events}, nil
+}
+
+// validateClaudeVisibleSkills requires the turn's system/init event to list
+// every installed evaluation skill as visible. A run must never complete with
+// the governed skills silently unloaded, because a miss caused by an
+// invisible skill is indistinguishable from a genuine model choice.
+func validateClaudeVisibleSkills(events []json.RawMessage, expected []string) error {
+	for _, event := range events {
+		var value struct {
+			Type    string   `json:"type"`
+			Subtype string   `json:"subtype"`
+			Skills  []string `json:"skills"`
+		}
+		if json.Unmarshal(event, &value) != nil || value.Type != "system" || value.Subtype != "init" {
+			continue
+		}
+		if value.Skills == nil {
+			return errors.New("Claude Code system/init event does not expose visible skills; evaluation skill visibility cannot be verified")
+		}
+		visible := make(map[string]bool, len(value.Skills))
+		for _, name := range value.Skills {
+			visible[name] = true
+		}
+		for _, name := range expected {
+			if !visible[name] {
+				return fmt.Errorf("Claude Code did not list installed evaluation skill %q as visible in its system/init event; the temporary skills were not loaded", name)
+			}
+		}
+		return nil
+	}
+	return errors.New("Claude Code output has no system/init event to verify evaluation skill visibility")
 }
 
 func validateHarnessOutput(harnessID HarnessID, events []json.RawMessage, stderr string, requireSessionStart bool) error {
@@ -238,36 +278,11 @@ func validateHarnessOutput(harnessID HarnessID, events []json.RawMessage, stderr
 			return fmt.Errorf("%w: Claude Code output missing successful system/init and result events: %s", ErrProtocol, strings.TrimSpace(stderr))
 		}
 	case HarnessOpenCode, HarnessKilo:
-		if markerFailure, failed := failedSignalMarker(events); failed {
-			return fmt.Errorf("%s marker command failed: %s", harnessID, markerFailure)
-		}
 		if !structuredRunStopped(events) {
 			return fmt.Errorf("%w: %s output missing terminal step_finish with reason stop: %s", ErrProtocol, harnessID, strings.TrimSpace(stderr))
 		}
 	}
 	return nil
-}
-
-func failedSignalMarker(events []json.RawMessage) (string, bool) {
-	for _, event := range events {
-		var value struct {
-			Type string `json:"type"`
-			Part struct {
-				Tool  string `json:"tool"`
-				State struct {
-					Status string `json:"status"`
-					Error  string `json:"error"`
-					Input  struct {
-						Command string `json:"command"`
-					} `json:"input"`
-				} `json:"state"`
-			} `json:"part"`
-		}
-		if json.Unmarshal(event, &value) == nil && value.Type == "tool_use" && value.Part.Tool == "bash" && value.Part.State.Status == "error" && strings.Contains(value.Part.State.Input.Command, " signal ") {
-			return value.Part.State.Input.Command + ": " + value.Part.State.Error, true
-		}
-	}
-	return "", false
 }
 
 func validateSessionID(harnessID HarnessID, sessionID string, events []json.RawMessage) error {
@@ -465,6 +480,41 @@ func CheckOpenCodeSkills(ctx context.Context, executable, directory string, env 
 	return nil
 }
 
+// CheckKiloSkills verifies Kilo discovers every installed evaluation skill
+// through its native debug listing. Only stdout is parsed because Kilo can
+// interleave log lines on stderr.
+func CheckKiloSkills(ctx context.Context, executable, directory string, env []string, clean bool, expected []string) error {
+	path, err := resolveExecutable("kilo", executable)
+	if err != nil {
+		return fmt.Errorf("Kilo skill discovery executable: %w", err)
+	}
+	command := exec.CommandContext(ctx, path, "debug", "skill", "--pure")
+	command.Dir = directory
+	command.Env = environment(env, clean)
+	var stdout, stderr bytes.Buffer
+	command.Stdout = &stdout
+	command.Stderr = &stderr
+	if err := command.Run(); err != nil {
+		return fmt.Errorf("Kilo skill discovery failed: %w: %s", err, strings.TrimSpace(stderr.String()))
+	}
+	var discovered []struct {
+		Name string `json:"name"`
+	}
+	if err := json.Unmarshal(stdout.Bytes(), &discovered); err != nil {
+		return fmt.Errorf("decode Kilo skill discovery: %w", err)
+	}
+	found := make(map[string]bool, len(discovered))
+	for _, skill := range discovered {
+		found[skill.Name] = true
+	}
+	for _, name := range expected {
+		if !found[name] {
+			return fmt.Errorf("Kilo did not discover installed evaluation skill %q", name)
+		}
+	}
+	return nil
+}
+
 func jsonContainsString(data []byte, wanted string) bool {
 	var value any
 	if json.Unmarshal(data, &value) != nil {
@@ -580,7 +630,11 @@ func checkKiloAuthentication(ctx context.Context, path, model string, env []stri
 	if err != nil {
 		return fmt.Errorf("Kilo version check failed: %w", err)
 	}
-	if err := requireQualifiedVersion("Kilo", strings.TrimSpace(version), qualifiedKiloVersion); err != nil {
+	qualified, _, err := harness.TestedVersion(harness.KiloCode)
+	if err != nil {
+		return err
+	}
+	if err := requireQualifiedVersion("Kilo", strings.TrimSpace(version), qualified); err != nil {
 		return err
 	}
 	provider, _, found := strings.Cut(model, "/")
@@ -609,7 +663,11 @@ func checkOpenCodeAuthentication(ctx context.Context, path, model string, env []
 	if err != nil {
 		return fmt.Errorf("OpenCode version check failed: %w", err)
 	}
-	if err := requireQualifiedVersion("OpenCode", strings.TrimSpace(version), qualifiedOpenCodeVersion); err != nil {
+	qualified, _, err := harness.TestedVersion(harness.OpenCode)
+	if err != nil {
+		return err
+	}
+	if err := requireQualifiedVersion("OpenCode", strings.TrimSpace(version), qualified); err != nil {
 		return err
 	}
 	provider, _, found := strings.Cut(model, "/")

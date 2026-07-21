@@ -2,6 +2,8 @@ package lifecycle
 
 import (
 	"bytes"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -26,16 +28,6 @@ func TestEvaluationRunIsProjectLocalAndHasOneInputMode(t *testing.T) {
 		t.Fatalf("unexpected evaluation request: %#v", request)
 	}
 
-	withoutOutput := make(map[string]string, len(base)-1)
-	for key, value := range base {
-		if key != "output" {
-			withoutOutput[key] = value
-		}
-	}
-	if _, err := evaluationRunRequest(withoutOutput); err == nil {
-		t.Fatal("evaluation run without output was accepted")
-	}
-
 	withCustom := make(map[string]string, len(base)+2)
 	for key, value := range base {
 		withCustom[key] = value
@@ -44,6 +36,78 @@ func TestEvaluationRunIsProjectLocalAndHasOneInputMode(t *testing.T) {
 	withCustom["answer-sheet"] = "answer.json"
 	if _, err := evaluationRunRequest(withCustom); err == nil {
 		t.Fatal("built-in and custom inputs were accepted together")
+	}
+}
+
+func TestEvaluationRunDefaultsWorkspaceOutputAndEvaluation(t *testing.T) {
+	directory := t.TempDir()
+	t.Chdir(directory)
+	request, err := evaluationRunRequest(map[string]string{"harness": "codex"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !request.WorkspaceCreated || !strings.Contains(filepath.Base(request.Workspace), "skill-issue-workspace-") {
+		t.Fatalf("workspace was not created with the default name: %#v", request)
+	}
+	if info, err := os.Stat(request.Workspace); err != nil || !info.IsDir() {
+		t.Fatalf("default workspace does not exist: %v", err)
+	}
+	if filepath.Base(request.OutputRoot) != "skill-issue-output" || !filepath.IsAbs(request.OutputRoot) {
+		t.Fatalf("output root was not defaulted: %q", request.OutputRoot)
+	}
+	if request.EvaluationID != defaultEvaluationID || request.AvailableTurns != 30 {
+		t.Fatalf("built-in evaluation was not defaulted: %#v", request)
+	}
+
+	// A second defaulted run must get its own fresh workspace.
+	second, err := evaluationRunRequest(map[string]string{"harness": "codex"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if second.Workspace == request.Workspace {
+		t.Fatal("defaulted workspaces were reused across runs")
+	}
+}
+
+func TestEvaluationRunCreatesANamedMissingWorkspace(t *testing.T) {
+	directory := t.TempDir()
+	t.Chdir(directory)
+	request, err := evaluationRunRequest(map[string]string{"harness": "codex", "workspace": "fresh-workspace"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !request.WorkspaceCreated {
+		t.Fatalf("named missing workspace was not marked created: %#v", request)
+	}
+	if info, err := os.Stat(filepath.Join(directory, "fresh-workspace")); err != nil || !info.IsDir() {
+		t.Fatalf("named workspace was not created: %v", err)
+	}
+
+	// An existing workspace is used as-is and never marked created.
+	again, err := evaluationRunRequest(map[string]string{"harness": "codex", "workspace": "fresh-workspace"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if again.WorkspaceCreated {
+		t.Fatalf("existing workspace was marked created: %#v", again)
+	}
+}
+
+func TestCancelledEvaluationRemovesItsCreatedWorkspace(t *testing.T) {
+	directory := t.TempDir()
+	t.Chdir(directory)
+	service := New(nil)
+	decline := func(evaluation.RunRequest) (bool, error) { return false, nil }
+	result, err := service.ExecuteEvaluationRun([]string{"--harness", "codex"}, decline, nil)
+	if err != nil || result.Status != "cancelled" {
+		t.Fatalf("cancelled run result: %#v %v", result, err)
+	}
+	leftovers, err := filepath.Glob(filepath.Join(directory, "skill-issue-workspace-*"))
+	if err != nil || len(leftovers) != 0 {
+		t.Fatalf("cancelled run left its created workspace behind: %v %v", leftovers, err)
+	}
+	if _, err := os.Stat(filepath.Join(directory, "skill-issue-output")); !os.IsNotExist(err) {
+		t.Fatalf("cancelled run created the output root: %v", err)
 	}
 }
 

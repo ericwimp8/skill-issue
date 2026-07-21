@@ -1,4 +1,4 @@
-import { useEffect, useId, type ReactNode } from 'react';
+import { useCallback, useEffect, useId, useState, type ReactNode } from 'react';
 
 type DocumentReaderDialogProps = {
   title: string;
@@ -18,12 +18,14 @@ export function DocumentReaderDialog({
   sourceLabel = 'View on GitHub',
 }: DocumentReaderDialogProps) {
   const titleId = useId();
+  const [isClosing, setIsClosing] = useState(false);
+  const requestClose = useCallback(() => setIsClosing(true), []);
 
   useEffect(() => {
     const activeElement = document.activeElement;
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        onClose();
+        requestClose();
       }
     };
 
@@ -38,13 +40,18 @@ export function DocumentReaderDialog({
         activeElement.focus();
       }
     };
-  }, [onClose]);
+  }, [requestClose]);
 
   return (
     <div
-      className="skill-reader-backdrop"
+      className={`skill-reader-backdrop${isClosing ? ' is-closing' : ''}`}
       role="presentation"
-      onMouseDown={onClose}
+      onMouseDown={requestClose}
+      onAnimationEnd={(event) => {
+        if (isClosing && event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
     >
       <section
         className="skill-reader"
@@ -67,7 +74,7 @@ export function DocumentReaderDialog({
             <button
               className="skill-reader-close"
               type="button"
-              onClick={onClose}
+              onClick={requestClose}
               autoFocus
             >
               <span className="sr-only">Close document reader</span>

@@ -47,14 +47,7 @@ func (service Service) prepareRuntime(harnessID harness.ID, model, reasoning, ru
 		if err != nil {
 			return runtimePreparation{}, err
 		}
-		configuration := []string{
-			`features.multi_agent=false`,
-			`features.multi_agent_v2=false`,
-			`approvals_reviewer="auto_review"`,
-			fmt.Sprintf("model_reasoning_effort=%s", strconv.Quote(reasoning)),
-			`project_doc_max_bytes=0`,
-			`apps._default.enabled=false`,
-		}
+		configuration := CodexBaseConfiguration(reasoning)
 		if len(skills) > 0 {
 			configuration = append(configuration, codexSkillConfiguration(skills))
 		}
@@ -87,6 +80,21 @@ func (service Service) prepareRuntime(harnessID harness.ID, model, reasoning, ru
 		return preparePiRuntime(root, workspace, executable)
 	default:
 		return runtimePreparation{}, fmt.Errorf("unsupported evaluation harness %q", harnessID)
+	}
+}
+
+// CodexBaseConfiguration is the static generated Codex configuration every
+// evaluation passes with --config. Doctor validates these exact keys against
+// the installed binary's parser, so runtime generation and preflight
+// validation cannot drift apart.
+func CodexBaseConfiguration(reasoning string) []string {
+	return []string{
+		`features.multi_agent=false`,
+		`features.multi_agent_v2=false`,
+		`approvals_reviewer="auto_review"`,
+		fmt.Sprintf("model_reasoning_effort=%s", strconv.Quote(reasoning)),
+		`project_doc_max_bytes=0`,
+		`apps._default.enabled=false`,
 	}
 }
 

@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/ericwimp8/skill-issue/cli/internal/harness"
 )
 
 func TestMergedEnvironmentReplacesInheritedValues(t *testing.T) {
@@ -86,13 +88,16 @@ func TestOpenCodeProtocolRequiresStableStoppedSession(t *testing.T) {
 	}
 }
 
-func TestOpenCodeProtocolRejectsFailedMarkerCommand(t *testing.T) {
+func TestOpenCodeProtocolToleratesErroredToolEventsAtReplayLayer(t *testing.T) {
+	// Errored signal-bearing commands are classified at the evaluation layer,
+	// which knows whether the marker was recorded; the replay layer must not
+	// fail a stopped turn for them.
 	events := []json.RawMessage{
-		json.RawMessage(`{"type":"tool_use","sessionID":"session-1","part":{"tool":"bash","state":{"status":"error","input":{"command":"/tmp/skill-issue signal token state"}}}}`),
+		json.RawMessage(`{"type":"tool_use","sessionID":"session-1","part":{"tool":"bash","state":{"status":"error","input":{"command":"/tmp/skill-issue signal token state && mkdir plans"}}}}`),
 		json.RawMessage(`{"type":"step_finish","sessionID":"session-1","part":{"reason":"stop"}}`),
 	}
-	if err := validateHarnessOutput(HarnessOpenCode, events, "", true); err == nil {
-		t.Fatal("failed OpenCode marker command was accepted")
+	if err := validateHarnessOutput(HarnessOpenCode, events, "", true); err != nil {
+		t.Fatalf("errored tool event failed the replay layer: %v", err)
 	}
 }
 
@@ -227,15 +232,58 @@ printf '[{"name":"alpha"},{"name":"beta"}]\n'
 }
 
 func TestRequireQualifiedVersionEscapeHatch(t *testing.T) {
-	if err := requireQualifiedVersion("Kilo", "9.9.9", qualifiedKiloVersion); err == nil {
+	qualified, pinned, err := harness.TestedVersion(harness.KiloCode)
+	if err != nil || !pinned || qualified == "" {
+		t.Fatalf("Kilo tested version is not pinned in the harness registry: %q %v %v", qualified, pinned, err)
+	}
+	if err := requireQualifiedVersion("Kilo", "9.9.9", qualified); err == nil {
 		t.Fatal("unqualified version was accepted without the escape hatch")
 	}
-	if err := requireQualifiedVersion("Kilo", qualifiedKiloVersion, qualifiedKiloVersion); err != nil {
+	if err := requireQualifiedVersion("Kilo", qualified, qualified); err != nil {
 		t.Fatal(err)
 	}
 	t.Setenv(allowUnqualifiedHarnessEnv, "1")
-	if err := requireQualifiedVersion("Kilo", "9.9.9", qualifiedKiloVersion); err != nil {
+	if err := requireQualifiedVersion("Kilo", "9.9.9", qualified); err != nil {
 		t.Fatalf("escape hatch did not downgrade the mismatch: %v", err)
+	}
+}
+
+func TestClaudeVisibleSkillValidationRequiresEveryInstalledSkill(t *testing.T) {
+	expected := []string{"alpha", "beta"}
+	visible := []json.RawMessage{json.RawMessage(`{"type":"system","subtype":"init","session_id":"s","skills":["alpha","beta","operator-skill"]}`)}
+	if err := validateClaudeVisibleSkills(visible, expected); err != nil {
+		t.Fatal(err)
+	}
+	hidden := []json.RawMessage{json.RawMessage(`{"type":"system","subtype":"init","session_id":"s","skills":["operator-skill"]}`)}
+	if err := validateClaudeVisibleSkills(hidden, expected); err == nil || !strings.Contains(err.Error(), "alpha") {
+		t.Fatalf("invisible skill was accepted: %v", err)
+	}
+	unverifiable := []json.RawMessage{json.RawMessage(`{"type":"system","subtype":"init","session_id":"s"}`)}
+	if err := validateClaudeVisibleSkills(unverifiable, expected); err == nil {
+		t.Fatal("init event without skill evidence was accepted")
+	}
+	if err := validateClaudeVisibleSkills([]json.RawMessage{json.RawMessage(`{"type":"result"}`)}, expected); err == nil {
+		t.Fatal("output without an init event was accepted")
+	}
+}
+
+func TestCheckKiloSkillsParsesStdoutDespiteStderrNoise(t *testing.T) {
+	directory := t.TempDir()
+	executable := filepath.Join(directory, "kilo")
+	script := `#!/bin/sh
+[ "$1 $2 $3" = "debug skill --pure" ] || exit 3
+echo "INFO log noise" >&2
+printf '[{"name":"alpha","location":"builtin"},{"name":"beta"}]\n'
+`
+	if err := os.WriteFile(executable, []byte(script), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	environment := []string{"PATH=/usr/bin:/bin"}
+	if err := CheckKiloSkills(context.Background(), executable, directory, environment, true, []string{"alpha", "beta"}); err != nil {
+		t.Fatal(err)
+	}
+	if err := CheckKiloSkills(context.Background(), executable, directory, environment, true, []string{"missing"}); err == nil {
+		t.Fatal("missing Kilo evaluation skill was accepted")
 	}
 }
 

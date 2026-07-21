@@ -71,12 +71,13 @@ type conformanceRun struct {
 	fakeDir    string
 	executable string
 	inputs     string
+	stdin      string
 	extraEnv   []string
 }
 
 func newConformanceRun(t *testing.T, harnessID, mode string) *conformanceRun {
 	t.Helper()
-	run := &conformanceRun{t: t, harness: harnessID, root: t.TempDir()}
+	run := &conformanceRun{t: t, harness: harnessID, root: t.TempDir(), stdin: "y\n"}
 	run.workspace = filepath.Join(run.root, "workspace")
 	run.output = filepath.Join(run.root, "output")
 	run.tmp = filepath.Join(run.root, "tmp")
@@ -181,7 +182,7 @@ func (run *conformanceRun) execute(extraArgs, extraEnv []string) (int, string, s
 	defer cancel()
 	command := exec.CommandContext(ctx, binaries.cli, args...)
 	command.Dir = run.root
-	command.Stdin = strings.NewReader("y\n")
+	command.Stdin = strings.NewReader(run.stdin)
 	command.Env = append([]string{
 		"HOME=" + run.home,
 		"TMPDIR=" + run.tmp,
@@ -440,18 +441,45 @@ func TestCodexConfigurationRejectionIsDiagnosed(t *testing.T) {
 	run.assertCleanup()
 }
 
-func TestOpenCodeFailedMarkerIsToolingFailure(t *testing.T) {
-	t.Parallel()
-	run := newConformanceRun(t, "opencode", "marker-failure")
-	code, _, _ := run.execute(nil, nil)
-	if code == 0 {
-		t.Fatal("failed marker command was reported as success")
+func TestUnrecoveredMarkerFailureIsToolingFailure(t *testing.T) {
+	for _, harnessID := range []string{"opencode", "kilo-code"} {
+		t.Run(harnessID, func(t *testing.T) {
+			t.Parallel()
+			run := newConformanceRun(t, harnessID, "marker-failure")
+			code, _, _ := run.execute(nil, nil)
+			if code == 0 {
+				t.Fatal("failed marker command was reported as success")
+			}
+			record := run.failureRecord()
+			if !strings.Contains(record.Error, "no marker was recorded") || !strings.Contains(record.Error, "permission denied by rule") {
+				t.Errorf("failure does not carry the marker denial: %#v", record)
+			}
+			run.assertCleanup()
+		})
 	}
-	record := run.failureRecord()
-	if !strings.Contains(record.Error, "marker command failed") {
-		t.Errorf("failure does not name the marker command: %#v", record)
+}
+
+// TestDeniedCompoundSignalWithRecoveryIsModelBehavior reproduces the live
+// failure where a model chained its next action onto the signal command, was
+// denied by the deny-first policy, and immediately retried the exact signal
+// successfully. The recorded marker proves the instrumentation worked, so the
+// run must complete tooling-clean.
+func TestDeniedCompoundSignalWithRecoveryIsModelBehavior(t *testing.T) {
+	for _, harnessID := range []string{"opencode", "kilo-code"} {
+		t.Run(harnessID, func(t *testing.T) {
+			t.Parallel()
+			run := newConformanceRun(t, harnessID, "marker-recovered")
+			code, stdout, stderr := run.execute(nil, nil)
+			if code != 0 {
+				t.Fatalf("recovered signal denial failed the run: %s", stderr)
+			}
+			result := run.completedResult(stdout)
+			if err := expectedConformanceCalls(result); err != nil {
+				t.Fatal(err)
+			}
+			run.assertCleanup()
+		})
 	}
-	run.assertCleanup()
 }
 
 func TestVersionPinBlocksUnqualifiedHarness(t *testing.T) {
@@ -471,6 +499,215 @@ func TestVersionPinBlocksUnqualifiedHarness(t *testing.T) {
 			run.assertCleanup()
 		})
 	}
+}
+
+// TestSilentlyUnloadedSkillsAreToolingFailures proves a run can no longer
+// "succeed" while the governed skills are invisible to the model — the
+// failure mode that once produced misleading missing-call results.
+func TestSilentlyUnloadedSkillsAreToolingFailures(t *testing.T) {
+	t.Run("claude-code", func(t *testing.T) {
+		t.Parallel()
+		run := newConformanceRun(t, "claude-code", "hide-skills")
+		code, _, stderr := run.execute(nil, nil)
+		if code == 0 {
+			t.Fatal("run with invisible skills was reported as success")
+		}
+		record := run.failureRecord()
+		if !strings.Contains(record.Error, "not loaded") {
+			t.Errorf("failure does not name the invisible skill: %s: %s", record.Error, stderr)
+		}
+		if record.TurnID != "turn-1" {
+			t.Errorf("failure not attributed to turn-1: %#v", record)
+		}
+		run.assertCleanup()
+	})
+	t.Run("kilo-code", func(t *testing.T) {
+		t.Parallel()
+		run := newConformanceRun(t, "kilo-code", "hide-skills")
+		code, _, stderr := run.execute(nil, nil)
+		if code == 0 {
+			t.Fatal("run with undiscovered skills was reported as success")
+		}
+		record := run.failureRecord()
+		if !strings.Contains(record.Error, "did not discover") {
+			t.Errorf("failure does not name the discovery gap: %s: %s", record.Error, stderr)
+		}
+		if record.TurnID != "" {
+			t.Errorf("discovery failure should precede every turn: %#v", record)
+		}
+		run.assertCleanup()
+	})
+}
+
+func TestYesFlagConfirmsWithoutPrompting(t *testing.T) {
+	t.Parallel()
+	run := newConformanceRun(t, "codex", "happy")
+	run.stdin = ""
+	code, stdout, stderr := run.execute([]string{"--yes"}, nil)
+	if code != 0 {
+		t.Fatalf("--yes run failed: %s", stderr)
+	}
+	if !strings.Contains(stderr, "confirmed by --yes") {
+		t.Errorf("summary does not record the --yes confirmation: %s", stderr)
+	}
+	result := run.completedResult(stdout)
+	if err := expectedConformanceCalls(result); err != nil {
+		t.Fatal(err)
+	}
+	run.assertCleanup()
+}
+
+// TestRelativeExecutablePathResolvesAgainstInvocationDirectory covers the
+// stranger-passing-./bin/agent papercut: the evaluator changes to a run-owned
+// working directory, so a caller-relative path must be resolved at parse time.
+func TestRelativeExecutablePathResolvesAgainstInvocationDirectory(t *testing.T) {
+	t.Parallel()
+	run := newConformanceRun(t, "cursor", "happy")
+	run.executable = filepath.Join("harness-bin", harnessExecutables["cursor"])
+	code, stdout, stderr := run.execute(nil, nil)
+	if code != 0 {
+		t.Fatalf("relative executable run failed: %s", stderr)
+	}
+	result := run.completedResult(stdout)
+	if err := expectedConformanceCalls(result); err != nil {
+		t.Fatal(err)
+	}
+	run.assertCleanup()
+}
+
+// TestMinimalCommandDefaultsEverything drives the stranger-facing short form:
+// only a harness (plus the fake-route executable and a turn budget). The CLI
+// must create an adjacent fresh workspace, default the output root and the
+// built-in evaluation, run tooling-clean, and clean its skills back out.
+func TestMinimalCommandDefaultsEverything(t *testing.T) {
+	t.Parallel()
+	run := newConformanceRun(t, "codex", "happy")
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+	command := exec.CommandContext(ctx, binaries.cli,
+		"evaluate", "run", "--harness", "codex", "--executable", run.executable, "--turns", "2", "--yes")
+	command.Dir = run.root
+	command.Env = append([]string{
+		"HOME=" + run.home,
+		"TMPDIR=" + run.tmp,
+		"PATH=/usr/bin:/bin",
+		"USER=conformance",
+		"LOGNAME=conformance",
+		"TERM=dumb",
+		"LANG=en_US.UTF-8",
+	}, run.extraEnv...)
+	var stdout, stderr bytes.Buffer
+	command.Stdout = &stdout
+	command.Stderr = &stderr
+	if err := command.Run(); err != nil {
+		t.Fatalf("minimal command failed: %v: %s", err, stderr.String())
+	}
+	if !strings.Contains(stderr.String(), "(created for this run)") {
+		t.Errorf("summary does not disclose the created workspace: %s", stderr.String())
+	}
+	workspaces, err := filepath.Glob(filepath.Join(run.root, "skill-issue-workspace-*"))
+	if err != nil || len(workspaces) != 1 {
+		t.Fatalf("expected one adjacent default workspace: %v %v", workspaces, err)
+	}
+	results, err := filepath.Glob(filepath.Join(run.root, "skill-issue-output", "codex-*", "result.json"))
+	if err != nil || len(results) != 1 {
+		t.Fatalf("expected one result in the default output root: %v %v", results, err)
+	}
+	data, err := os.ReadFile(results[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	var result evaluation.Result
+	if err := json.Unmarshal(data, &result); err != nil {
+		t.Fatal(err)
+	}
+	if result.EvaluationID != "gardening-web-application" || len(result.Observed) == 0 {
+		t.Fatalf("defaulted evaluation did not run with attribution: %#v", result)
+	}
+	skillFiles, err := filepath.Glob(filepath.Join(workspaces[0], "*", "*", "SKILL.md"))
+	if err != nil || len(skillFiles) != 0 {
+		t.Errorf("temporary skills remain in the default workspace: %v %v", skillFiles, err)
+	}
+}
+
+func doctorReport(t *testing.T, run *conformanceRun, args, extraEnv []string) (int, map[string]any, string) {
+	t.Helper()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	command := exec.CommandContext(ctx, binaries.cli, append([]string{"doctor"}, args...)...)
+	command.Dir = run.root
+	command.Env = append([]string{
+		"HOME=" + run.home,
+		"TMPDIR=" + run.tmp,
+		"PATH=/usr/bin:/bin",
+		"USER=conformance",
+		"LOGNAME=conformance",
+	}, extraEnv...)
+	var stdout, stderr bytes.Buffer
+	command.Stdout = &stdout
+	command.Stderr = &stderr
+	err := command.Run()
+	code := 0
+	if err != nil {
+		exit, ok := err.(*exec.ExitError)
+		if !ok {
+			t.Fatalf("run doctor: %v: %s", err, stderr.String())
+		}
+		code = exit.ExitCode()
+	}
+	var report map[string]any
+	if err := json.Unmarshal(stdout.Bytes(), &report); err != nil {
+		t.Fatalf("decode doctor report: %v: %s", err, stdout.String())
+	}
+	return code, report, stderr.String()
+}
+
+func TestDoctorReportsHealthyFakeHarnesses(t *testing.T) {
+	for _, harnessID := range evaluationHarnesses {
+		t.Run(harnessID, func(t *testing.T) {
+			t.Parallel()
+			run := newConformanceRun(t, harnessID, "happy")
+			var extraEnv []string
+			if harnessID == "pi" {
+				agentDirectory := filepath.Join(run.root, "pi-agent")
+				if err := os.MkdirAll(agentDirectory, 0o700); err != nil {
+					t.Fatal(err)
+				}
+				extraEnv = append(extraEnv, "PI_CODING_AGENT_DIR="+agentDirectory)
+			}
+			code, report, stderr := doctorReport(t, run, []string{"--harness", harnessID, "--executable", run.executable}, extraEnv)
+			if code != 0 || report["healthy"] != true {
+				t.Fatalf("doctor reported unhealthy: %v: %s", report, stderr)
+			}
+		})
+	}
+}
+
+func TestDoctorClassifiesVersionDrift(t *testing.T) {
+	t.Run("unpinned-harness-warns", func(t *testing.T) {
+		t.Parallel()
+		run := newConformanceRun(t, "claude-code", "happy")
+		run.setMode("happy", "9.9.9")
+		code, report, stderr := doctorReport(t, run, []string{"--harness", "claude-code", "--executable", run.executable}, nil)
+		if code != 0 || report["healthy"] != true {
+			t.Fatalf("version drift on an unpinned harness must warn, not fail: %v: %s", report, stderr)
+		}
+		if !strings.Contains(stderr, "differs from the tested version") {
+			t.Errorf("doctor did not warn about the drift: %s", stderr)
+		}
+	})
+	t.Run("pinned-harness-fails", func(t *testing.T) {
+		t.Parallel()
+		run := newConformanceRun(t, "kilo-code", "happy")
+		run.setMode("happy", "9.9.9")
+		code, report, stderr := doctorReport(t, run, []string{"--harness", "kilo-code", "--executable", run.executable}, nil)
+		if code == 0 || report["healthy"] != false {
+			t.Fatalf("version drift on a pinned harness must fail: %v: %s", report, stderr)
+		}
+		if !strings.Contains(stderr, "qualified version") {
+			t.Errorf("doctor did not name the version pin: %s", stderr)
+		}
+	})
 }
 
 func TestVersionPinEscapeHatchWarnsAndProceeds(t *testing.T) {

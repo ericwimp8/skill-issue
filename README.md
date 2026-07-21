@@ -35,6 +35,8 @@ The skill generation loop was really meta. The skill generator was refining the
 skill, and Codex and 5.6 built me a wrapper harness that refined the refiner. It
 worked. With a little fiddling.
 
+You can see the reseasrch files in the research folder. Most of it is still there.
+
 ## Why Skill Issue exists
 
 When a skill fails, the cause is often unclear:

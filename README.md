@@ -11,6 +11,30 @@ coding agent.
 
 [Watch the Skill Issue demo on YouTube.](https://youtu.be/lwTX20ola5M)
 
+## How this was built with Codex and gpt-5.6
+
+I built Skill Issue with Codex and GPT-5.6. Basically everything. The CLI, the
+research, the planning, the website, the video. I mumbled into the mic. I did
+not write the site by hand. Not one line.
+
+Most tasks started the same way: Codex app voice dictation plus my Dictate Plan
+skill. Then deep research. Then Codex executing. That was the loop.
+
+Deep research uses my own home-rolled skills. GPT-5.6 Sol fans out GPT-5.6 Luna
+subagents onto narrow research tasks, then all of that gets aggregated into one
+target subject. I used that for planning too. Harness research for the CLI went
+through the same path: dig into each configuration hard enough that Codex could
+embed real usage in the tool, then run eval after eval.
+
+Codex deep-searched the website design and built it. I just said the style I
+wanted. GPT-5.6 built and deployed the site while I talked into the microphone.
+The demo video was Remotion and Speechify. Codex did nearly all of it. I hardly
+touched it. Mostly advice.
+
+The skill generation loop was really meta. The skill generator was refining the
+skill, and Codex and 5.6 built me a wrapper harness that refined the refiner. It
+worked. With a little fiddling.
+
 ## Why Skill Issue exists
 
 When a skill fails, the cause is often unclear:

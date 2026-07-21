@@ -20,4 +20,4 @@ Do not add extra skills or prompts. Let each of the thirty turns finish fully. T
 - harness, model, version, operating system, and reasoning-setting metadata;
 - any tooling error that prevented replay or marker recording.
 
-A tooling failure requires repair and rerun. Missing skill activations remain evaluation data after a tooling-complete replay.
+A tooling failure requires repair and rerun. Missing skill activations remain evaluation data after a tooling-complete replay only when the replay recorded at least one attributed skill signal and the missing skill is proven visible to the harness; verify an unproven miss with a `--transcript` visibility check before scoring it, because a silently unloaded skill produces a miss identical to a genuine model choice.

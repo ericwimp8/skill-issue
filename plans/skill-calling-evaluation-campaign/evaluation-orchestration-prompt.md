@@ -193,7 +193,7 @@ After a command finishes:
 - Set `Complete` only when the full run, required artifacts, and cleanup all pass. Link the retained result and record concise configuration notes.
 - Set `Failed` for a tooling failure after launch. Add a failure-log row with the attempt, exact non-secret cause, resolution or next action, and later rerun result.
 - Set `Blocked` when a prerequisite prevents launch or continuation. Add a blocker-log row and continue independent work.
-- Treat missing expected skill calls as evaluation data when tooling completed; do not convert them into tooling failures.
+- Treat missing expected skill calls as evaluation data when tooling completed and the miss is corroborated: the run recorded at least one attributed signal, and the missing skill is proven visible to the harness through its own evidence or an observed invocation on the same harness and build. Verify an uncorroborated miss with a `--transcript` diagnostic before accepting it; do not convert corroborated misses into tooling failures.
 - Preserve earlier failure and blocker rows after a successful rerun.
 - Check a configuration heading only when all three runs beneath it are complete.
 - Recalculate configuration totals, campaign totals, pending, failed, blocked, and percentage after every status transition.

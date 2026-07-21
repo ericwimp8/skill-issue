@@ -82,11 +82,11 @@ Shell aliases are invisible to the CLI (`exec.LookPath`); pass `--executable` ex
 
 Read artifacts from the run's output directory `output/harness-hardening/<harness>-<attempt>/<harness>-<timestamp>-<prefix>/`:
 
-- `result.json` — `expected`, `observed`, `missing`, `additional`, `unattributed` skill calls plus run metadata and timestamps. **Missing or additional calls are model behavior, not tooling failures.** A tooling-complete run with missing calls is a hardening pass.
+- `result.json` — `expected`, `observed`, `missing`, `additional`, `unattributed` skill calls plus run metadata and timestamps. **Missing or additional calls are model behavior only once corroborated, not by classification alone.** A tooling-complete run with missing calls is a hardening pass when the run recorded at least one attributed signal and each missing skill is proven visible (see failure classification 4).
 - `events.jsonl` (with `--events`) — each recorded signal with turn attribution and time. An empty file plus a completed run means the model made no instrumented skill calls.
 - `transcript.json` (with `--transcript`) — the full sanitized harness event stream per turn, including the harness's own stderr. Use it to see what the model actually saw and did (for Claude Code, the first `system/init` event lists the visible skills and tools).
 - `failure.json` — written automatically when a run fails with a tooling error. It records the run ID, harness, model, reasoning, **active turn**, the full error chain, the **exact harness command line the CLI executed**, and the complete native stdout and stderr of the failed interaction. This is your primary post-mortem artifact; the terminal error message names its path. It is not sanitized — it contains local paths and the turn prompt — so keep it out of anything shared or committed.
-- Progress stream — `Starting turn i of 4` / `Finished turn i of 4: <id> (<duration>, <n> harness events, <n> skill calls)` per turn. Zero harness events on a "finished" turn is suspicious; zero skill calls is not.
+- Progress stream — `Starting turn i of 4` / `Finished turn i of 4: <id> (<duration>, <n> harness events, <n> skill calls)` per turn. Zero harness events on a "finished" turn is suspicious; zero skill calls on a single turn is not, but a run that completes with zero recorded skill calls anywhere is unproven until skill visibility is verified.
 
 ### Failure classification
 
@@ -95,7 +95,7 @@ Work every failure to one of these causes before changing anything:
 1. **Route/environment** — wrong executable, missing `XDG_DATA_HOME`, version pin mismatch, missing authentication. Fix the invocation, not the CLI.
 2. **Harness configuration rejected** — the harness exits refusing its own config (`failure.json` stdout/stderr shows a config parse error naming a key). The generated configuration lives in `cli/internal/evaluation/runtime.go`; validate a candidate key cheaply against the real binary before changing it (for example `codex -c '<key>=<value>' login status` parses configuration without running a turn).
 3. **Protocol violation** — `malformed harness protocol` errors: missing init/completion events, session ID changes, unparseable output. Compare `failure.json` stdout against the validator expectations in `cli/internal/replay/process.go` (`validateHarnessOutput`); a harness version change is the usual suspect.
-4. **Model behavior** — completed run, unexpected `missing`/`additional` sets. Record it; do not "fix" it.
+4. **Model behavior** — completed run, unexpected `missing`/`additional` sets. Corroborate before recording: at least one attributed signal in the run proves the pipeline live, and each missing skill must be proven visible to the harness — through the harness's own evidence (Claude Code lists visible skills in its first `system/init` transcript event; OpenCode is checked through `CheckOpenCodeSkills`; Pi validates through `get_commands`) or an observed invocation of that same skill on the same harness and build. An uncorroborated miss is unclassified: verify it with a `--transcript` diagnostic rerun rather than recording it as model behavior, because a silently unloaded skill produces a miss identical to a genuine model choice. Once corroborated, record it; do not "fix" it.
 
 ### Recovery
 

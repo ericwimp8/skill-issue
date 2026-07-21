@@ -43,7 +43,6 @@ var defaultVersions = map[string]string{
 	"codex":       "codex-cli 0.144.6",
 	"cursor":      "2026.07.16-899851b",
 	"opencode":    "1.18.4",
-	"kilo-code":   "7.4.11",
 	"pi":          "0.80.10",
 }
 
@@ -75,7 +74,7 @@ func main() {
 		runClaude(configuration)
 	case "cursor":
 		runCursor(configuration)
-	case "opencode", "kilo-code":
+	case "opencode":
 		runStructured(configuration, directory)
 	case "pi":
 		runPi(configuration)
@@ -199,18 +198,13 @@ func runCursor(configuration settings) {
 }
 
 func runStructured(configuration settings, directory string) {
-	kilo := configuration.Harness == "kilo-code"
 	arguments := os.Args[1:]
 	if len(arguments) == 0 {
 		fail("%s fake requires a subcommand", configuration.Harness)
 	}
 	version := configuration.Version
 	if version == "" {
-		if kilo {
-			version = "7.4.11"
-		} else {
-			version = "1.18.4"
-		}
+		version = "1.18.4"
 	}
 	switch arguments[0] {
 	case "--version":
@@ -224,11 +218,11 @@ func runStructured(configuration settings, directory string) {
 			fmt.Println("[]")
 			return
 		}
-		listSkills(structuredSkillRoot(kilo))
+		listSkills(structuredSkillRoot())
 	case "session":
-		handleStructuredSession(directory, arguments, kilo)
+		handleStructuredSession(directory, arguments)
 	case "run":
-		runStructuredTurn(configuration, directory, kilo)
+		runStructuredTurn(configuration, directory)
 	default:
 		fail("unsupported %s subcommand: %v", configuration.Harness, arguments)
 	}
@@ -246,7 +240,7 @@ func listSkills(root string) {
 	fmt.Println(string(data))
 }
 
-func handleStructuredSession(directory string, arguments []string, kilo bool) {
+func handleStructuredSession(directory string, arguments []string) {
 	if len(arguments) < 2 {
 		fail("session subcommand requires an action")
 	}
@@ -268,15 +262,6 @@ func handleStructuredSession(directory string, arguments []string, kilo bool) {
 			fail("session delete requires an ID")
 		}
 		id := arguments[2]
-		if kilo {
-			record, err := os.OpenFile(filepath.Join(directory, "deleted-sessions"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
-			if err != nil {
-				fail("record kilo deletion: %v", err)
-			}
-			fmt.Fprintln(record, id)
-			record.Close()
-			return
-		}
 		remaining := slices.DeleteFunc(readSessions(sessionsPath), func(existing string) bool { return existing == id })
 		writeSessions(sessionsPath, remaining)
 	default:
@@ -284,16 +269,8 @@ func handleStructuredSession(directory string, arguments []string, kilo bool) {
 	}
 }
 
-func runStructuredTurn(configuration settings, directory string, kilo bool) {
+func runStructuredTurn(configuration settings, directory string) {
 	name := configuration.Harness
-	emitEvent := func(value map[string]any) {
-		emit(value)
-		if kilo {
-			// Kilo 7.4.11 emits exact adjacent duplicate event lines; the
-			// adapter must tolerate them.
-			emit(value)
-		}
-	}
 	sessionID := argumentValue("--session")
 	resumed := sessionID != ""
 	if !resumed {
@@ -309,43 +286,28 @@ func runStructuredTurn(configuration settings, directory string, kilo bool) {
 		sessionID = name + "-session-changed"
 	}
 	if configuration.Mode != modeMarkerFailure {
-		executeSignals(structuredSkillRoot(kilo))
+		executeSignals(structuredSkillRoot())
 	}
-	emitEvent(map[string]any{"type": "step_start", "sessionID": sessionID})
+	emit(map[string]any{"type": "step_start", "sessionID": sessionID})
 	if configuration.Mode == modeMarkerFailure || configuration.Mode == modeMarkerRecovered {
 		// A compound command chaining the real signal with another action,
 		// denied by the deny-first policy — the live failure shape.
-		command := firstSignalCommand(structuredSkillRoot(kilo)) + ` && mkdir -p "plans/fake"`
-		emitEvent(map[string]any{"type": "tool_use", "sessionID": sessionID, "part": map[string]any{"tool": "bash", "state": map[string]any{"status": "error", "error": "permission denied by rule", "input": map[string]any{"command": command}}}})
+		command := firstSignalCommand(structuredSkillRoot()) + ` && mkdir -p "plans/fake"`
+		emit(map[string]any{"type": "tool_use", "sessionID": sessionID, "part": map[string]any{"tool": "bash", "state": map[string]any{"status": "error", "error": "permission denied by rule", "input": map[string]any{"command": command}}}})
 	}
 	reason := "stop"
 	if configuration.Mode == modeMissingCompletion {
 		reason = "tool-calls"
 	}
-	emitEvent(map[string]any{"type": "step_finish", "sessionID": sessionID, "part": map[string]any{"reason": reason}})
+	emit(map[string]any{"type": "step_finish", "sessionID": sessionID, "part": map[string]any{"reason": reason}})
 }
 
-func structuredSkillRoot(kilo bool) string {
+func structuredSkillRoot() string {
 	configHome := os.Getenv("XDG_CONFIG_HOME")
 	if configHome == "" {
 		fail("XDG_CONFIG_HOME is not set")
 	}
-	if !kilo {
-		return filepath.Join(configHome, "opencode", "skills")
-	}
-	data, err := os.ReadFile(filepath.Join(configHome, "kilo", "kilo.json"))
-	if err != nil {
-		fail("read kilo configuration: %v", err)
-	}
-	var configuration struct {
-		Skills struct {
-			Paths []string `json:"paths"`
-		} `json:"skills"`
-	}
-	if err := json.Unmarshal(data, &configuration); err != nil || len(configuration.Skills.Paths) == 0 {
-		fail("kilo configuration names no skill path: %v", err)
-	}
-	return configuration.Skills.Paths[0]
+	return filepath.Join(configHome, "opencode", "skills")
 }
 
 func runPi(configuration settings) {

@@ -18,7 +18,7 @@
 - [xAI Sessions](https://docs.x.ai/build/features/sessions) and [xAI Background Tasks source guide](https://github.com/xai-org/grok-build/blob/main/crates/codegen/xai-grok-pager/docs/user-guide/20-background-tasks.md) — persisted sessions, background-task controls, and kill semantics.
 - [xAI Grok Build repository](https://github.com/xai-org/grok-build), `SOURCE_REV` `ba69d70c2f7d70a130a323b2becdf137af784c7f` — first-party Rust CLI/runtime source. Inspected: `crates/codegen/xai-grok-config/src/paths.rs`, `crates/codegen/xai-grok-config/src/loader.rs`, `crates/codegen/xai-grok-pager/docs/user-guide/14-headless-mode.md`, `18-sandbox.md`, `20-background-tasks.md`, and `crates/codegen/xai-grok-shell/src/session/acp_session_impl/tasks_cancel.rs`.
 - Local production boundary: `cli/internal/harness/harness.go`, `cli/internal/evaluation/runtime.go`, and `cli/internal/replay/process.go` — current Grok registration/replay stub and unsupported evaluator path.
-- Local qualification framing: `research/harness-portability-qualification/assignments/01-existing-runtime-implementation.md`, `02-product-support-and-setup-contract.md`, and `04-local-candidate-research-grok-opencode-kilo.md`.
+- Local qualification framing: `research/harness-portability-qualification/assignments/01-existing-runtime-implementation.md` and `02-product-support-and-setup-contract.md`.
 
 ## Findings
 

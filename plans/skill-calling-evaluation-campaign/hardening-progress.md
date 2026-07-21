@@ -12,7 +12,6 @@ paths remain in ignored evidence under `output/harness-hardening/`.
 | `claude-code` | Operator `claude` executable resolved from `PATH`                    | `2.1.205`            | `opus`                                                                 | `medium`  |
 | `cursor`      | `.skill-issue/cursor/home/.local/bin/agent`                          | `2026.07.16-899851b` | `grok` requested; installed identifiers recorded in preflight evidence | `medium`  |
 | `opencode`    | `.skill-issue/opencode/bin/opencode`                                 | `1.18.4`             | `openai/gpt-5.6-sol`                                                   | `medium`  |
-| `kilo-code`   | `.skill-issue/kilo/node_modules/@kilocode/cli-darwin-arm64/bin/kilo` | `7.4.11`             | `openai/gpt-5.6-sol`                                                   | `medium`  |
 | `pi`          | Operator `pi` executable resolved from `PATH`                        | `0.80.10`            | `openai-codex/gpt-5.6-sol`                                             | `medium`  |
 
 Exact resolved executable paths are retained in
@@ -30,7 +29,6 @@ Exact resolved executable paths are retained in
 | `cursor`      |       2 | Temporary skills, private state, and run-owned processes removed                                                  | Tooling error before model execution           | Route/environment: installed agent rejected the `grok` alias                                   | Selected the listed medium Grok identifier `cursor-grok-4.5-medium`                                                      | `cursor 2026.07.16-899851b`; requested `grok`; `medium`                            | `output/harness-hardening/cursor-2/cursor-20260721T072052Z-98ee7ba2/failure.json`           |
 | `cursor`      |       3 | Temporary skills, private state, and run-owned processes removed; model-created `plans/` retained                 | Tooling-clean pass; 4 turns completed          | Model behavior: all expected calls observed                                                    | Absolute executable route and native Grok identifier included                                                            | `cursor 2026.07.16-899851b`; `cursor-grok-4.5-medium`; `medium`                    | `output/harness-hardening/cursor-3/cursor-20260721T072158Z-9d9477b2/result.json`            |
 | `opencode`    |       1 | Temporary skills, private state, native session, and run-owned processes removed; model-created `plans/` retained | Tooling-clean pass; 4 turns completed          | Model behavior: three missing `document-update-discipline` calls                               | None                                                                                                                     | `opencode 1.18.4`; `openai/gpt-5.6-sol`; `medium`; qualified `XDG_DATA_HOME`       | `output/harness-hardening/opencode-1/opencode-20260721T072730Z-a5d32f21/result.json`        |
-| `kilo-code`   |       1 | Temporary skills, private state, native session, and run-owned processes removed; model-created `plans/` retained | Tooling-clean pass; 4 turns completed          | Model behavior: three missing calls and one additional `prompt-writing` call                   | None                                                                                                                     | `kilo-code 7.4.11`; `openai/gpt-5.6-sol`; `medium`; qualified `XDG_DATA_HOME`      | `output/harness-hardening/kilo-code-1/kilo-code-20260721T073157Z-d26ed7f9/result.json`      |
 | `pi`          |       1 | Temporary skills, private state, and run-owned processes removed; model-created `plans/` retained                 | Tooling-clean pass; 4 turns completed          | Model behavior: three missing calls and one additional `prompt-writing` call                   | None                                                                                                                     | `pi 0.80.10`; `openai-codex/gpt-5.6-sol`; `medium`; operator `PI_CODING_AGENT_DIR` | `output/harness-hardening/pi-1/pi-20260721T073608Z-1ec48bd1/result.json`                    |
 
 ## Defects And Requirements
@@ -44,15 +42,13 @@ Exact resolved executable paths are retained in
   sandboxed.
 - Cursor Agent `2026.07.16-899851b` does not expose the `grok` alias; its
   installed medium Grok route is `cursor-grok-4.5-medium`.
-- OpenCode and Kilo require their qualified `XDG_DATA_HOME` values. Kilo must
-  use the real versioned binary rather than the wrapper that pins its own
-  configuration home.
+- OpenCode requires its qualified `XDG_DATA_HOME` value.
 - Pi continues to resolve authentication through the operator-owned
   `PI_CODING_AGENT_DIR`.
 
 ## Completion Summary
 
-- Ten attempts produced four tooling failures and six final tooling-clean
+- Nine attempts produced four tooling failures and five final tooling-clean
   passes on the current rebuilt development CLI.
 - One production defect was fixed: Codex `0.144.6` rejected the obsolete
   Boolean `agents.enabled` configuration. The runtime now disables the stable
@@ -67,6 +63,6 @@ Exact resolved executable paths are retained in
   disposable sessions where applicable, and run-owned processes. Model-created
   workspace files remain as run evidence.
 - `gofmt`, `go vet ./cli/...`, and `go test ./cli/...` passed before the
-  post-fix six-harness matrix.
+  post-fix five-harness matrix.
 - Retain this prompt and progress ledger until the fix is committed and the
   development build is deliberately promoted to the next known-good baseline.

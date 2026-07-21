@@ -49,13 +49,6 @@
 - **Skill request:** Yes. A skill can request delegation; the active agent performs the launch.
 - **Research:** [assignment](assignments/07-opencode.md)
 
-## Kilo Code
-
-- **Supported:** Yes.
-- **Launch:** A primary agent uses the `task` tool automatically or after an explicit `@agent-name` request.
-- **Skill request:** Yes. A skill can request that a capable primary agent use the task tool.
-- **Research:** [assignment](assignments/08-kilo-code.md)
-
 ## Pi
 
 - **Supported:** Yes, through Pi's official sub-agent extension.

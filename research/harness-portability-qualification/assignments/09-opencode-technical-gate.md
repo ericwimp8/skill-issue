@@ -11,7 +11,7 @@
 ## Sources
 
 - Skill Issue production source: `cli/internal/harness/harness.go`, `cli/internal/evaluation/runtime.go`, `cli/internal/evaluation/evaluation.go`, and `cli/internal/replay/process.go`.
-- Skill Issue qualification context: `research/harness-portability-qualification/assignments/01-existing-runtime-implementation.md`, `02-product-support-and-setup-contract.md`, and `04-local-candidate-research-grok-opencode-kilo.md`.
+- Skill Issue qualification context: `research/harness-portability-qualification/assignments/01-existing-runtime-implementation.md` and `02-product-support-and-setup-contract.md`.
 - Official OpenCode CLI documentation, current July 2026: <https://opencode.ai/docs/cli> — `run`, `--session`, `--format json`, `--model`, `--variant`, `--auto`, `--pure`, environment controls, and session deletion.
 - Official OpenCode configuration documentation, current July 2026: <https://opencode.ai/docs/config> — merge/precedence rules, `OPENCODE_CONFIG`, `OPENCODE_CONFIG_DIR`, project traversal, plugins, instructions, and managed configuration.
 - Official OpenCode skills documentation, current July 2026: <https://opencode.ai/docs/skills> — native skill roots, `skill` tool, frontmatter, and skill permissions.

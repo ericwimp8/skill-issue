@@ -15,7 +15,6 @@ const (
 	HarnessCodex    HarnessID = "codex"
 	HarnessCursor   HarnessID = "cursor"
 	HarnessOpenCode HarnessID = "opencode"
-	HarnessKilo     HarnessID = "kilo-code"
 	HarnessPi       HarnessID = "pi"
 )
 

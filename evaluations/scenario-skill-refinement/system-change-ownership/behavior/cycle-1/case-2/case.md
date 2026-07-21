@@ -13,7 +13,7 @@
 
 - Fresh agent: `/root/eval_system_ownership/sco_body_2` (`Hypatia`)
 - Session: `019f8272-60dc-7dc0-895a-a982a91f5fd3`
-- Native trace: `transcript.jsonl`; it records the canonical target read before output.
+- Curated native evidence: `transcript.jsonl`; it records the canonical target read before output and the final response.
 - Observable output: `output.md`
 
 ## Ground-Truth Audit

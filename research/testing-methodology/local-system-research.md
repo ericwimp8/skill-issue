@@ -101,7 +101,7 @@ These hashes support source identity for this inspection. The campaign baseline 
 7. close the active-turn window; and
 8. repeat through Turn 30 using the same session.
 
-The adapters use their native continuation mechanisms: Codex resume, Cursor `--resume`, Claude Code `--resume`, OpenCode/Kilo session identifiers, and one long-lived Pi RPC process. Full campaign runs omit `--turns`; truncation is a smoke/custom feature and changes the evaluated unit.
+The adapters use their native continuation mechanisms: Codex resume, Cursor `--resume`, Claude Code `--resume`, OpenCode session identifiers, and one long-lived Pi RPC process. Full campaign runs omit `--turns`; truncation is a smoke/custom feature and changes the evaluated unit.
 
 Governed surfaces include the scenario ID, prompt order, private answer sheet, supplied skill payload, selected harness/model/reasoning target, active-turn boundaries, and result derivation. Variable surfaces include assistant text, call order, tools, workspace effects, native compaction, provider behavior, and session implementation.
 
@@ -136,7 +136,6 @@ The campaign contract requires a fresh empty workspace outside this repository f
 | Claude Code | Restricts setting sources, disables project memory/marketplace/background features, supplies only the passed skill directory, limits allowed tools, and uses a generated workspace prompt. | Bundled Claude skills/commands may remain; normal authentication and Claude's managed permission policy remain product surfaces.                                                              |
 | Cursor      | Uses a generated home/config/plugin, disables project configs, enables its sandbox, and allowlists evaluator-required operations.                                                          | Product-managed skills and account/team policy may remain; the generated runtime links the user's keychain for normal authentication.                                                         |
 | OpenCode    | Uses generated XDG roots, disables plugins and Claude imports, and configures explicit skills and permissions.                                                                             | Provider authentication and the harness's own runtime enforcement remain relevant.                                                                                                            |
-| Kilo        | Uses generated XDG roots, disables external/project skill sources and indexing, and configures only the supplied custom skill path.                                                        | Runtime exclusivity of that configured path has not yet been independently proven; provider authentication and host permissions remain.                                                       |
 | Pi          | Disables extensions, ambient skills, templates, themes, context files, and sessions; explicitly enumerates supplied skills; sets `--offline`.                                              | Offline mode is a Pi content/update mode, not demonstrated network confinement. Bash and host filesystem permissions remain available, and an allowlist of provider credentials is forwarded. |
 
 “Default-like” is defensible only when defined as a primary-agent run with known ambient customization removed and evaluator-required controls added. “Uniformly isolated” or “equivalently sandboxed” is unsupported. The orchestration contract correctly requires bounded lane probes rather than inferring confinement from a working directory or flag name.
@@ -232,7 +231,6 @@ Describe concrete controls and residuals per harness. Use “fresh evaluator-own
 - **Opaque instrumentation is invisible or behavior-free:** rejected by the visible injected instruction and command surface.
 - **All harnesses have equivalent isolation:** rejected by their concrete runtime and authentication differences.
 - **Pi offline mode proves network confinement:** rejected; the host Bash/file surface and network boundary require separate proof.
-- **Kilo's supplied path proves exclusive runtime skill discovery:** not yet proven by accepted runtime evidence.
 - **A clean process exit proves acceptance:** rejected by protocol, artifact, session, cleanup, and confinement gates.
 - **Missing calls are tooling failures:** rejected when the run is otherwise accepted; they are measured outcomes.
 - **A passed refinement campaign proves universal skill correctness:** rejected by the campaigns' own evidence boundaries.
@@ -270,7 +268,7 @@ Describe concrete controls and residuals per harness. Use “fresh evaluator-own
 2. **The selected known-good build is stale.** It does not embed the current governed method and must not be used for current campaign decisions or interpretation.
 3. **The development campaign baseline is not immutable.** A coherent source state, rebuilt development executable, exact version record, and embedded-source verification are still required.
 4. **No accepted campaign set exists.** The planned matrix is 0/30 complete in the inspected progress record.
-5. **Lane confinement remains evidence-gated.** Each harness requires its bounded runtime probe, especially for product-managed surfaces, Kilo skill exclusivity, and Pi's host/network boundary.
+5. **Lane confinement remains evidence-gated.** Each harness requires its bounded runtime probe, especially for product-managed surfaces and Pi's host/network boundary.
 6. **Exact configuration provenance remains incomplete.** Every run needs the effective harness version, executable, model identifier/version or alias, and reasoning setting.
 7. **The accepted website collection is empty.** Current charts fall back to illustrative data.
 8. **Illustrative website data is sparse and partly stale.** Four points cannot represent the 27 expectation-bearing turns, and the gardening label needs reconciliation; the 30-turn total is current.

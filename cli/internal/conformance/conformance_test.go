@@ -49,14 +49,13 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-var evaluationHarnesses = []string{"claude-code", "codex", "cursor", "opencode", "kilo-code", "pi"}
+var evaluationHarnesses = []string{"claude-code", "codex", "cursor", "opencode", "pi"}
 
 var harnessExecutables = map[string]string{
 	"claude-code": "claude",
 	"codex":       "codex",
 	"cursor":      "agent",
 	"opencode":    "opencode",
-	"kilo-code":   "kilo",
 	"pi":          "pi",
 }
 
@@ -321,16 +320,10 @@ func TestHappyPathAttributesSignalsAndCleansUp(t *testing.T) {
 				t.Errorf("passing run wrote failure.json: %v", err)
 			}
 			run.assertCleanup()
-			switch harnessID {
-			case "opencode":
+			if harnessID == "opencode" {
 				data, err := os.ReadFile(filepath.Join(run.fakeDir, "sessions.json"))
 				if err != nil || strings.TrimSpace(string(data)) != "[]" {
 					t.Errorf("OpenCode session was not deleted: %q %v", data, err)
-				}
-			case "kilo-code":
-				data, err := os.ReadFile(filepath.Join(run.fakeDir, "deleted-sessions"))
-				if err != nil || !strings.Contains(string(data), "kilo-code-session-0001") {
-					t.Errorf("Kilo session was not deleted: %q %v", data, err)
 				}
 			}
 		})
@@ -397,7 +390,6 @@ func TestIncompleteProtocolIsViolation(t *testing.T) {
 		"codex":       {mode: "missing-completion", message: "turn.completed"},
 		"cursor":      {mode: "missing-completion", message: "system/init and result"},
 		"opencode":    {mode: "missing-completion", message: "step_finish"},
-		"kilo-code":   {mode: "missing-completion", message: "step_finish"},
 		"pi":          {mode: "agent-error", message: "Pi agent ended with error"},
 	}
 	for _, harnessID := range evaluationHarnesses {
@@ -442,7 +434,7 @@ func TestCodexConfigurationRejectionIsDiagnosed(t *testing.T) {
 }
 
 func TestUnrecoveredMarkerFailureIsToolingFailure(t *testing.T) {
-	for _, harnessID := range []string{"claude-code", "opencode", "kilo-code", "pi"} {
+	for _, harnessID := range []string{"claude-code", "opencode", "pi"} {
 		t.Run(harnessID, func(t *testing.T) {
 			t.Parallel()
 			run := newConformanceRun(t, harnessID, "marker-failure")
@@ -465,7 +457,7 @@ func TestUnrecoveredMarkerFailureIsToolingFailure(t *testing.T) {
 // successfully. The recorded marker proves the instrumentation worked, so the
 // run must complete tooling-clean.
 func TestDeniedCompoundSignalWithRecoveryIsModelBehavior(t *testing.T) {
-	for _, harnessID := range []string{"opencode", "kilo-code"} {
+	for _, harnessID := range []string{"opencode"} {
 		t.Run(harnessID, func(t *testing.T) {
 			t.Parallel()
 			run := newConformanceRun(t, harnessID, "marker-recovered")
@@ -483,7 +475,7 @@ func TestDeniedCompoundSignalWithRecoveryIsModelBehavior(t *testing.T) {
 }
 
 func TestVersionPinBlocksUnqualifiedHarness(t *testing.T) {
-	for _, harnessID := range []string{"opencode", "kilo-code"} {
+	for _, harnessID := range []string{"opencode"} {
 		t.Run(harnessID, func(t *testing.T) {
 			t.Parallel()
 			run := newConformanceRun(t, harnessID, "happy")
@@ -518,22 +510,6 @@ func TestSilentlyUnloadedSkillsAreToolingFailures(t *testing.T) {
 		}
 		if record.TurnID != "turn-1" {
 			t.Errorf("failure not attributed to turn-1: %#v", record)
-		}
-		run.assertCleanup()
-	})
-	t.Run("kilo-code", func(t *testing.T) {
-		t.Parallel()
-		run := newConformanceRun(t, "kilo-code", "hide-skills")
-		code, _, stderr := run.execute(nil, nil)
-		if code == 0 {
-			t.Fatal("run with undiscovered skills was reported as success")
-		}
-		record := run.failureRecord()
-		if !strings.Contains(record.Error, "did not discover") {
-			t.Errorf("failure does not name the discovery gap: %s: %s", record.Error, stderr)
-		}
-		if record.TurnID != "" {
-			t.Errorf("discovery failure should precede every turn: %#v", record)
 		}
 		run.assertCleanup()
 	})
@@ -698,9 +674,9 @@ func TestDoctorClassifiesVersionDrift(t *testing.T) {
 	})
 	t.Run("pinned-harness-fails", func(t *testing.T) {
 		t.Parallel()
-		run := newConformanceRun(t, "kilo-code", "happy")
+		run := newConformanceRun(t, "opencode", "happy")
 		run.setMode("happy", "9.9.9")
-		code, report, stderr := doctorReport(t, run, []string{"--harness", "kilo-code", "--executable", run.executable}, nil)
+		code, report, stderr := doctorReport(t, run, []string{"--harness", "opencode", "--executable", run.executable}, nil)
 		if code == 0 || report["healthy"] != false {
 			t.Fatalf("version drift on a pinned harness must fail: %v: %s", report, stderr)
 		}
@@ -711,7 +687,7 @@ func TestDoctorClassifiesVersionDrift(t *testing.T) {
 }
 
 func TestVersionPinEscapeHatchWarnsAndProceeds(t *testing.T) {
-	for _, harnessID := range []string{"opencode", "kilo-code"} {
+	for _, harnessID := range []string{"opencode"} {
 		t.Run(harnessID, func(t *testing.T) {
 			t.Parallel()
 			run := newConformanceRun(t, harnessID, "happy")

@@ -2,7 +2,7 @@
 
 ## Run Contract
 
-- Goal: define the direct CLI-managed install, verify, update, repair, rollback, diagnostics, and removal lifecycle for Skill Issue across GitHub Copilot, Claude Code, OpenAI Codex, Cursor, Google Antigravity / Gemini CLI, Grok, OpenCode, Kilo Code, and Pi.
+- Goal: define the direct CLI-managed install, verify, update, repair, rollback, diagnostics, and removal lifecycle for Skill Issue across GitHub Copilot, Claude Code, OpenAI Codex, Cursor, Google Antigravity / Gemini CLI, Grok, OpenCode, and Pi.
 - Product boundary: one Skill Issue cross-platform lifecycle CLI installs a canonical payload directly; per-harness native plugins and package-manager delivery are outside the chosen architecture.
 - Source scope: internet only.
 - Active researcher concurrency: 5.
@@ -18,7 +18,7 @@ Establish the authoritative filesystem, metadata, configuration, activation, dis
 
 ### Cross-Harness Adapter Architecture
 
-Compare the nine validated harness contracts after their assignments complete. Identify common declarative filesystem behavior, genuine bespoke lifecycle requirements, unsupported targets, and the minimum shared adapter contract for later CLI implementation.
+Compare the eight validated harness contracts after their assignments complete. Identify common declarative filesystem behavior, genuine bespoke lifecycle requirements, unsupported targets, and the minimum shared adapter contract for later CLI implementation.
 
 ## Discovery Waves
 
@@ -36,22 +36,21 @@ Expected evidence: current official documentation, first-party repositories wher
 
 ### Wave 2: Remaining Harness Contracts
 
-Backfill four researchers after Wave 1 finishes:
+Backfill three researchers after Wave 1 finishes:
 
 6. `assignments/06-grok-direct-installation.md` — determine whether a standalone installable Grok coding harness exists and reject Cursor-model conflation.
 7. `assignments/07-opencode-direct-installation.md` — OpenCode project and user skill lifecycle.
-8. `assignments/08-kilo-code-direct-installation.md` — Kilo Code project and user skill lifecycle across material surfaces.
 9. `assignments/09-pi-direct-installation.md` — Pi package, skill, prompt, extension, or closest-equivalent direct lifecycle.
 
 Expected evidence: the same lifecycle contract as Wave 1, with special emphasis on standalone-product identity for Grok and package-manager-versus-direct-filesystem boundaries for Pi.
 
 ### Wave 3: Ranked Adapter Synthesis Evidence
 
-After all nine harness assignments finish, run:
+After all eight harness assignments finish, run:
 
-10. `assignments/10-cross-harness-adapter-contract.md` — inspect the nine assignment documents, cross-check their primary citations where necessary, rank common-adapter, bespoke-adapter, and unsupported candidates, and propose the shared adapter contract.
+10. `assignments/10-cross-harness-adapter-contract.md` — inspect the eight assignment documents, cross-check their primary citations where necessary, rank common-adapter, bespoke-adapter, and unsupported candidates, and propose the shared adapter contract.
 
-Expected evidence: a traceable comparison table derived from the nine harness documents, validation of disputed or cross-cutting claims against primary sources, and explicit deep-dive/skim/reject classification for any competing installation interpretations.
+Expected evidence: a traceable comparison table derived from the eight harness documents, validation of disputed or cross-cutting claims against primary sources, and explicit deep-dive/skim/reject classification for any competing installation interpretations.
 
 ## Fan-Out Decisions
 

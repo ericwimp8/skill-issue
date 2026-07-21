@@ -206,7 +206,7 @@ func authenticationChecks(ctx context.Context, id harness.ID, path string) []Che
 			return []Check{{Harness: name, Name: "authentication", Status: StatusFail, Detail: fmt.Sprintf("cursor status failed: %v: %s; run the agent login flow", err, firstLine(output))}}
 		}
 		return []Check{{Harness: name, Name: "authentication", Status: StatusOK, Detail: "cursor agent status succeeded"}}
-	case harness.OpenCode, harness.KiloCode:
+	case harness.OpenCode:
 		return structuredAuthenticationChecks(ctx, id, path)
 	case harness.Pi:
 		directory := os.Getenv("PI_CODING_AGENT_DIR")

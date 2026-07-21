@@ -1,4 +1,4 @@
-# Manual Invocation of `dictate-plan` Across Nine Harnesses
+# Manual Invocation of `dictate-plan` Across Eight Harnesses
 
 ## Combined Reference
 
@@ -72,16 +72,6 @@ Load and use the `dictate-plan` skill, then help me develop a dependency-ordered
 
 OpenCode's `skill({ name: "dictate-plan" })` form is an internal agent tool call, not prompt syntax. `/skill:dictate-plan` is only a proposed feature in the cited first-party issue. ([assignment](assignments/07-opencode.md), [OpenCode Agent Skills](https://opencode.ai/docs/skills), [OpenCode issue #7846](https://github.com/anomalyco/opencode/issues/7846))
 
-### Kilo Code
-
-**Answer: Yes, through documented natural-language invocation.** No dedicated user-facing skill syntax is documented. Send:
-
-```text
-Use the `dictate-plan` skill.
-```
-
-For an immediate task: `Use the dictate-plan skill to develop a dependency-ordered plan from my next messages.` This directly adapts Kilo Code's documented “use the [name] skill” pattern. ([assignment](assignments/08-kilo-code.md), [Kilo Code Skills](https://kilo.ai/docs/customize/skills), [Kilo Code CLI commands](https://kilo.ai/docs/code-with-ai/platforms/cli))
-
 ### Pi
 
 **Answer: Yes, when skill commands are enabled; Pi documents them as enabled by default.** At the interactive prompt, enter:
@@ -94,7 +84,7 @@ Initial task text may follow: `/skill:dictate-plan <your dictation or task>`. If
 
 ## Best-Supported Overall Direction
 
-Use each harness's dedicated mechanism where first-party evidence establishes one: `/dictate-plan` in GitHub Copilot CLI, Claude Code, Cursor, eligible Antigravity CLI skill registrations, and Grok Build; `$dictate-plan` or the `/skills` picker in OpenAI Codex; and `/skill:dictate-plan` in Pi. For OpenCode, Kilo Code, Gemini CLI, and Antigravity directory-style skills without confirmed slash exposure, explicitly name the skill in ordinary language: `Use the dictate-plan skill to ...`.
+Use each harness's dedicated mechanism where first-party evidence establishes one: `/dictate-plan` in GitHub Copilot CLI, Claude Code, Cursor, eligible Antigravity CLI skill registrations, and Grok Build; `$dictate-plan` or the `/skills` picker in OpenAI Codex; and `/skill:dictate-plan` in Pi. For OpenCode, Gemini CLI, and Antigravity directory-style skills without confirmed slash exposure, explicitly name the skill in ordinary language: `Use the dictate-plan skill to ...`.
 
 This harness-specific approach is strongest because command grammars are not portable. It also separates deterministic or UI-mediated skill selection from prose that asks an agent to load a named skill but may still depend on model behavior.
 
@@ -106,14 +96,14 @@ This harness-specific approach is strongest because command grammars are not por
 
 ## Rejected or Lower-Fit Interpretations
 
-- **Universal `/dictate-plan`: rejected.** Codex documents `$dictate-plan`; Pi documents `/skill:dictate-plan`; OpenCode, Kilo Code, and Gemini CLI do not document `/dictate-plan` for named-skill invocation.
+- **Universal `/dictate-plan`: rejected.** Codex documents `$dictate-plan`; Pi documents `/skill:dictate-plan`; OpenCode and Gemini CLI do not document `/dictate-plan` for named-skill invocation.
 - **Universal `/skills` invocation: rejected.** Depending on the harness, `/skills` may be a picker, browser, or management surface rather than the command that invokes a selected skill.
-- **Internal tool calls as user syntax: rejected.** OpenCode's `skill({ name: ... })` and Kilo Code's internal `skill` tool describe agent behavior, not text users are documented to enter.
-- **Prose as equivalent to a dedicated command: lower fit.** Natural-language naming is the documented primary method in Kilo Code and the best-supported method in OpenCode and Gemini CLI, but it is not uniformly guaranteed to force deterministic loading.
+- **Internal tool calls as user syntax: rejected.** OpenCode's `skill({ name: ... })` describes agent behavior, not text users are documented to enter.
+- **Prose as equivalent to a dedicated command: lower fit.** Natural-language naming is the best-supported method in OpenCode and Gemini CLI, but it is not uniformly guaranteed to force deterministic loading.
 
 ## Unresolved Blockers and Evidence Limits
 
 - No assignment verifies the caller's local installation, discovery state, declared name, or invocation-control metadata. Commands that depend on those states remain conditional.
 - Dedicated syntax is surface-specific for GitHub Copilot and Google: Copilot's `/dictate-plan` evidence is CLI-specific, while Antigravity slash exposure is confirmed for its CLI-registered skill format but not every directory-style Agent Skill.
-- OpenCode and Gemini CLI lack first-party support for a dedicated user invocation command in the supplied research. Kilo Code instead documents explicit natural-language invocation.
+- OpenCode and Gemini CLI lack first-party support for a dedicated user invocation command in the supplied research.
 - These limits do not block the reference; they define where the recommended wording is best-supported rather than mechanically guaranteed.

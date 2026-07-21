@@ -8,8 +8,6 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
-
-	"github.com/ericwimp8/skill-issue/cli/internal/harness"
 )
 
 func TestMergedEnvironmentReplacesInheritedValues(t *testing.T) {
@@ -101,70 +99,6 @@ func TestOpenCodeProtocolToleratesErroredToolEventsAtReplayLayer(t *testing.T) {
 	}
 }
 
-func TestKiloCommandsUseQualifiedStructuredSessionRoute(t *testing.T) {
-	adapter := &processAdapter{directory: "/tmp/workspace", model: "openai/gpt-5.6-sol", reasoning: "medium"}
-	initial := kiloArgs(adapter, "", "first prompt")
-	resumed := kiloArgs(adapter, "session-1", "second prompt")
-
-	for _, args := range [][]string{initial, resumed} {
-		joined := strings.Join(args, " ")
-		for _, required := range []string{"run", "--pure", "--format json", "--model openai/gpt-5.6-sol", "--variant medium", "--agent code", "--dir /tmp/workspace"} {
-			if !strings.Contains(joined, required) {
-				t.Fatalf("Kilo command lacks %q: %v", required, args)
-			}
-		}
-	}
-	if strings.Contains(strings.Join(initial, " "), "--session") {
-		t.Fatalf("initial Kilo command resumes a session: %v", initial)
-	}
-	if !strings.Contains(strings.Join(resumed, " "), "--session session-1") {
-		t.Fatalf("resumed Kilo command lacks its session: %v", resumed)
-	}
-}
-
-func TestKiloProtocolCollapsesOnlyAdjacentExactDuplicates(t *testing.T) {
-	start := json.RawMessage(`{"type":"step_start","sessionID":"session-1"}`)
-	textEvent := json.RawMessage(`{"type":"text","sessionID":"session-1","part":{"text":"done"}}`)
-	stop := json.RawMessage(`{"type":"step_finish","sessionID":"session-1","part":{"reason":"stop"}}`)
-	events := collapseAdjacentExactDuplicateEvents([]json.RawMessage{start, start, textEvent, textEvent, stop, stop, textEvent})
-	if len(events) != 4 {
-		t.Fatalf("Kilo normalized event count = %d", len(events))
-	}
-	if string(events[0]) != string(start) || string(events[1]) != string(textEvent) || string(events[2]) != string(stop) || string(events[3]) != string(textEvent) {
-		t.Fatalf("Kilo normalization changed distinct event order: %q", events)
-	}
-	if err := validateHarnessOutput(HarnessKilo, events, "", true); err != nil {
-		t.Fatal(err)
-	}
-	if err := validateSessionID(HarnessKilo, "session-1", events); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestDeleteKiloSessionDeletesDirectlyByID(t *testing.T) {
-	directory := t.TempDir()
-	executable := filepath.Join(directory, "kilo")
-	logPath := filepath.Join(directory, "deleted")
-	script := `#!/bin/sh
-if [ "$1 $2 $3" = "session delete session-1" ]; then
-  printf '%s\n' "$3" > "$DELETE_LOG"
-  exit 0
-fi
-exit 1
-`
-	if err := os.WriteFile(executable, []byte(script), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	environment := []string{"PATH=/usr/bin:/bin", "DELETE_LOG=" + logPath}
-	if err := DeleteKiloSession(context.Background(), executable, directory, environment, true, "session-1"); err != nil {
-		t.Fatal(err)
-	}
-	data, err := os.ReadFile(logPath)
-	if err != nil || strings.TrimSpace(string(data)) != "session-1" {
-		t.Fatalf("Kilo session was not deleted directly: %q %v", data, err)
-	}
-}
-
 func TestDeleteOpenCodeSessionDeletesOnlyAnExistingSession(t *testing.T) {
 	directory := t.TempDir()
 	executable := filepath.Join(directory, "opencode")
@@ -231,23 +165,6 @@ printf '[{"name":"alpha"},{"name":"beta"}]\n'
 	}
 }
 
-func TestRequireQualifiedVersionEscapeHatch(t *testing.T) {
-	qualified, pinned, err := harness.TestedVersion(harness.KiloCode)
-	if err != nil || !pinned || qualified == "" {
-		t.Fatalf("Kilo tested version is not pinned in the harness registry: %q %v %v", qualified, pinned, err)
-	}
-	if err := requireQualifiedVersion("Kilo", "9.9.9", qualified); err == nil {
-		t.Fatal("unqualified version was accepted without the escape hatch")
-	}
-	if err := requireQualifiedVersion("Kilo", qualified, qualified); err != nil {
-		t.Fatal(err)
-	}
-	t.Setenv(allowUnqualifiedHarnessEnv, "1")
-	if err := requireQualifiedVersion("Kilo", "9.9.9", qualified); err != nil {
-		t.Fatalf("escape hatch did not downgrade the mismatch: %v", err)
-	}
-}
-
 func TestClaudeVisibleSkillValidationRequiresEveryInstalledSkill(t *testing.T) {
 	expected := []string{"alpha", "beta"}
 	visible := []json.RawMessage{json.RawMessage(`{"type":"system","subtype":"init","session_id":"s","skills":["alpha","beta","operator-skill"]}`)}
@@ -264,26 +181,6 @@ func TestClaudeVisibleSkillValidationRequiresEveryInstalledSkill(t *testing.T) {
 	}
 	if err := validateClaudeVisibleSkills([]json.RawMessage{json.RawMessage(`{"type":"result"}`)}, expected); err == nil {
 		t.Fatal("output without an init event was accepted")
-	}
-}
-
-func TestCheckKiloSkillsParsesStdoutDespiteStderrNoise(t *testing.T) {
-	directory := t.TempDir()
-	executable := filepath.Join(directory, "kilo")
-	script := `#!/bin/sh
-[ "$1 $2 $3" = "debug skill --pure" ] || exit 3
-echo "INFO log noise" >&2
-printf '[{"name":"alpha","location":"builtin"},{"name":"beta"}]\n'
-`
-	if err := os.WriteFile(executable, []byte(script), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	environment := []string{"PATH=/usr/bin:/bin"}
-	if err := CheckKiloSkills(context.Background(), executable, directory, environment, true, []string{"alpha", "beta"}); err != nil {
-		t.Fatal(err)
-	}
-	if err := CheckKiloSkills(context.Background(), executable, directory, environment, true, []string{"missing"}); err == nil {
-		t.Fatal("missing Kilo evaluation skill was accepted")
 	}
 }
 

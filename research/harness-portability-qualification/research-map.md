@@ -2,13 +2,13 @@
 
 ## Goal
 
-Reconstruct the qualified evaluation pattern implemented for OpenAI Codex, Cursor, Claude Code, and Pi, then apply the same two qualification gates to GitHub Copilot, Gemini CLI, Grok Build, OpenCode, and Kilo Code without expanding Skill Issue into harness installation or environment management.
+Reconstruct the qualified evaluation pattern implemented for OpenAI Codex, Cursor, Claude Code, and Pi, then apply the same two qualification gates to GitHub Copilot, Gemini CLI, Grok Build, and OpenCode without expanding Skill Issue into harness installation or environment management.
 
 ## Scope And Output
 
 - Source scope: local plus internet.
-- Active researcher concurrency: five.
-- Total researcher budget: twenty.
+- Active researcher concurrency: four.
+- Total researcher budget: sixteen.
 - Assignment root: `research/harness-portability-qualification/assignments/`.
 - Final aggregation target: `research/harness-portability-qualification/remaining-harness-portability-qualification-audit.md`.
 - Final shape: best-supported direction, conditional alternatives, rejected or lower-fit interpretations, evidence, and unresolved blockers.
@@ -28,7 +28,6 @@ Reconstruct the qualified evaluation pattern implemented for OpenAI Codex, Curso
 - `01-existing-runtime-implementation.md`: trace the four concrete adapters end to end.
 - `02-product-support-and-setup-contract.md`: extract controlling support and qualification contracts.
 - `03-local-candidate-research-copilot-gemini.md`: map existing local evidence for Copilot and Gemini CLI.
-- `04-local-candidate-research-grok-opencode-kilo.md`: map existing local evidence for Grok Build, OpenCode, and Kilo Code.
 - `05-existing-auth-and-subscription-patterns.md`: reconstruct qualified authentication and Codex-access arrangements.
 
 ### Wave 2: Candidate Deep Dives
@@ -41,7 +40,7 @@ One assignment per candidate audits the preceding local and upstream documents, 
 
 ## Candidate Classification
 
-- Deep-dive: the five named candidates, because each is an explicit campaign target.
+- Deep-dive: the four named candidates, because each is an explicit campaign target.
 - Skim-only: adjacent provider bridges or proxy arrangements that are officially documented but fail a core safety or ownership constraint.
 - Reject: unofficial credential copying, permanent configuration mutation, invasive home-directory substitution, installation or repair ownership, and undocumented compatibility claims.
 

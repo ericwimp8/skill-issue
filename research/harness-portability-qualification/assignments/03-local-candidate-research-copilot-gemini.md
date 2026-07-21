@@ -15,7 +15,7 @@
 - **Production source:** `cli/internal/replay/replay.go` and `cli/internal/replay/process.go` — process adapter, headless argument stubs, process ownership, session extraction, protocol parsing, and cancellation.
 - **Local contract:** `cli/README.md`, `plans/harness-setup.md`, `plans/skill-issue-project-completion/01-reconcile-the-definitive-product-support-and-evidence-contract.md`, and `skills/skill-evaluation-and-refinement/SKILL.md` — current user-facing boundary and qualification gates.
 - **Prior research:** `research/deep-research/harness-direct-installation-architecture/assignments/01-github-copilot-direct-installation.md` and `05-google-antigravity-gemini-cli-direct-installation.md` — first-party findings retained locally, inspected 2026-07-19.
-- **Prior research:** `research/deep-research/manual-skill-invocation-nine-harnesses/assignments/01-github-copilot.md` and `05-google-antigravity-gemini-cli.md`; `research/harness-subagent-launch/assignments/01-github-copilot.md` and `05-google-antigravity-gemini-cli.md` — explicit invocation and delegated-work findings.
+- **Prior research:** `research/deep-research/manual-skill-invocation-eight-harnesses/assignments/01-github-copilot.md` and `05-google-antigravity-gemini-cli.md`; `research/harness-subagent-launch/assignments/01-github-copilot.md` and `05-google-antigravity-gemini-cli.md` — explicit invocation and delegated-work findings.
 - **Validation evidence:** `evaluations/skill-calling/smoke/real-harness-smoke-report.md` and the 2026-07-21 local shell probe: neither `copilot` nor `gemini` resolves on `PATH` in this environment.
 
 ## Findings
@@ -26,7 +26,7 @@
 
 `harness.Spec` registers Copilot as executable `copilot` with project root `.github/skills` and user root `~/.copilot/skills`; it registers Gemini CLI as `gemini` with `.gemini/skills` and `~/.gemini/skills`. The general `ParseID` path accepts both, so ordinary installation and uninstall can resolve their native roots. `evaluationDefaults`, however, contains only Claude Code, Codex, Cursor, and Pi. `ParseEvaluationID`, which is called by the evaluate command path, rejects both candidates before runtime preparation.
 
-**Evidence:** `cli/internal/harness/harness.go` defines both `Spec` entries, while `evaluationDefaults`, `ParseEvaluationID`, and `EvaluationDefaultsFor` exclude them. `cli/internal/lifecycle/lifecycle.go` routes `evaluate run` through `ParseEvaluationID`; `cli/README.md` states that installation supports nine harnesses and evaluation currently supports only four.
+**Evidence:** The retained source snapshot registered both candidates while excluding them from evaluation. The current `cli/README.md` documents the supported installation and evaluation harnesses.
 
 **Implication:** The local executable names and project skill roots are production-backed installation data. Neither candidate currently owns an accepted evaluation request, a default model, or a default reasoning setting.
 
@@ -96,7 +96,7 @@ On 2026-07-21, `command -v copilot` and `command -v gemini` returned no executab
 
 The retained Copilot research states that direct skills use `.github/skills/<name>/SKILL.md` or `~/.copilot/skills/<name>/SKILL.md`, can reload/list/info skills, and support `/skill-name` manual invocation when user-invocable; it records trust, organization-policy, and `allowed-tools` constraints. The retained Gemini research records `.gemini/skills` and `~/.gemini/skills`, `/skills reload` and `/skills list`, matching-task activation consent, workspace trust, `skills.enabled`, collision precedence, and natural-language explicit naming rather than a documented per-skill slash invocation. Both direct-installation documents preserve official URLs for later re-checking.
 
-**Evidence:** `research/deep-research/harness-direct-installation-architecture/assignments/01-github-copilot-direct-installation.md`; `research/deep-research/harness-direct-installation-architecture/assignments/05-google-antigravity-gemini-cli-direct-installation.md`; `research/deep-research/manual-skill-invocation-nine-harnesses/assignments/01-github-copilot.md`; `research/deep-research/manual-skill-invocation-nine-harnesses/assignments/05-google-antigravity-gemini-cli.md`.
+**Evidence:** `research/deep-research/harness-direct-installation-architecture/assignments/01-github-copilot-direct-installation.md`; `research/deep-research/harness-direct-installation-architecture/assignments/05-google-antigravity-gemini-cli-direct-installation.md`; `research/deep-research/manual-skill-invocation-eight-harnesses/assignments/01-github-copilot.md`; `research/deep-research/manual-skill-invocation-eight-harnesses/assignments/05-google-antigravity-gemini-cli.md`.
 
 **Implication:** These findings support source-target selection for discovery/trust/activation research, but do not prove noninteractive evaluation compatibility, protocol output, signal permission, session persistence, or cleanup in the current unavailable local binaries.
 
@@ -126,7 +126,7 @@ The current product contract makes Copilot and Gemini additional selected target
 
 The direct-installation research treats Gemini CLI as the selected Google adapter and records a current v0.50.0 skill feature claim, while the manual-invocation research says a May 2026 transition made Antigravity CLI the general consumer terminal surface and retained Gemini CLI only for enterprise/paid API-key access. The active research map still names Gemini CLI as this campaign candidate, and the CLI README says Antigravity automation is outside the runner. Copilot's retained direct-installation research is explicitly current only as of 2026-07-19 and marks `gh skill` preview. No live binary is available to resolve either product-version/access state locally.
 
-**Evidence:** `research/deep-research/harness-direct-installation-architecture/assignments/05-google-antigravity-gemini-cli-direct-installation.md`; `research/deep-research/manual-skill-invocation-nine-harnesses/assignments/05-google-antigravity-gemini-cli.md`; `research/harness-portability-qualification/research-map.md`; `cli/README.md`; and the Copilot assignment's “Currentness caveat.”
+**Evidence:** `research/deep-research/harness-direct-installation-architecture/assignments/05-google-antigravity-gemini-cli-direct-installation.md`; `research/deep-research/manual-skill-invocation-eight-harnesses/assignments/05-google-antigravity-gemini-cli.md`; `research/harness-portability-qualification/research-map.md`; `cli/README.md`; and the Copilot assignment's “Currentness caveat.”
 
 **Implication:** Official-web deep dives must first confirm the exact currently supported Copilot CLI and Gemini CLI distributions, auth/access eligibility, feature/version gates, and documented automation mode. The campaign should retain Gemini as the named research target until that evidence is reconciled, without transferring Antigravity behavior into Gemini.
 

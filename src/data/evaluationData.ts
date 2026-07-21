@@ -58,7 +58,6 @@ const harnessLabels: Record<string, string> = {
   codex: 'OpenAI Codex',
   'claude-code': 'Claude Code',
   cursor: 'Cursor',
-  kilo: 'Kilo Code',
   opencode: 'OpenCode',
   pi: 'Pi',
 };
@@ -124,12 +123,6 @@ const cellDefinitions = [
     model: 'codex-sol',
     missedCalls: [3, 3, 3],
     seed: 47,
-  },
-  {
-    harness: 'kilo',
-    model: 'codex-sol',
-    missedCalls: [3, 4, 4],
-    seed: 53,
   },
 ] as const satisfies readonly CellDefinition[];
 

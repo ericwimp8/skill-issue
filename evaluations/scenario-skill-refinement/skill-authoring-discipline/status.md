@@ -18,6 +18,6 @@
 - Remaining attempts: not applicable after pass
 - Last completed trial: body cycle 2 case 1 passed with transcript-confirmed isolation
 - Applied refinement: evaluation isolation only; the canonical target is unchanged because no target-owned semantic failure was established
-- Cleanup state: all presentation-worthy fixtures, outputs, native traces, full transcripts, audits, and cycle records retained; no transient agent files remain outside the campaign's owned fixtures and outputs
+- Cleanup state: all presentation-worthy fixtures, outputs, curated native evidence, audits, and cycle records retained; no transient agent files remain outside the campaign's owned fixtures and outputs
 - Next action: none; see `conclusion.md`
 - Campaign state: passed

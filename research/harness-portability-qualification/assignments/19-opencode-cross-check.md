@@ -12,7 +12,6 @@
 
 - `research/harness-portability-qualification/assignments/01-existing-runtime-implementation.md` — qualified-runtime lifecycle and cleanup baseline.
 - `research/harness-portability-qualification/assignments/02-product-support-and-setup-contract.md` — qualification evidence and support-state boundary.
-- `research/harness-portability-qualification/assignments/04-local-candidate-research-grok-opencode-kilo.md` — current Skill Issue OpenCode registration and runtime rejection.
 - `research/harness-portability-qualification/assignments/05-existing-auth-and-subscription-patterns.md` — credential ownership and second-gate criteria.
 - `research/harness-portability-qualification/assignments/09-opencode-technical-gate.md` — technical-gate evidence and limitations.
 - `research/harness-portability-qualification/assignments/14-opencode-codex-subscription.md` — current native OpenAI subscription route and credential-store boundary.

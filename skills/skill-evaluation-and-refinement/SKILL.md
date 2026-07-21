@@ -10,7 +10,7 @@ description: Two-loop skill evaluation and semantic refinement workflow. Use whe
 1. Confirm that the target skill exists. Locate a durable environment-qualification record naming the harness surface, model, qualification date, trial method, and direct proactive-invocation evidence. Stop and explain the missing prerequisite when that record is absent or does not cover the current environment.
 2. Read the complete target, including frontmatter and every referenced instruction required to understand its contract.
 3. Establish the target's goal, intended use, required behavior, observable result, and contract boundaries. Follow `references/target-outcome-interpretation.md`.
-4. Create an evaluation-owned campaign location using `references/campaign-record.md`. Keep fixtures, trial records, transcripts, outputs, audit findings, cycle counts, and cleanup ownership there.
+4. Create an evaluation-owned campaign location using `references/campaign-record.md`. Keep fixtures, trial records, curated native evidence, outputs, audit findings, cycle counts, and cleanup ownership there.
 5. Keep description evaluation and body evaluation separate. Record a four-trial description pass before starting the body loop. For an explicit-only target, record that description evaluation is not applicable and why.
 
 ## Evaluate the Description
@@ -18,7 +18,7 @@ description: Two-loop skill evaluation and semantic refinement workflow. Use whe
 1. Verify that the target is implicitly invocable, independent trial agents are available, and native execution evidence can prove whether the skill loaded. Stop with the documented reason when any gate fails.
 2. Derive two distinct, representative prompts from the target's intended-use boundary. Make each task naturally require the skill without naming it, requesting its invocation, quoting its description, or revealing the expected selection.
 3. Prepare only the inputs those prompts require inside the campaign location.
-4. Give each prompt to a fresh independent agent and retain the native skill-load or tool trace. Treat the agent's prose claim as insufficient evidence.
+4. Give each prompt to a fresh independent agent and retain the minimal native skill-load or tool trace that proves the candidate loaded before output. Treat the agent's prose claim as insufficient evidence. Never copy a complete harness session or rollout into the campaign.
 5. When both trials succeed, derive two different confirmation prompts and repeat with fresh agents. Four successes across the two stages pass the description.
 6. On any failure, diagnose the missing or misleading meaning in the description, update that meaning without adding fixture-specific wording or widening the intended boundary, clean transient artifacts, and restart the complete two-stage protocol.
 7. After five unsuccessful description rounds for the current target, pause the campaign, retain the evidence, and ask whether the user authorizes a specified number of further rounds.
@@ -31,7 +31,7 @@ description: Two-loop skill evaluation and semantic refinement workflow. Use whe
 4. Read `references/semantic-refinement.md` and apply its constraints to automatic edits and human-facing proposals alike.
 5. Design varied representative cases that exercise generalized behavior. Record ground truth as conditions and result characteristics rather than prescribing one exact answer where multiple answers can satisfy the contract.
 6. Inventory every file under the target's `references/` directory. Before general body cases, qualify each reference independently with `references/reference-file-evaluation.md`. A target with references cannot pass while any current reference lacks passing evidence.
-7. Create the smallest meaningful connected fixtures in the campaign location. For conversational behavior, conduct the interaction through an independent agent one turn at a time and retain a verbatim transcript or equivalent native record.
+7. Create the smallest meaningful connected fixtures in the campaign location. For conversational behavior, conduct the interaction through an independent agent one turn at a time and retain the task-owned messages and observable responses as a curated transcript or equivalent native record. Exclude ambient system and developer instructions, memory, local configuration, hidden reasoning, credentials, and machine-specific paths.
 8. Confirm that the harness can execute and observe the selected surface. When it cannot, provide the prepared inputs and an actionable external execution route, then wait for reliable evidence.
 9. Execute every case in isolation and audit the outputs against the goal, expected result, ground truth, and completion criteria. Treat a failure as material when it violates the target's goal, preserved boundary, or required completion criterion. Pass the body only when every reference qualification, required case, and criterion passes without a retained material failure.
 10. Translate retained failures into one coherent update at the meaning that owns them. Apply it automatically or present the same governed update for approval according to the selected mode.

@@ -74,8 +74,6 @@ func (service Service) prepareRuntime(harnessID harness.ID, model, reasoning, ru
 		return prepareClaudeRuntime(root, workspace)
 	case harness.OpenCode:
 		return prepareOpenCodeRuntime(root, workspace, executable, model, reasoning, cliPath, skillNames)
-	case harness.KiloCode:
-		return prepareKiloRuntime(root, workspace, executable, model, reasoning, cliPath, skillNames)
 	case harness.Pi:
 		return preparePiRuntime(root, workspace, executable)
 	default:
@@ -98,9 +96,8 @@ func CodexBaseConfiguration(reasoning string) []string {
 	}
 }
 
-// structuredRuntimeSpec parameterizes the OpenCode-style harnesses (OpenCode
-// and its Kilo fork) that share a configuration schema, permission model, and
-// XDG-based environment isolation. Fields hold only what genuinely differs.
+// structuredRuntimeSpec defines OpenCode's configuration schema, permission
+// model, and XDG-based environment isolation.
 type structuredRuntimeSpec struct {
 	harnessID        harness.ID
 	name             string            // harness name used in error messages
@@ -112,52 +109,6 @@ type structuredRuntimeSpec struct {
 	configExtras     map[string]any    // harness-specific top-level configuration
 	permissionExtras map[string]string // harness-specific permission denials
 	environment      []string          // harness-specific environment variables
-}
-
-func kiloRuntimeSpec(skillRoot string) structuredRuntimeSpec {
-	return structuredRuntimeSpec{
-		harnessID:    harness.KiloCode,
-		name:         "Kilo",
-		configDir:    "kilo",
-		configFile:   "kilo.json",
-		schema:       "https://app.kilo.ai/config.json",
-		defaultAgent: "code",
-		agentConfig: map[string]any{
-			"permission": map[string]string{
-				"codebase_search": "deny",
-				"semantic_search": "deny",
-			},
-		},
-		configExtras: map[string]any{
-			"remote_control": false,
-			"indexing":       map[string]any{"enabled": false},
-			"skills":         map[string]any{"paths": []string{skillRoot}, "urls": []string{}},
-		},
-		permissionExtras: map[string]string{
-			"semantic_search":    "deny",
-			"codebase_search":    "deny",
-			"kilo_memory_save":   "deny",
-			"kilo_memory_recall": "deny",
-		},
-		environment: []string{
-			"KILO_AUTO_SHARE=false",
-			"KILO_DISABLE_AUTOUPDATE=true",
-			"KILO_DISABLE_CLAUDE_CODE=true",
-			"KILO_DISABLE_CLAUDE_CODE_PROMPT=true",
-			"KILO_DISABLE_CLAUDE_CODE_SKILLS=true",
-			"KILO_DISABLE_CODEBASE_INDEXING=true",
-			"KILO_DISABLE_EXTERNAL_SKILLS=true",
-			"KILO_DISABLE_LSP_DOWNLOAD=true",
-			"KILO_DISABLE_PRESENCE=true",
-			"KILO_DISABLE_PROJECT_CONFIG=true",
-			"KILO_DISABLE_SESSION_INGEST=true",
-			"KILO_DISABLE_SHARE=true",
-			"KILO_EXPERIMENTAL_DISABLE_FILEWATCHER=true",
-			"KILO_NO_DAEMON=true",
-			"KILO_PURE=true",
-			"KILO_REMOTE=false",
-		},
-	}
 }
 
 func openCodeRuntimeSpec() structuredRuntimeSpec {
@@ -186,11 +137,6 @@ func openCodeRuntimeSpec() structuredRuntimeSpec {
 			"OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER=true",
 		},
 	}
-}
-
-func prepareKiloRuntime(root, workspace, executable, model, reasoning, cliPath string, skillNames []string) (runtimePreparation, error) {
-	skillRoot := filepath.Join(root, "passed-skills")
-	return prepareStructuredRuntime(kiloRuntimeSpec(skillRoot), root, workspace, executable, model, reasoning, cliPath, skillNames, skillRoot, []string{skillRoot})
 }
 
 func prepareOpenCodeRuntime(root, workspace, executable, model, reasoning, cliPath string, skillNames []string) (runtimePreparation, error) {
@@ -308,10 +254,6 @@ func structuredEnvironment(spec structuredRuntimeSpec, root, executable string) 
 		environment = append(environment, "XDG_DATA_HOME="+dataHome)
 	}
 	return append(environment, spec.environment...), nil
-}
-
-func kiloEnvironment(root, executable string) ([]string, error) {
-	return structuredEnvironment(kiloRuntimeSpec(filepath.Join(root, "passed-skills")), root, executable)
 }
 
 func openCodeEnvironment(root, executable string) ([]string, error) {
@@ -532,8 +474,6 @@ func runtimeExecutable(harnessID harness.ID, override string) (string, error) {
 			names = []string{"claude"}
 		case harness.OpenCode:
 			names = []string{"opencode"}
-		case harness.KiloCode:
-			names = []string{"kilo"}
 		case harness.Pi:
 			names = []string{"pi"}
 		}

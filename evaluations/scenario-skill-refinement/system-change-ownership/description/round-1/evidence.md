@@ -2,7 +2,7 @@
 
 ## Protocol
 
-Four distinct, unleading architecture-placement tasks were given to fresh independent agents with `fork_turns: "none"`. No prompt named the target skill, requested skill invocation, quoted its description, or revealed the expected placement. Each trial retained its fixture, prompt, output, complete native child-session transcript, and audit.
+Four distinct, unleading architecture-placement tasks were given to fresh independent agents with `fork_turns: "none"`. No prompt named the target skill, requested skill invocation, quoted its description, or revealed the expected placement. Each trial retained its fixture, prompt, output, curated session identity and target-read evidence, and audit.
 
 ## Results
 

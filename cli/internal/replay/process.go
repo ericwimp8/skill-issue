@@ -188,9 +188,6 @@ func (session *processSession) Wait(_ context.Context) (Capture, error) {
 	if err != nil {
 		return Capture{}, session.failure(fmt.Errorf("%s harness produced invalid structured output: %w: %s", session.adapter.harnessID, err, strings.TrimSpace(session.stderr.String())))
 	}
-	if session.adapter.harnessID == HarnessKilo {
-		events = collapseAdjacentExactDuplicateEvents(events)
-	}
 	requireSessionStart := session.sessionID == ""
 	if err := validateHarnessOutput(session.adapter.harnessID, events, session.stderr.String(), requireSessionStart); err != nil {
 		return Capture{}, session.failure(err)
@@ -277,7 +274,7 @@ func validateHarnessOutput(harnessID HarnessID, events []json.RawMessage, stderr
 		if !types["system\x00init"] || !types["result\x00"] {
 			return fmt.Errorf("%w: Claude Code output missing successful system/init and result events: %s", ErrProtocol, strings.TrimSpace(stderr))
 		}
-	case HarnessOpenCode, HarnessKilo:
+	case HarnessOpenCode:
 		if !structuredRunStopped(events) {
 			return fmt.Errorf("%w: %s output missing terminal step_finish with reason stop: %s", ErrProtocol, harnessID, strings.TrimSpace(stderr))
 		}
@@ -293,7 +290,7 @@ func validateSessionID(harnessID HarnessID, sessionID string, events []json.RawM
 	if found != "" && found != sessionID {
 		return fmt.Errorf("%w: %s session ID changed from %s to %s", ErrProtocol, harnessID, sessionID, found)
 	}
-	if harnessID == HarnessOpenCode || harnessID == HarnessKilo {
+	if harnessID == HarnessOpenCode {
 		for _, event := range events {
 			var value struct {
 				SessionID string `json:"sessionID"`
@@ -346,30 +343,11 @@ func (session *processSession) Close() error {
 			}
 		}
 	}
-	if session.adapter.harnessID == HarnessKilo {
-		if session.sessionID == "" {
-			session.sessionID = findSessionIDFromPartialOutput(session.stdout.Bytes())
-		}
-		if session.sessionID != "" {
-			cleanupErr := DeleteKiloSession(context.Background(), session.adapter.path, session.adapter.directory, session.adapter.environ, session.adapter.cleanEnvironment, session.sessionID)
-			if closeErr == nil {
-				closeErr = cleanupErr
-			}
-		}
-	}
 	return closeErr
 }
 
 func openCodeArgs(adapter *processAdapter, sessionID, prompt string) []string {
 	args := []string{"run", "--pure", "--format", "json", "--model", adapter.model, "--variant", adapter.reasoning}
-	if sessionID != "" {
-		args = append(args, "--session", sessionID)
-	}
-	return append(args, prompt)
-}
-
-func kiloArgs(adapter *processAdapter, sessionID, prompt string) []string {
-	args := []string{"run", "--pure", "--format", "json", "--model", adapter.model, "--variant", adapter.reasoning, "--agent", "code", "--dir", adapter.directory}
 	if sessionID != "" {
 		args = append(args, "--session", sessionID)
 	}
@@ -386,37 +364,6 @@ func findSessionIDFromPartialOutput(output []byte) string {
 		}
 	}
 	return ""
-}
-
-func collapseAdjacentExactDuplicateEvents(events []json.RawMessage) []json.RawMessage {
-	result := make([]json.RawMessage, 0, len(events))
-	for _, event := range events {
-		if len(result) > 0 && bytes.Equal(result[len(result)-1], event) {
-			continue
-		}
-		result = append(result, event)
-	}
-	return result
-}
-
-func DeleteKiloSession(ctx context.Context, executable, directory string, env []string, clean bool, sessionID string) error {
-	path, err := resolveExecutable("kilo", executable)
-	if err != nil {
-		return fmt.Errorf("Kilo session executable: %w", err)
-	}
-	command := exec.CommandContext(ctx, path, "session", "delete", sessionID)
-	configureOwnedProcess(command)
-	command.Dir = directory
-	command.Env = environment(env, clean)
-	var output bytes.Buffer
-	command.Stdout = &output
-	command.Stderr = &output
-	err = command.Run()
-	stopOwnedProcessGroup(command)
-	if err != nil && !strings.Contains(strings.ToLower(output.String()), "not found") {
-		return fmt.Errorf("Kilo session deletion failed: %w: %s", err, strings.TrimSpace(output.String()))
-	}
-	return nil
 }
 
 func DeleteOpenCodeSession(ctx context.Context, executable, directory string, env []string, clean bool, sessionID string) error {
@@ -475,41 +422,6 @@ func CheckOpenCodeSkills(ctx context.Context, executable, directory string, env 
 	for _, name := range expected {
 		if !found[name] {
 			return fmt.Errorf("OpenCode did not discover installed evaluation skill %q", name)
-		}
-	}
-	return nil
-}
-
-// CheckKiloSkills verifies Kilo discovers every installed evaluation skill
-// through its native debug listing. Only stdout is parsed because Kilo can
-// interleave log lines on stderr.
-func CheckKiloSkills(ctx context.Context, executable, directory string, env []string, clean bool, expected []string) error {
-	path, err := resolveExecutable("kilo", executable)
-	if err != nil {
-		return fmt.Errorf("Kilo skill discovery executable: %w", err)
-	}
-	command := exec.CommandContext(ctx, path, "debug", "skill", "--pure")
-	command.Dir = directory
-	command.Env = environment(env, clean)
-	var stdout, stderr bytes.Buffer
-	command.Stdout = &stdout
-	command.Stderr = &stderr
-	if err := command.Run(); err != nil {
-		return fmt.Errorf("Kilo skill discovery failed: %w: %s", err, strings.TrimSpace(stderr.String()))
-	}
-	var discovered []struct {
-		Name string `json:"name"`
-	}
-	if err := json.Unmarshal(stdout.Bytes(), &discovered); err != nil {
-		return fmt.Errorf("decode Kilo skill discovery: %w", err)
-	}
-	found := make(map[string]bool, len(discovered))
-	for _, skill := range discovered {
-		found[skill.Name] = true
-	}
-	for _, name := range expected {
-		if !found[name] {
-			return fmt.Errorf("Kilo did not discover installed evaluation skill %q", name)
 		}
 	}
 	return nil
@@ -584,7 +496,7 @@ func resolveCursorExecutable() (string, error) {
 }
 
 func CheckAuthentication(ctx context.Context, harnessID HarnessID, override, model string, env []string, clean bool) error {
-	if harnessID != HarnessCodex && harnessID != HarnessCursor && harnessID != HarnessOpenCode && harnessID != HarnessKilo {
+	if harnessID != HarnessCodex && harnessID != HarnessCursor && harnessID != HarnessOpenCode {
 		return nil
 	}
 	var path string
@@ -597,8 +509,6 @@ func CheckAuthentication(ctx context.Context, harnessID HarnessID, override, mod
 			name = "cursor-agent"
 		} else if harnessID == HarnessOpenCode {
 			name = "opencode"
-		} else if harnessID == HarnessKilo {
-			name = "kilo"
 		}
 		path, err = resolveExecutable(name, override)
 	}
@@ -607,9 +517,6 @@ func CheckAuthentication(ctx context.Context, harnessID HarnessID, override, mod
 	}
 	if harnessID == HarnessOpenCode {
 		return checkOpenCodeAuthentication(ctx, path, model, env, clean)
-	}
-	if harnessID == HarnessKilo {
-		return checkKiloAuthentication(ctx, path, model, env, clean)
 	}
 	command := exec.CommandContext(ctx, path, "login", "status")
 	if harnessID == HarnessCursor {
@@ -621,39 +528,6 @@ func CheckAuthentication(ctx context.Context, harnessID HarnessID, override, mod
 	command.Stderr = &output
 	if err := command.Run(); err != nil {
 		return fmt.Errorf("%s authentication status failed: %w: %s", harnessID, err, strings.TrimSpace(output.String()))
-	}
-	return nil
-}
-
-func checkKiloAuthentication(ctx context.Context, path, model string, env []string, clean bool) error {
-	version, err := runStatusCommand(ctx, path, env, clean, "--version")
-	if err != nil {
-		return fmt.Errorf("Kilo version check failed: %w", err)
-	}
-	qualified, _, err := harness.TestedVersion(harness.KiloCode)
-	if err != nil {
-		return err
-	}
-	if err := requireQualifiedVersion("Kilo", strings.TrimSpace(version), qualified); err != nil {
-		return err
-	}
-	provider, _, found := strings.Cut(model, "/")
-	if !found || provider == "" {
-		return errors.New("Kilo model must use provider/model format")
-	}
-	auth, err := runStatusCommand(ctx, path, env, clean, "auth", "list")
-	if err != nil {
-		return fmt.Errorf("Kilo authentication status failed: %w", err)
-	}
-	if !strings.Contains(strings.ToLower(auth), strings.ToLower(provider)) {
-		return fmt.Errorf("Kilo provider %q is not authenticated; run kilo auth login", provider)
-	}
-	models, err := runStatusCommand(ctx, path, env, clean, "models", provider)
-	if err != nil {
-		return fmt.Errorf("Kilo model availability failed: %w", err)
-	}
-	if !containsLine(models, model) {
-		return fmt.Errorf("Kilo model %q is unavailable for provider %q", model, provider)
 	}
 	return nil
 }
@@ -872,9 +746,6 @@ func commandSpecs() map[HarnessID]commandSpec {
 		}},
 		HarnessOpenCode: {executable: "opencode", buildArgs: func(adapter *processAdapter, sessionID string, _ bool, prompt string) []string {
 			return openCodeArgs(adapter, sessionID, prompt)
-		}},
-		HarnessKilo: {executable: "kilo", buildArgs: func(adapter *processAdapter, sessionID string, _ bool, prompt string) []string {
-			return kiloArgs(adapter, sessionID, prompt)
 		}},
 	}
 }

@@ -79,8 +79,8 @@ export const siteData = {
   },
   evaluationMetrics: [
     { value: '30', label: 'conversation turns' },
-    { value: '6', label: 'supported harnesses' },
-    { value: '10', label: 'comparison cells' },
+    { value: '5', label: 'supported harnesses' },
+    { value: '9', label: 'comparison cells' },
   ],
   method: {
     title: 'A simple signal for a difficult failure mode.',

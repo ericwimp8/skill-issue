@@ -5,14 +5,14 @@
 - `description/round-1/evidence.md`: four-trial selection decision.
 - `description/round-1/trial-*/trial.md`: unmodified prompts, identities, evidence pointers, and audits.
 - `description/round-1/trial-*/output.md`: observable architecture decisions.
-- `description/round-1/trial-*/transcript.jsonl`: complete native child-session records with exact pre-output canonical target reads.
+- `description/round-1/trial-*/transcript.jsonl`: curated session identity, exact pre-output canonical target read, and final response.
 
 ## Body
 
 - `behavior/cycle-1/audit.md`: aggregate criterion audit and cycle decision.
 - `behavior/cycle-1/case-*/case.md`: unmodified prompts, identities, evidence pointers, and ground-truth audits.
 - `behavior/cycle-1/case-*/output.md`: observable architecture decisions.
-- `behavior/cycle-1/case-*/transcript.jsonl`: complete native child-session records.
+- `behavior/cycle-1/case-*/transcript.jsonl`: curated session identity, exact pre-output canonical target read, and final response.
 - `fixtures/body/case-*/`: connected source, requests, and independently held ground truth.
 
 ## Versions

@@ -47,7 +47,7 @@ No further audit cycle is required.
 - Behavior pass evidence requires later representative task execution.
 - Exact model identifiers remain owned by environment evaluation rather than the skills.
 - Cursor's explicit-only field is documented for native skills, while plugin-delivered behavior requires installed-version validation.
-- Antigravity, Gemini CLI, Junie, OpenCode, Kilo, and JetBrains AI Assistant lack one proven cross-version per-skill explicit-only switch; their reference entries preserve guidance or underlying-agent fallbacks.
+- Antigravity, Gemini CLI, Junie, OpenCode, and JetBrains AI Assistant lack one proven cross-version per-skill explicit-only switch; their reference entries preserve guidance or underlying-agent fallbacks.
 - Native release adapters beyond the proven Codex wrapper are later rendering work. This skills-only pass records their package and metadata requirements without manufacturing divergent copies.
 
 ## Audit Closure

@@ -7,7 +7,7 @@ Review `evaluations/scenario-skill-refinement/skill-authoring-discipline/fixture
 ## Evidence State
 
 - Fresh-agent identity: `019f825e-8e6b-75f3-a318-ff241039bc15`, agent path `/root/eval_skill_authoring/sad_desc_r1_t1`, nickname `Darwin`, `gpt-5.6-sol`, medium reasoning
-- Native invocation evidence: retained in `retained-evidence/description/trial-1-native-trace.jsonl`. Before producing the assessment, the agent issued a tool call that read the exact project-local `supporting-skills/skill-authoring-discipline/SKILL.md`; the correlated tool output contains the candidate's complete frontmatter and body. Full native transcript: `retained-evidence/description/trial-1-transcript.jsonl`.
+- Native invocation evidence: retained in `retained-evidence/description/trial-1-native-trace.jsonl`. Before producing the assessment, the agent issued a tool call that read the exact project-local `supporting-skills/skill-authoring-discipline/SKILL.md`. Curated final-response evidence: `retained-evidence/description/trial-1-transcript.jsonl`.
 - Observable output: `description/round-1/trial-1-output.md`
 - Ground-truth comparison: the assessment correctly identified the long list-style description, repeated activation guidance, and exhaustive checklist, then proposed concise generalized authoring changes. This matches the trial boundary without relying on the duplicate plugin skill.
 - Result: passed

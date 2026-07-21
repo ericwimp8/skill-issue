@@ -219,7 +219,7 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 	if err != nil {
 		return Result{}, err
 	}
-	if request.Harness == harness.OpenCode || request.Harness == harness.KiloCode {
+	if request.Harness == harness.OpenCode {
 		request.Executable, err = runtimeExecutable(request.Harness, request.Executable)
 		if err != nil {
 			return Result{}, err
@@ -330,11 +330,6 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 			return Result{}, service.toolingFailure(outputDirectory, runID, request, err)
 		}
 	}
-	if request.Harness == harness.KiloCode {
-		if err := replay.CheckKiloSkills(ctx, request.Executable, runtime.workingDirectory, runtime.environment, true, skillNames); err != nil {
-			return Result{}, service.toolingFailure(outputDirectory, runID, request, err)
-		}
-	}
 	run.InstallationState = installationStatePath
 	run.Status = runstate.StatusRunning
 	if err := service.runs.Save(run); err != nil {
@@ -397,7 +392,7 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 					return err
 				}
 			}
-			if (request.Harness == harness.OpenCode || request.Harness == harness.KiloCode) && boundary.Capture != nil {
+			if request.Harness == harness.OpenCode && boundary.Capture != nil {
 				if err := service.validateStructuredSignals(string(request.Harness), runID, boundary.TurnID, *boundary.Capture, tokens, cliPath); err != nil {
 					return err
 				}
@@ -720,7 +715,7 @@ func piSignalCompletionDetail(events []json.RawMessage, toolCallID string) strin
 	return "the command did not record its marker"
 }
 
-// validateStructuredSignals classifies errored OpenCode and Kilo bash events
+// validateStructuredSignals classifies errored OpenCode bash events
 // that carry the instrumented signal. A denied compound command whose signal
 // the model retried — so the marker was recorded for the turn — is model
 // behavior; an attempted signal whose marker was never recorded is a tooling
@@ -876,15 +871,6 @@ func (service Service) cleanupNativeSession(run runstate.Run) error {
 		return nil
 	}
 	switch run.Harness {
-	case string(harness.KiloCode):
-		environment, err := kiloEnvironment(privateRuntimeRunRoot(run.ID), run.HarnessExecutable)
-		if err != nil {
-			return err
-		}
-		if err := replay.DeleteKiloSession(context.Background(), run.HarnessExecutable, run.Workspace, environment, true, run.HarnessSession); err != nil {
-			return fmt.Errorf("delete recovered Kilo session: %w", err)
-		}
-		return nil
 	case string(harness.OpenCode):
 		environment, err := openCodeEnvironment(privateRuntimeRunRoot(run.ID), run.HarnessExecutable)
 		if err != nil {

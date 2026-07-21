@@ -37,6 +37,17 @@ Each trial or case records its unmodified prompt, fresh-agent identity, fixture 
 
 Keep conclusions separate from raw evidence. Preserve the evidence needed to reproduce a pass or understand a stop.
 
+## Retained Evidence Boundary
+
+Keep complete harness sessions and rollouts outside the campaign. Derive the smallest public evidence record that establishes the claim being made:
+
+- session identity, harness version, model, and reasoning level when relevant;
+- the timestamped pre-output event that loaded the exact candidate;
+- task-owned prompt or conversation turns when the interaction itself is under evaluation;
+- the observable final response or generated artifact used by the audit.
+
+Do not retain system or developer instructions, ambient memory or configuration, hidden reasoning, credentials, approval history, unrelated tool output, or machine-specific paths. For a Codex JSONL session, use `scripts/export-codex-evidence.mjs` to create the curated record instead of copying or line-slicing the rollout.
+
 ## Cleanup
 
 Before rerunning a loop:

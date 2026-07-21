@@ -9,7 +9,7 @@ Bring the candidate Codex skill at `evaluations/scenario-skill-refinement/skill-
 - Fresh-agent identity: `019f8272-8f7c-71a1-935b-76dab8f701a5`, agent path `/root/eval_skill_authoring/sad_body_c1_case3`, nickname `Hooke`, `gpt-5.6-sol`, medium reasoning
 - Target version: initial unchanged target
 - Fixture paths: `fixtures/body/case-3/`
-- Native target-load evidence: `retained-evidence/body/cycle-1/case-3-native-trace.jsonl`; full transcript at `retained-evidence/body/cycle-1/case-3-transcript.jsonl`
+- Curated target-load and final-response evidence: `retained-evidence/body/cycle-1/case-3-native-trace.jsonl` and `retained-evidence/body/cycle-1/case-3-transcript.jsonl`
 - Observable output: revised `fixtures/body/case-3/SKILL.md`; README and metadata preserved unchanged
 - Ground-truth comparison: activation guidance and exhaustive enumeration were replaced with concise review rules, while the explicitly requested README and default prompt were preserved. The transcript did not expose this case's campaign ground truth.
 - Result: passed

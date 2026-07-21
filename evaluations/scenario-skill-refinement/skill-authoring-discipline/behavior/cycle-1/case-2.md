@@ -9,7 +9,7 @@ Create the Codex skill specified by `evaluations/scenario-skill-refinement/skill
 - Fresh-agent identity: `019f8271-482e-76d2-9d93-80838ccfc046`, agent path `/root/eval_skill_authoring/sad_body_c1_case2`, nickname `Leibniz`, `gpt-5.6-sol`, medium reasoning
 - Target version: initial unchanged target
 - Fixture paths: `fixtures/body/case-2/requirements.md`
-- Native target-load evidence: `retained-evidence/body/cycle-1/case-2-native-trace.jsonl`; full transcript at `retained-evidence/body/cycle-1/case-2-transcript.jsonl`
+- Curated target-load and final-response evidence: `retained-evidence/body/cycle-1/case-2-native-trace.jsonl` and `retained-evidence/body/cycle-1/case-2-transcript.jsonl`
 - Observable output: `behavior/cycle-1/case-2-output/release-signing-readiness/`
 - Ground-truth comparison: shared guidance remains concise; Android and Apple policies are complete, separately indexed, and lazy-loaded; metadata is minimal and contains no default prompt. The transcript did not expose this case's ground truth or a prior case output.
 - Result: passed

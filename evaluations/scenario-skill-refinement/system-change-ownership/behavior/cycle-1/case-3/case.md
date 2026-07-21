@@ -13,7 +13,7 @@
 
 - Fresh agent: `/root/eval_system_ownership/sco_body_3` (`Sartre`)
 - Session: `019f8273-795f-7170-9000-649791c5def8`
-- Native trace: `transcript.jsonl`; it records the canonical target read before output.
+- Curated native evidence: `transcript.jsonl`; it records the canonical target read before output and the final response.
 - Observable output: `output.md`
 
 ## Ground-Truth Audit

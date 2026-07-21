@@ -9,7 +9,7 @@ Make the candidate Codex skill at `evaluations/scenario-skill-refinement/skill-a
 - Fresh-agent identity: `019f8274-e26b-7201-93eb-bdc338331edb`, agent path `/root/eval_skill_authoring/sad_body_c2_case1`, nickname `Raman`, `gpt-5.6-sol`, medium reasoning
 - Target version: initial unchanged target
 - Fixture paths: `fixtures/body/cycle-2/case-1/`
-- Native target-load evidence: `retained-evidence/body/cycle-2/case-1-native-trace.jsonl`; full transcript at `retained-evidence/body/cycle-2/case-1-transcript.jsonl`
+- Curated target-load and final-response evidence: `retained-evidence/body/cycle-2/case-1-native-trace.jsonl` and `retained-evidence/body/cycle-2/case-1-transcript.jsonl`
 - Observable output: revised cycle 2 case 1 `SKILL.md` and metadata; README removed; rollback reference preserved
 - Ground-truth comparison: description, body, metadata, folder contents, and conditional reference index satisfy every recorded case criterion without adding fixture-specific guidance.
 - Isolation audit: every tool call was inspected. Reads were limited to the exact project-local target, document-update discipline, and assigned fixture. No campaign record, retained evidence, sibling fixture, prior output, or memory file was read.

@@ -9,6 +9,8 @@ users can fix the right thing.
 In this project, a skill is a reusable set of instructions and resources for a
 coding agent.
 
+[Watch the Skill Issue demo on YouTube.](https://youtu.be/lwTX20ola5M)
+
 ## Why Skill Issue exists
 
 When a skill fails, the cause is often unclear:
@@ -50,14 +52,13 @@ provide a consistent comparison point across identical conversations.
 
 ### Comparison design
 
-The evaluation supports six harnesses:
+The evaluation supports five harnesses:
 
 - OpenAI Codex
 - Claude Code
 - Cursor
 - Pi
 - OpenCode
-- Kilo Code
 
 The comparison campaign tests models across harnesses and multiple models
 within the same harness where those combinations are available. Each

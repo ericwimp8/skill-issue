@@ -16,7 +16,6 @@ const (
 	Codex      ID = "codex"
 	Cursor     ID = "cursor"
 	OpenCode   ID = "opencode"
-	KiloCode   ID = "kilo-code"
 	Pi         ID = "pi"
 )
 
@@ -67,7 +66,6 @@ var orderedSpecs = []Spec{
 	{ID: Codex, Executable: "codex", ProjectSkillDir: ".agents/skills", UserSkillDir: homePath(".agents", "skills"), HarnessSkillFiles: []string{"agents/openai.yaml"}, TestedVersion: "0.144.6", Evaluation: &EvaluationDefaults{Model: "gpt-5.6-sol", Reasoning: "medium"}},
 	{ID: Cursor, Executable: "cursor-agent", ProjectSkillDir: ".cursor/skills", UserSkillDir: homePath(".cursor", "skills"), DisableModelInvocation: true, CleanEvaluationEnvironment: true, CleanAuthenticationEnvironment: true, TestedVersion: "2026.07.16-899851b", Evaluation: &EvaluationDefaults{Model: "auto", Reasoning: "medium"}},
 	{ID: OpenCode, Executable: "opencode", ProjectSkillDir: ".opencode/skills", UserSkillDir: homePath(".config", "opencode", "skills"), CleanAuthenticationEnvironment: true, TestedVersion: "1.18.4", VersionPinned: true, Evaluation: &EvaluationDefaults{Model: "openai/gpt-5.6-sol", Reasoning: "medium"}},
-	{ID: KiloCode, Executable: "kilo", ProjectSkillDir: ".kilo/skills", UserSkillDir: homePath(".kilo", "skills"), CleanEvaluationEnvironment: true, CleanAuthenticationEnvironment: true, TestedVersion: "7.4.11", VersionPinned: true, Evaluation: &EvaluationDefaults{Model: "openai/gpt-5.6-sol", Reasoning: "medium"}},
 	{ID: Pi, Executable: "pi", ProjectSkillDir: ".pi/skills", UserSkillDir: homePath(".pi", "agent", "skills"), DisableModelInvocation: true, CleanEvaluationEnvironment: true, CleanAuthenticationEnvironment: true, TestedVersion: "0.80.10", Evaluation: &EvaluationDefaults{Model: "openai-codex/gpt-5.6-sol", Reasoning: "medium"}},
 }
 

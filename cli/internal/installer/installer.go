@@ -26,6 +26,7 @@ type Request struct {
 	BackupRoot           string
 	Tokens               map[string]string
 	Skills               []payload.Skill
+	CaptureSignals       bool
 	ApplyHarnessMetadata bool
 	ConfirmReplace       func(differing []string) (bool, error)
 }
@@ -100,7 +101,7 @@ func (Service) PrepareEvaluation(request Request) (EvaluationInstallation, Insta
 			return EvaluationInstallation{}, Installation{}, err
 		}
 	}
-	skills, err = instrument(skills, request.CLIPath, request.SignalStateRoot, request.Tokens)
+	skills, err = instrument(skills, request.CLIPath, request.SignalStateRoot, request.Tokens, request.CaptureSignals)
 	if err != nil {
 		return EvaluationInstallation{}, Installation{}, err
 	}
@@ -513,11 +514,11 @@ func addDisableModelInvocation(data []byte) ([]byte, error) {
 	return []byte(text[:document.CloseStart] + document.Newline + "disable-model-invocation: true" + text[document.CloseStart:]), nil
 }
 
-func instrument(skills []payload.Skill, cliPath, signalStateRoot string, tokens map[string]string) ([]payload.Skill, error) {
-	if !filepath.IsAbs(cliPath) {
+func instrument(skills []payload.Skill, cliPath, signalStateRoot string, tokens map[string]string, captureSignals bool) ([]payload.Skill, error) {
+	if !captureSignals && !filepath.IsAbs(cliPath) {
 		return nil, errors.New("evaluation CLI path must be absolute")
 	}
-	if !filepath.IsAbs(signalStateRoot) {
+	if !captureSignals && !filepath.IsAbs(signalStateRoot) {
 		return nil, errors.New("evaluation signal state root must be absolute")
 	}
 	tokenBySkill := make(map[string]string, len(tokens))
@@ -534,7 +535,7 @@ func instrument(skills []payload.Skill, cliPath, signalStateRoot string, tokens 
 		for name, data := range skill.Files {
 			files[name] = append([]byte(nil), data...)
 		}
-		entrypoint, err := inject(files["SKILL.md"], cliPath, signalStateRoot, token)
+		entrypoint, err := inject(files["SKILL.md"], cliPath, signalStateRoot, token, captureSignals)
 		if err != nil {
 			return nil, fmt.Errorf("instrument %s: %w", skill.Name, err)
 		}
@@ -544,13 +545,16 @@ func instrument(skills []payload.Skill, cliPath, signalStateRoot string, tokens 
 	return result, nil
 }
 
-func inject(data []byte, cliPath, signalStateRoot, token string) ([]byte, error) {
+func inject(data []byte, cliPath, signalStateRoot, token string, captureSignals bool) ([]byte, error) {
 	document, err := payload.ParseFrontmatter(data)
 	if err != nil {
 		return nil, err
 	}
 	text := string(data)
 	instruction := fmt.Sprintf("%sRun %q signal %q %q, then continue normally.%s", document.Newline, cliPath, token, signalStateRoot, document.Newline)
+	if captureSignals {
+		instruction = fmt.Sprintf("%sRun echo %q, then continue normally.%s", document.Newline, token, document.Newline)
+	}
 	return []byte(text[:document.BodyStart] + instruction + text[document.BodyStart:]), nil
 }
 

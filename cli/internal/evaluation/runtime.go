@@ -31,11 +31,25 @@ type runtimePreparation struct {
 
 func (service Service) prepareRuntime(harnessID harness.ID, model, reasoning, runID, workspace, executable, cliPath string, skillNames []string) (runtimePreparation, error) {
 	if harnessID == harness.Codex {
+		root := privateRuntimeRunRoot(runID)
+		codexHome := filepath.Join(root, "codex-home")
+		if err := os.MkdirAll(codexHome, 0o700); err != nil {
+			return runtimePreparation{}, fmt.Errorf("create Codex runtime home: %w", err)
+		}
+		userCodexHome, err := codexUserHome()
+		if err != nil {
+			return runtimePreparation{}, err
+		}
+		if err := copyFileIfPresent(filepath.Join(userCodexHome, "auth.json"), filepath.Join(codexHome, "auth.json"), 0o600); err != nil {
+			return runtimePreparation{}, fmt.Errorf("copy Codex authentication: %w", err)
+		}
 		skills, err := codexSkillsToDisable()
 		if err != nil {
 			return runtimePreparation{}, err
 		}
 		configuration := []string{
+			`agents.enabled=false`,
+			`features.multi_agent_v2=false`,
 			`approvals_reviewer="auto_review"`,
 			fmt.Sprintf("model_reasoning_effort=%s", strconv.Quote(reasoning)),
 			`project_doc_max_bytes=0`,
@@ -44,7 +58,12 @@ func (service Service) prepareRuntime(harnessID harness.ID, model, reasoning, ru
 		if len(skills) > 0 {
 			configuration = append(configuration, codexSkillConfiguration(skills))
 		}
-		return runtimePreparation{workingDirectory: workspace, evaluationSkillRoot: filepath.Join(workspace, ".agents", "skills"), codexConfiguration: configuration}, nil
+		return runtimePreparation{
+			environment:         []string{"CODEX_HOME=" + codexHome},
+			workingDirectory:    workspace,
+			evaluationSkillRoot: filepath.Join(workspace, ".agents", "skills"),
+			codexConfiguration:  configuration,
+		}, nil
 	}
 
 	root := privateRuntimeRunRoot(runID)
@@ -381,6 +400,26 @@ func copyExecutable(source, destination string) error {
 	return output.Close()
 }
 
+func copyFileIfPresent(source, destination string, mode fs.FileMode) error {
+	input, err := os.Open(source)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	defer input.Close()
+	output, err := os.OpenFile(destination, os.O_CREATE|os.O_EXCL|os.O_WRONLY, mode)
+	if err != nil {
+		return err
+	}
+	if _, err := io.Copy(output, input); err != nil {
+		output.Close()
+		return err
+	}
+	return output.Close()
+}
+
 func prepareClaudeRuntime(root, workspace string) (runtimePreparation, error) {
 	launch := filepath.Join(root, "launch")
 	skills := filepath.Join(root, "passed-skills", ".claude", "skills")
@@ -578,9 +617,9 @@ func codexSkillsToDisable() ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("resolve user home: %w", err)
 	}
-	codexHome := os.Getenv("CODEX_HOME")
-	if codexHome == "" {
-		codexHome = filepath.Join(home, ".codex")
+	codexHome, err := codexUserHome()
+	if err != nil {
+		return nil, err
 	}
 	roots := []string{
 		filepath.Join(codexHome, "skills"),
@@ -603,6 +642,17 @@ func codexSkillsToDisable() ([]string, error) {
 	}
 	slices.Sort(skills)
 	return skills, nil
+}
+
+func codexUserHome() (string, error) {
+	if codexHome := os.Getenv("CODEX_HOME"); codexHome != "" {
+		return codexHome, nil
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("resolve user home: %w", err)
+	}
+	return filepath.Join(home, ".codex"), nil
 }
 
 func skillFilesUnder(root string) ([]string, error) {

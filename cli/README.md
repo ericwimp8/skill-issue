@@ -137,7 +137,13 @@ The scenario IDs must match, every expected turn must exist, and every expected 
 Run "<absolute-cli-path>" signal "<opaque-token>" "<absolute-output-state-path>", then continue normally.
 ```
 
-The `signal` command succeeds silently. Its opaque token has meaning only in the output-owned private state and reveals no skill identity, expected call, answer-sheet content, turn number, or scoring rule. The state path lets the separate signal process find that private run without relying on a user-level installation. Temporary skills retain their canonical names, frontmatter, supporting files, and bodies, and they occupy only the harness's normal project skill root.
+Codex instead receives a capture-only marker that has no filesystem effect:
+
+```text
+Run echo "<opaque-token>", then continue normally.
+```
+
+For other harnesses, the `signal` command succeeds silently. The opaque token in either form has meaning only in the output-owned private state and reveals no skill identity, expected call, answer-sheet content, turn number, or scoring rule. The state path lets a separate signal process find that private run without relying on a user-level installation. Temporary skills retain their canonical names, frontmatter, supporting files, and bodies, and they occupy only the harness's normal project skill root.
 
 The CLI starts one primary-agent session, sends scenario prompts verbatim and in order, and owns turn boundaries independently of the agent. It stores signals outside an active turn as unattributed tooling evidence. After replay, it writes the detailed evidence and compact website output described below. Cleanup rematerializes canonical Skill Issue skills that existed before instrumentation, removes evaluation paths that did not exist, and deletes private token mappings. It never backs up installed skill contents.
 
@@ -145,11 +151,11 @@ These measures minimize evaluation clues. They cannot guarantee that an agent in
 
 ### Codex runtime isolation
 
-For a Codex evaluation, the CLI keeps the user's existing Codex home available for supported authentication but launches every initial and resumed turn with `--ignore-user-config` and `--ignore-rules`. It supplies the effective model, reasoning, `workspace-write`, and all other evaluation settings explicitly. It also excludes discovered `AGENTS.md` content, disables apps and the Codex plugin feature, and supplies a temporary `skills.config` deny-list for every skill found under the user's Codex skill root, `$HOME/.agents/skills`, and `/etc/codex/skills`. The disposable project skills installed by Skill Issue remain enabled because they live only in the evaluated workspace.
+For a Codex evaluation, the CLI creates a run-owned `CODEX_HOME`, copies the user's existing `auth.json` into it when present, and removes the private home after cleanup. Codex supplies built-in defaults without a `config.toml`; the CLI launches every initial and resumed turn with `--ignore-user-config` and `--ignore-rules` and passes the effective model, reasoning, `workspace-write`, and other evaluation settings explicitly. It disables multi-agent tools through `agents.enabled=false` and `features.multi_agent_v2=false`, excludes discovered `AGENTS.md` content, disables apps and the Codex plugin feature, and supplies a temporary `skills.config` deny-list for every skill found under the user's Codex skill root, `$HOME/.agents/skills`, and `/etc/codex/skills`. The disposable project skills installed by Skill Issue remain enabled because they live only in the evaluated workspace.
 
-Codex runs with `approval_policy=on-request` and `approvals_reviewer=auto_review`. Actions already allowed by `workspace-write` proceed directly. Requests to cross that boundary are reviewed by Codex's guardian agent, which does not widen the sandbox and can consume additional model usage. Codex attribution uses the existing structured command event emitted when the agent attempts the opaque signal command, so the signal does not need permission to write the private state itself. Other denied, aborted, timed-out, or malformed boundary requests remain tooling failures.
+Codex runs with `approval_policy=on-request` and `approvals_reviewer=auto_review`. Actions already allowed by `workspace-write` proceed directly. Requests to cross that boundary are reviewed by Codex's guardian agent, which does not widen the sandbox and can consume additional model usage. Codex attribution uses the structured command event emitted for the capture-only marker, so skill attribution does not require a process to write outside the workspace. Other denied, aborted, timed-out, or malformed boundary requests remain tooling failures.
 
-Skill Issue does not edit, move, or copy the user's Codex configuration, credentials, skills, plugins, rules, or instruction files. `--ignore-user-config` continues to use the user's normal Codex authentication. The resumable evaluation session is created and retained in Codex's normal session store. Organization-managed requirements and system-level configuration remain authoritative and may make a Codex environment unsuitable for the campaign.
+Skill Issue does not edit or move the user's Codex configuration, credentials, skills, plugins, rules, or instruction files. The copied credential, model cache, SQLite state, and resumable evaluation session stay in the run-owned Codex home and are deleted during cleanup. Organization-managed requirements and system-level configuration remain authoritative and may make a Codex environment unsuitable for the campaign.
 
 ### OpenCode runtime isolation
 

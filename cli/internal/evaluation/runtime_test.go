@@ -4,9 +4,48 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
+
+	"github.com/ericwimp8/skill-issue/cli/internal/harness"
 )
+
+func TestPrepareCodexRuntimeOwnsStateAndDisablesAgents(t *testing.T) {
+	defer os.RemoveAll(privateRuntimeRunRoot("run-id"))
+	root := t.TempDir()
+	workspace := filepath.Join(root, "workspace")
+	userCodexHome := filepath.Join(root, "user-codex-home")
+	if err := os.MkdirAll(userCodexHome, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(userCodexHome, "auth.json"), []byte("authentication"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("CODEX_HOME", userCodexHome)
+
+	runtime, err := (Service{}).prepareRuntime(harness.Codex, "gpt-5.6-sol", "medium", "run-id", workspace, "/bin/sh", "/tmp/skill-issue", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	codexHome := filepath.Join(privateRuntimeRunRoot("run-id"), "codex-home")
+	if !slices.Contains(runtime.environment, "CODEX_HOME="+codexHome) {
+		t.Fatalf("Codex runtime does not own CODEX_HOME: %v", runtime.environment)
+	}
+	authentication, err := os.ReadFile(filepath.Join(codexHome, "auth.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(authentication) != "authentication" {
+		t.Fatalf("unexpected copied authentication: %q", authentication)
+	}
+	if !slices.Contains(runtime.codexConfiguration, `agents.enabled=false`) || !slices.Contains(runtime.codexConfiguration, `features.multi_agent_v2=false`) {
+		t.Fatalf("Codex runtime leaves agents enabled: %v", runtime.codexConfiguration)
+	}
+	if runtime.evaluationSkillRoot != filepath.Join(workspace, ".agents", "skills") {
+		t.Fatalf("unexpected Codex skill root: %s", runtime.evaluationSkillRoot)
+	}
+}
 
 func TestPrepareCursorRuntimeOwnsSignalExecutable(t *testing.T) {
 	root := t.TempDir()

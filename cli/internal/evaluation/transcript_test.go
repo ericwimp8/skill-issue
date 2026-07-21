@@ -124,8 +124,7 @@ func TestTranscriptSanitizationFollowsCodexSignalRecording(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	cliPath := filepath.Join(stateRoot, "bin", "skill-issue")
-	command := cliPath + ` signal ` + token + ` ` + stateRoot
+	command := `echo "` + token + `"`
 	event, err := json.Marshal(map[string]any{
 		"type": "item.completed",
 		"item": map[string]any{"type": "command_execution", "command": command},
@@ -134,12 +133,11 @@ func TestTranscriptSanitizationFollowsCodexSignalRecording(t *testing.T) {
 		t.Fatal(err)
 	}
 	capture := replay.Capture{Events: []json.RawMessage{event}, Transcript: command}
-	if err := service.recordCodexSignals(runID, "turn-1", capture, map[string]string{token: "prompt-writing"}, cliPath); err != nil {
+	if err := service.recordCodexSignals(runID, "turn-1", capture, map[string]string{token: "prompt-writing"}); err != nil {
 		t.Fatal(err)
 	}
 
 	sanitizer := transcriptSanitizer{}
-	sanitizer.addPath(cliPath, "[skill-issue-cli]")
 	sanitizer.addPath(stateRoot, "[evaluation-state]")
 	replayResult := replay.Result{Turns: []replay.TurnResult{{TurnID: "turn-1", Capture: capture}}}
 	if err := sanitizer.sanitize(&replayResult); err != nil {
@@ -152,7 +150,7 @@ func TestTranscriptSanitizationFollowsCodexSignalRecording(t *testing.T) {
 	if len(events) != 1 || events[0].Skill != "prompt-writing" || events[0].TurnID != "turn-1" {
 		t.Fatalf("unexpected recorded signals: %#v", events)
 	}
-	if strings.Contains(replayResult.Turns[0].Capture.Transcript, cliPath) || strings.Contains(replayResult.Turns[0].Capture.Transcript, stateRoot) {
+	if strings.Contains(replayResult.Turns[0].Capture.Transcript, stateRoot) {
 		t.Fatal("stored replay capture retained scoring paths")
 	}
 }

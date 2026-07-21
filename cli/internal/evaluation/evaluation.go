@@ -290,6 +290,7 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 		BackupRoot:           filepath.Join(service.runs.RunDir(runID), "preexisting-skills"),
 		Tokens:               tokens,
 		Skills:               inputs.skills,
+		CaptureSignals:       request.Harness == harness.Codex,
 		ApplyHarnessMetadata: request.EvaluationID != "",
 		ConfirmReplace:       confirmPreexistingReplacement(request),
 	})
@@ -365,7 +366,7 @@ func (service Service) Run(ctx context.Context, request RunRequest) (result Resu
 				}
 			}
 			if request.Harness == harness.Codex && boundary.Capture != nil {
-				if err := service.recordCodexSignals(runID, boundary.TurnID, *boundary.Capture, tokens, cliPath); err != nil {
+				if err := service.recordCodexSignals(runID, boundary.TurnID, *boundary.Capture, tokens); err != nil {
 					return err
 				}
 			}
@@ -474,7 +475,7 @@ func confirmPreexistingReplacement(request RunRequest) func([]string) (bool, err
 	}
 }
 
-func (service Service) recordCodexSignals(runID, turnID string, capture replay.Capture, tokens map[string]string, cliPath string) error {
+func (service Service) recordCodexSignals(runID, turnID string, capture replay.Capture, tokens map[string]string) error {
 	existing, err := service.runs.Events(runID)
 	if err != nil {
 		return err
@@ -499,7 +500,7 @@ func (service Service) recordCodexSignals(runID, turnID string, capture replay.C
 		}
 		for token := range tokens {
 			skill := tokens[token]
-			if recorded[token] || observed[skill] || !isSignalCommand(value.Item.Command, cliPath, token, service.stateRoot) {
+			if recorded[token] || observed[skill] || !isCodexSignalCommand(value.Item.Command, token) {
 				continue
 			}
 			if err := service.runs.Mark(token); err != nil {
@@ -509,6 +510,10 @@ func (service Service) recordCodexSignals(runID, turnID string, capture replay.C
 		}
 	}
 	return nil
+}
+
+func isCodexSignalCommand(command, token string) bool {
+	return containsShellWord(command, "echo") && containsShellWord(command, token)
 }
 
 func (service Service) validateCursorSignals(runID, turnID string, capture replay.Capture, tokens map[string]string, cliPath string) error {

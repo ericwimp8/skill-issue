@@ -9,9 +9,20 @@
   --color-line-strong: #c8c8c1;
   --color-accent: #232321;
   --color-accent-contrast: #ffffff;
+  --color-codex-blue: #385bf6;
+  --color-codex-blue-muted: color-mix(
+    in srgb,
+    var(--color-codex-blue) 55%,
+    var(--color-text-muted)
+  );
+  --color-codex-blue-soft: color-mix(
+    in srgb,
+    var(--color-codex-blue) 38%,
+    transparent
+  );
   --color-call: #1d8a6a;
   --color-miss: #d05663;
-  --color-focus: #6a5cff;
+  --color-focus: var(--color-codex-blue);
   --color-chart-grid: #e8e8e3;
   --color-chart-label: #81817b;
   --color-neutral-dot: #c8c8c1;
@@ -67,7 +78,7 @@
   --color-accent-contrast: #111212;
   --color-call: #53cda6;
   --color-miss: #ff7b88;
-  --color-focus: #a99fff;
+  --color-focus: var(--color-codex-blue);
   --color-chart-grid: #282929;
   --color-chart-label: #8c8c86;
   --color-neutral-dot: #3f4141;
@@ -216,7 +227,7 @@ a:focus-visible {
 }
 
 .site-navigation a[aria-current='page'] {
-  border-color: var(--color-line);
+  border-color: var(--color-codex-blue-soft);
   background: var(--color-surface-elevated);
   box-shadow: var(--shadow-subtle);
   color: var(--color-text);
@@ -260,7 +271,7 @@ a:focus-visible {
   width: 6rem;
   height: 6rem;
   place-items: center;
-  border: 1px solid var(--color-line-strong);
+  border: 1px solid var(--color-codex-blue);
   border-radius: 50%;
   font-family: var(--font-mono);
   font-size: 1.8rem;
@@ -450,7 +461,7 @@ h1 {
 }
 
 .product-tab[aria-selected='true'] {
-  border-color: var(--color-line-strong);
+  border-color: var(--color-codex-blue-soft);
   background: var(--color-surface-elevated);
   box-shadow: var(--shadow-subtle);
   color: var(--color-text);
@@ -814,7 +825,7 @@ h1 {
 }
 
 .comparison-view-tabs button[aria-selected='true'] {
-  border-color: var(--color-line-strong);
+  border-color: var(--color-codex-blue-soft);
   background: var(--color-surface-elevated);
   box-shadow: var(--shadow-subtle);
   color: var(--color-text);
@@ -843,7 +854,6 @@ h1 {
   border-bottom: 1px solid var(--color-line);
 }
 
-.filter-control,
 .combination-picker summary {
   min-width: 0;
   min-height: 4.15rem;
@@ -853,29 +863,12 @@ h1 {
   background: var(--color-surface-elevated);
 }
 
-.filter-control {
-  display: grid;
-  gap: 0.35rem;
-}
-
-.filter-control > span,
 .combination-picker summary small {
   color: var(--color-text-muted);
   font-family: var(--font-mono);
   font-size: 0.62rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-}
-
-.filter-control select {
-  width: 100%;
-  padding: 0;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  color: var(--color-text);
-  font-size: 0.86rem;
-  font-weight: 620;
 }
 
 .combination-picker {
@@ -902,13 +895,32 @@ h1 {
 }
 
 .combination-picker summary i {
+  position: relative;
+  display: block;
+  flex: none;
+  width: 1.1rem;
+  height: 1.1rem;
   color: var(--color-text-muted);
+  font-size: 0;
   font-style: normal;
+}
+
+.combination-picker summary i::before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0.52rem;
+  height: 0.52rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  content: '';
+  transform: translate(-50%, -50%) rotate(45deg);
+  transform-origin: center;
   transition: transform var(--transition-fast);
 }
 
-.combination-picker[open] summary i {
-  transform: rotate(180deg);
+.combination-picker[open] summary i::before {
+  transform: translate(-50%, -50%) rotate(225deg);
 }
 
 .picker-panel {
@@ -960,6 +972,33 @@ h1 {
   grid-template-columns: auto 1fr;
 }
 
+.picker-option-button {
+  grid-template-columns: auto 1fr;
+  width: 100%;
+  border-top: 0;
+  border-right: 0;
+  border-left: 0;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+}
+
+.picker-option-button[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--color-codex-blue) 5%, transparent);
+}
+
+.picker-option-button > i {
+  width: 1rem;
+  color: var(--color-codex-blue);
+  font-style: normal;
+  text-align: center;
+}
+
+.scenario-picker-panel .picker-option-button:last-child {
+  border-bottom: 0;
+}
+
 .picker-option:hover {
   background: color-mix(in srgb, var(--color-focus) 5%, transparent);
 }
@@ -985,7 +1024,7 @@ h1 {
   font-size: 0.69rem;
 }
 
-.picker-option > i,
+.picker-option:not(.picker-option-button) > i,
 .selection-chips i {
   width: 0.55rem;
   height: 0.55rem;
@@ -1385,7 +1424,8 @@ h1 {
 
 .methodology-actions a,
 .methodology-inline-link a {
-  border-bottom: 1px solid var(--color-line-strong);
+  border-bottom: 1px solid var(--color-codex-blue-soft);
+  color: var(--color-codex-blue-muted);
   font-size: 0.82rem;
   font-weight: 600;
   line-height: 1.8;
@@ -1393,7 +1433,8 @@ h1 {
 
 .methodology-actions a:hover,
 .methodology-inline-link a:hover {
-  border-color: var(--color-text);
+  border-color: var(--color-codex-blue);
+  color: var(--color-codex-blue);
 }
 
 .methodology-summary {
@@ -1556,9 +1597,9 @@ h1 {
 .methodology-record-actions a {
   padding: 0;
   border: 0;
-  border-bottom: 1px solid var(--color-line-strong);
+  border-bottom: 1px solid var(--color-codex-blue-soft);
   background: transparent;
-  color: var(--color-text);
+  color: var(--color-codex-blue-muted);
   cursor: pointer;
   font-size: 0.75rem;
   font-weight: 600;
@@ -1567,7 +1608,8 @@ h1 {
 
 .methodology-record-actions button:hover,
 .methodology-record-actions a:hover {
-  border-color: var(--color-text);
+  border-color: var(--color-codex-blue);
+  color: var(--color-codex-blue);
 }
 
 .methodology-inline-link {

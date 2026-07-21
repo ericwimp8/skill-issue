@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import {
   availableCells,
@@ -137,6 +137,60 @@ function ScenarioCheckboxPicker({
   );
 }
 
+type ScenarioPickerProps = {
+  onSelectScenario: (scenarioId: string) => void;
+  selectedScenarioId: string;
+};
+
+function ScenarioPicker({
+  onSelectScenario,
+  selectedScenarioId,
+}: ScenarioPickerProps) {
+  const pickerRef = useRef<HTMLDetailsElement>(null);
+  const selectedScenario = scenarioOptions.find(
+    (scenario) => scenario.id === selectedScenarioId,
+  );
+
+  function selectScenario(nextScenarioId: string) {
+    onSelectScenario(nextScenarioId);
+    pickerRef.current?.removeAttribute('open');
+  }
+
+  return (
+    <details className="combination-picker" ref={pickerRef}>
+      <summary>
+        <span>
+          <small>Scenario</small>
+          {selectedScenario?.label ?? selectedScenarioId}
+        </span>
+        <i aria-hidden="true">⌄</i>
+      </summary>
+      <div className="picker-panel scenario-picker-panel">
+        <div className="picker-options" role="group" aria-label="Scenario">
+          {scenarioOptions.map((scenario) => {
+            const selected = scenario.id === selectedScenarioId;
+
+            return (
+              <button
+                key={scenario.id}
+                className="picker-option picker-option-button"
+                type="button"
+                aria-pressed={selected}
+                onClick={() => selectScenario(scenario.id)}
+              >
+                <i aria-hidden="true">{selected ? '✓' : ''}</i>
+                <span>
+                  <strong>{scenario.label}</strong>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </details>
+  );
+}
+
 export function EvaluationExplorer() {
   const [comparisonView, setComparisonView] = useState<'models' | 'harnesses'>(
     'models',
@@ -260,19 +314,10 @@ export function EvaluationExplorer() {
             className="explorer-controls"
             aria-label="Evaluation chart controls"
           >
-            <label className="filter-control">
-              <span>Scenario</span>
-              <select
-                value={scenarioId}
-                onChange={(event) => setScenarioId(event.target.value)}
-              >
-                {scenarioOptions.map((scenario) => (
-                  <option key={scenario.id} value={scenario.id}>
-                    {scenario.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <ScenarioPicker
+              selectedScenarioId={scenarioId}
+              onSelectScenario={setScenarioId}
+            />
 
             <CombinationPicker
               selectedCellIds={selectedCellIds}

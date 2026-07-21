@@ -223,3 +223,7 @@ skills reliably enough for me to depend on them?**
 
 A future hosted service could run standardized evaluations across more models
 and APIs, publish broader comparisons, and aggregate compatible local results.
+
+## License
+
+Skill Issue is available under the [MIT License](LICENSE).

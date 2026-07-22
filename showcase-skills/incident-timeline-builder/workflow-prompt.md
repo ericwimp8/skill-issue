@@ -3,9 +3,9 @@
 ```text
 Work in `<repo-root>`. Create a reusable skill named
 `incident-timeline-builder` by running the complete current project-local Skill
-Issue workflow from `skills/skill-intake/SKILL.md` through
-`skills/skill-generation/SKILL.md` and
-`skills/skill-evaluation-and-refinement/SKILL.md`, applying the supporting
+Issue workflow from `plugins/skill-issue/skills/skill-intake/SKILL.md` through
+`plugins/skill-issue/skills/skill-generation/SKILL.md` and
+`plugins/skill-issue/skills/skill-evaluation-and-refinement/SKILL.md`, applying the supporting
 disciplines those sources require.
 
 The skill must deterministically turn supplied logs, alerts, deployment

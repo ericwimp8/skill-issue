@@ -1,7 +1,7 @@
 # CI Failure Triage Workflow Prompt
 
 ```text
-Work in `<repo-root>`. Create a reusable skill named `ci-failure-triage` by running the complete current project-local Skill Issue workflow from `skills/skill-intake/SKILL.md` through `skills/skill-generation/SKILL.md` and `skills/skill-evaluation-and-refinement/SKILL.md`, applying the supporting disciplines those sources require.
+Work in `<repo-root>`. Create a reusable skill named `ci-failure-triage` by running the complete current project-local Skill Issue workflow from `plugins/skill-issue/skills/skill-intake/SKILL.md` through `plugins/skill-issue/skills/skill-generation/SKILL.md` and `plugins/skill-issue/skills/skill-evaluation-and-refinement/SKILL.md`, applying the supporting disciplines those sources require.
 
 The skill investigates failed CI runs from supplied logs, workflow configuration, repository source, and available local tooling; distinguishes the primary failure from cascading noise; produces an evidence-backed diagnosis, smallest responsible remediation direction, and exact verification plan; preserves uncertainty and unavailable evidence; and never modifies remote CI state, secrets, branches, or releases without explicit authorization.
 

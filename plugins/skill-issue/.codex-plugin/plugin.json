@@ -18,6 +18,7 @@
     "longDescription": "Skill Issue turns conversational intake into an agent skill, then evaluates its invocation and behavior through evidence-driven semantic refinement.",
     "developerName": "Eric Wimp",
     "category": "Developer Tools",
-    "capabilities": ["Interactive", "Read", "Write"]
+    "capabilities": ["Interactive", "Read", "Write"],
+    "defaultPrompt": ["Help me create and refine a reliable agent skill."]
   }
 }

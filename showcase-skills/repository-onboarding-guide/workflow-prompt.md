@@ -5,8 +5,8 @@ This publication-safe record preserves the initiating prompt with the checkout n
 > Work in `<repo-root>`.
 >
 > Run the complete current project-local Skill Issue workflow from
-> `skills/skill-intake/SKILL.md` through `skills/skill-generation/SKILL.md` and
-> `skills/skill-evaluation-and-refinement/SKILL.md`, applying their required
+> `plugins/skill-issue/skills/skill-intake/SKILL.md` through `plugins/skill-issue/skills/skill-generation/SKILL.md` and
+> `plugins/skill-issue/skills/skill-evaluation-and-refinement/SKILL.md`, applying their required
 > supporting disciplines. Create a reusable skill named
 > `repository-onboarding-guide`.
 >
@@ -26,4 +26,3 @@ This publication-safe record preserves the initiating prompt with the checkout n
 > genuinely required. Continue autonomously through the governed workflow and
 > apply refinements automatically within this workspace. Use fresh independent
 > GPT-5.6 Sol agents with medium reasoning for evaluation trials.
-

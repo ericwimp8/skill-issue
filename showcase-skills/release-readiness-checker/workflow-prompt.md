@@ -2,9 +2,9 @@
 
 ```text
 Work in `<repo-root>`. Run the complete current project-local Skill Issue
-workflow from `skills/skill-intake/SKILL.md` through
-`skills/skill-generation/SKILL.md` and
-`skills/skill-evaluation-and-refinement/SKILL.md`, applying the supporting
+workflow from `plugins/skill-issue/skills/skill-intake/SKILL.md` through
+`plugins/skill-issue/skills/skill-generation/SKILL.md` and
+`plugins/skill-issue/skills/skill-evaluation-and-refinement/SKILL.md`, applying the supporting
 disciplines those sources require. Create a reusable skill named
 `release-readiness-checker`.
 

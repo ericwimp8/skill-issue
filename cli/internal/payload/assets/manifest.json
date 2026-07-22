@@ -5,15 +5,15 @@
   "components": [
     {
       "id": "skill-evaluation-and-refinement",
-      "source": "skills/skill-evaluation-and-refinement"
+      "source": "plugins/skill-issue/skills/skill-evaluation-and-refinement"
     },
     {
       "id": "skill-generation",
-      "source": "skills/skill-generation"
+      "source": "plugins/skill-issue/skills/skill-generation"
     },
     {
       "id": "skill-intake",
-      "source": "skills/skill-intake"
+      "source": "plugins/skill-issue/skills/skill-intake"
     },
     {
       "id": "document-update-discipline",

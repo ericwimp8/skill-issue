@@ -16,7 +16,7 @@ cat > "$raw_session" <<'EOF'
 {"timestamp":"2026-07-21T00:00:03Z","type":"response_item","payload":{"type":"message","role":"assistant","content":[{"type":"output_text","text":"Safe evaluation result at /Users/private-name/project.\n<oai-mem-citation>private memory pointer</oai-mem-citation>"}]}}
 EOF
 
-node "$repo_root/skills/skill-evaluation-and-refinement/scripts/export-codex-evidence.mjs" \
+node "$repo_root/plugins/skill-issue/skills/skill-evaluation-and-refinement/scripts/export-codex-evidence.mjs" \
   --input "$raw_session" \
   --target supporting-skills/example/SKILL.md > "$curated_evidence"
 

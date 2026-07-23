@@ -1,0 +1,3 @@
+[submodule "dependencies/codex-skill-issue-plugin"]
+	path = dependencies/codex-skill-issue-plugin
+	url = https://github.com/ericwimp8/codex-skill-issue-plugin.git

@@ -29,6 +29,36 @@ The wrapper stores generated binaries under ignored repository-local `.skill-iss
 
 Unless the user explicitly requests the development CLI or current-source testing, use known-good. Build a new known-good snapshot only from the committed revision intended to become the next working baseline. Keep known-good and development evaluation artifacts in separate descriptive subdirectories under `output/`. Never force-add `.skill-issue/` binaries or state.
 
+# Skill Issue Plugin Dependency
+
+The canonical Skill Issue plugin lives in
+`https://github.com/ericwimp8/codex-skill-issue-plugin`. This repository consumes
+it through the `dependencies/codex-skill-issue-plugin` Git submodule so the CLI
+can embed a pinned plugin revision.
+
+Do not edit plugin files from the submodule checkout. Make plugin changes in the
+standalone `codex-skill-issue-plugin` repository and push them there. After
+publishing the plugin, trigger this repository's dependency sync:
+
+```sh
+gh workflow run sync-skill-issue-plugin.yml --repo ericwimp8/skill-issue
+```
+
+The workflow updates the pointer to the plugin repository's latest `main`
+commit, runs the CLI tests, and pushes a commit-specific automation branch. The
+publishing agent then opens and merges that branch through its authenticated
+GitHub CLI session. The workflow never writes directly to `main`.
+
+After cloning this repository, initialize the dependency with:
+
+```sh
+git submodule update --init --recursive
+```
+
+Treat manual submodule-pointer changes as recovery work. Before accepting one,
+confirm the pointer names an existing standalone-plugin commit and run the CLI
+tests with the submodule initialized.
+
 # Local Harness Evaluation Routing
 
 Use explicit executable selection for local evaluations so interactive shell aliases cannot choose the wrong harness route. Go resolves harness commands with `exec.LookPath`; shell aliases such as `claude-codex` are invisible to the CLI and are only for interactive terminal use.

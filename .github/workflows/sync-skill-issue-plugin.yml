@@ -1,0 +1,52 @@
+name: Sync Skill Issue plugin
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-skill-issue-plugin
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - name: Update and validate plugin dependency
+        run: |
+          dependency=dependencies/codex-skill-issue-plugin
+          latest=$(git ls-remote \
+            https://github.com/ericwimp8/codex-skill-issue-plugin.git \
+            refs/heads/main |
+            cut -f1)
+          current=$(git -C "$dependency" rev-parse HEAD)
+
+          if [ "$current" = "$latest" ]; then
+            echo "Skill Issue already uses plugin commit $latest."
+            exit 0
+          fi
+
+          branch="automation/skill-issue-plugin-${latest:0:12}"
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
+            echo "Automation branch $branch already exists."
+            exit 0
+          fi
+
+          git -C "$dependency" fetch origin "$latest"
+          git -C "$dependency" checkout --detach "$latest"
+          go test ./...
+
+          git checkout -b "$branch"
+          git config user.name "skill-issue[bot]"
+          git config user.email "skill-issue[bot]@users.noreply.github.com"
+          git add "$dependency"
+          git commit -m "chore: update Skill Issue plugin dependency"
+          git push origin "HEAD:refs/heads/$branch"

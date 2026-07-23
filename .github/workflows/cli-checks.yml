@@ -22,6 +22,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
+        with:
+          submodules: true
 
       - name: Set up Go
         uses: actions/setup-go@v6

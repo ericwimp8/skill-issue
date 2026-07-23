@@ -8,6 +8,7 @@ binary_root="$repository_root/.skill-issue/bin"
 development_binary="$binary_root/development/skill-issue"
 known_good_root="$binary_root/known-good"
 known_good_current="$known_good_root/current"
+plugin_dependency="dependencies/codex-skill-issue-plugin"
 
 archive_root=
 temporary_binary=
@@ -49,7 +50,7 @@ build_development() {
   short_commit=$(git -C "$repository_root" rev-parse --short=12 HEAD)
   build_date=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
   state=clean
-  if [ -n "$(git -C "$repository_root" status --porcelain -- cli bundle.go go.mod skills supporting-skills evaluations/skill-calling/built-ins ':(glob)evaluations/scenario-skill-refinement/*/skill/**')" ]; then
+  if [ -n "$(git -C "$repository_root" status --porcelain -- cli bundle.go go.mod "$plugin_dependency" supporting-skills evaluations/skill-calling/built-ins ':(glob)evaluations/scenario-skill-refinement/*/skill/**')" ]; then
     state=dirty
   fi
 
@@ -70,6 +71,15 @@ build_known_good() {
   if [ ! -x "$output_path" ]; then
     archive_root=$(mktemp -d "${TMPDIR:-/tmp}/skill-issue-known-good.XXXXXX")
     git -C "$repository_root" archive HEAD | tar -xf - -C "$archive_root"
+    dependency_commit=$(git -C "$repository_root" rev-parse "HEAD:$plugin_dependency")
+    dependency_checkout="$repository_root/$plugin_dependency"
+    if ! git -C "$dependency_checkout" cat-file -e "${dependency_commit}^{commit}" 2>/dev/null; then
+      echo "Plugin dependency is unavailable. Run: git submodule update --init --recursive" >&2
+      exit 1
+    fi
+    mkdir -p "$archive_root/$plugin_dependency"
+    git -C "$dependency_checkout" archive "$dependency_commit" |
+      tar -xf - -C "$archive_root/$plugin_dependency"
     build_binary \
       "$archive_root" \
       "$output_path" \

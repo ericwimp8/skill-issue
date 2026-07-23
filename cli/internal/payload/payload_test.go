@@ -46,9 +46,9 @@ func TestCanonicalManifestSources(t *testing.T) {
 		"document-update-discipline":      "evaluations/scenario-skill-refinement/document-update-discipline/skill",
 		"prompt-writing":                  "evaluations/scenario-skill-refinement/prompt-writing/skill",
 		"skill-authoring-discipline":      "evaluations/scenario-skill-refinement/skill-authoring-discipline/skill",
-		"skill-evaluation-and-refinement": "plugins/skill-issue/skills/skill-evaluation-and-refinement",
-		"skill-generation":                "plugins/skill-issue/skills/skill-generation",
-		"skill-intake":                    "plugins/skill-issue/skills/skill-intake",
+		"skill-evaluation-and-refinement": "dependencies/codex-skill-issue-plugin/plugins/skill-issue/skills/skill-evaluation-and-refinement",
+		"skill-generation":                "dependencies/codex-skill-issue-plugin/plugins/skill-issue/skills/skill-generation",
+		"skill-intake":                    "dependencies/codex-skill-issue-plugin/plugins/skill-issue/skills/skill-intake",
 		"system-change-ownership":         "evaluations/scenario-skill-refinement/system-change-ownership/skill",
 		"systematic-debugging":            "evaluations/scenario-skill-refinement/systematic-debugging/skill",
 	}

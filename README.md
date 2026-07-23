@@ -159,6 +159,12 @@ Skill Issue then:
 The user defines the outcome; Skill Issue handles the skill-engineering
 workflow.
 
+The skill-engineering workflow runs with whichever agent the user has chosen;
+more capable agents will generally produce stronger construction and evaluation
+work. During intake, the user selects the model and reasoning level that should
+run the finished skill's evaluation trials. That evaluated-agent configuration
+should match the environment in which the user intends the skill to operate.
+
 ## Command-line interface
 
 The project includes a self-contained Go CLI for local use. It installs the

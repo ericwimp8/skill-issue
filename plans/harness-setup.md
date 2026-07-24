@@ -1,5 +1,9 @@
 # Harness Setup Tasks: Evaluation Support
 
+> **Historical setup reference:** Production source and
+> [`plans/current-state.md`](current-state.md) own current behavior and work.
+> Preserve this document for setup rationale only.
+
 This document owns the native setup contracts for Codex, Cursor, Claude Code, OpenCode, and Pi. The CLI implementation owns their current executable behavior, and the retained qualification records document the bounded runtime evidence.
 
 The evaluation contracts use the CLI's disposable lifecycle: temporary instrumented paths are materialized in the harness project root, cleanup rematerializes current canonical Skill Issue copies only for paths that existed before instrumentation, removes paths introduced for the evaluation, and retains the selected evidence. Ordinary installation has no receipts, backups, rollback inventories, repair commands, update commands, or platform application-state directory.

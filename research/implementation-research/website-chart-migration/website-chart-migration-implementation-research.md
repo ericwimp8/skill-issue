@@ -1,6 +1,11 @@
 # Website Chart Migration Implementation Research
 
-> **Status:** The chart migration described here has been implemented. Production source owns current behavior; this report remains evidence for the accepted-data handoff and future campaign-result export.
+> **Historical implementation research:** The chart migration is implemented.
+> Production source owns current behavior, accepted artifacts own published
+> results, and
+> [`plans/current-state.md`](../../../plans/current-state.md) owns remaining
+> work. Status statements below describe the inspected pre-implementation
+> snapshot.
 
 ## Research Decision
 

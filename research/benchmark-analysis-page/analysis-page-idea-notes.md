@@ -1,5 +1,10 @@
 # Analysis Page — Idea Notes
 
+> **Historical idea notes:** The counts and incomplete-run language below are a
+> superseded drafting snapshot. Accepted artifacts and current website source
+> own published analysis; [`plans/current-state.md`](../../plans/current-state.md)
+> owns remaining work.
+
 Working notes for the written analysis page: candidate structure, findings, framings, tidbits, and required caveats. Numbers reflect the corrected 19-run dataset (post attribution-matcher fix); the two in-flight Claude Code — Codex Sol runs complete that configuration and should be finalized before publication.
 
 ## The dataset in one line

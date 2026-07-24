@@ -1,5 +1,9 @@
 # Website Reference And Architecture Decision
 
+> **Historical architecture reference:** Current website source owns behavior,
+> and [`plans/current-state.md`](../current-state.md) owns current work. Preserve
+> this document for the decisions that shaped the implemented site.
+
 ## Product Boundary
 
 Skill Issue needs a public facade for a local-first skill-evaluation product. The website owns explanation, benchmark presentation, and a route to downloadable CLI artifacts. GitHub Pages owns static hosting; GitHub Releases owns versioned binaries. Benchmark content remains repository-owned local data, so the first website requires neither a runtime API nor a database.

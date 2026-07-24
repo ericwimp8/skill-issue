@@ -2,6 +2,17 @@
 
 For any competition or hackathon-rules question, read and follow the authoritative [OpenAI Build Week rules](https://openai.devpost.com/rules).
 
+Preserve `main` exactly as the post-submission competition snapshot protected by
+the existing `build-week-2026` tag.
+
+- Never merge into, commit directly to, rebase, reset, force-push, or otherwise
+  modify `main`.
+- Do all future implementation work on a non-`main` branch, currently
+  `codex/post-submission-development`, unless Shannon explicitly directs
+  otherwise.
+- Before any Git operation that might affect branch topology, verify the current
+  branch is not `main`. If it is, stop and ask Shannon.
+
 # Website Development
 
 The repository root contains the static React, TypeScript, and Vite website.
@@ -46,8 +57,8 @@ gh workflow run sync-skill-issue-plugin.yml --repo ericwimp8/skill-issue
 
 The workflow updates the pointer to the plugin repository's latest `main`
 commit, runs the CLI tests, and pushes a commit-specific automation branch. The
-publishing agent then opens and merges that branch through its authenticated
-GitHub CLI session. The workflow never writes directly to `main`.
+publishing agent then opens that branch for review under the competition
+snapshot safety rules above. The workflow never writes directly to `main`.
 
 After cloning this repository, initialize the dependency with:
 

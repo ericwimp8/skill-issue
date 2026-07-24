@@ -1,5 +1,9 @@
 # Skill Issue Local Testing Methodology Research
 
+> **Historical methodology snapshot:** Production source and accepted artifacts
+> supersede the development-state counts and publication status below.
+> [`plans/current-state.md`](../../plans/current-state.md) owns current work.
+
 ## Best-Supported Answer
 
 The current development working tree defines a governed skill-calling methodology with three **30-turn** scenarios. At the inspected development snapshot, the gardening and archive scenarios each contain **44 unique expected turn-skill pairs**, the preparedness scenario contains **43**, and each scenario has expectations on **27 of its 30 turns**. These totals are current observations rather than frozen campaign constants because the scenario sources are still being edited and require final re-verification.

@@ -2,9 +2,18 @@
 
 ## The job
 
-Run the campaign's 30 blind skill-calling evaluations — ten harness-and-model configurations, each running the three built-in scenarios once, in full — and keep `evaluation-progress.md` (same directory) truthful as you go. Complete as many of the 30 as you can: troubleshoot what fails where you can, record with evidence what you cannot, and never let one failure stop the rest. When every run is settled, report what completed, what didn't, and why, with enough diagnosis that the operator can fix and rerun the leftovers.
+Run the campaign's 27 blind skill-calling evaluations — nine harness-and-model
+configurations, each running the three built-in scenarios once, in full — and
+keep the campaign section of [`../current-state.md`](../current-state.md)
+truthful as you go. Complete as many of the 27 as you can: troubleshoot what
+fails where you can, record with evidence what you cannot, and never let one
+failure stop the rest. When every run is settled, report what completed, what
+didn't, and why, with enough diagnosis that the operator can fix and rerun the
+leftovers.
 
-You own the whole task: scheduling, launching, monitoring, bookkeeping, and reporting. The tracker is yours alone to write.
+You own scheduling, launching, monitoring, campaign bookkeeping, and reporting.
+Edit only the campaign-owned state in `../current-state.md`; that document
+remains the repository-wide live owner.
 
 ## Running one evaluation
 
@@ -50,7 +59,10 @@ A completed evaluation retains its container as evidence. When an attempt fails 
 
 ## Constraints that are real, not stylistic
 
-- There is no concurrency cap: run as many simultaneous evaluations as you need. Within each configuration, the three scenarios run one at a time, in order.
+- Choose concurrency adaptively according to active monitoring capacity,
+  harness health, and account limits. Ten simultaneous evaluations is the
+  campaign-wide ceiling, not a required launch count. Within each configuration,
+  the three scenarios run one at a time, in order.
 - Every active evaluation remains observable and actively monitored through completion or failure.
 - At most one `claude-code`-harness run may be active at any moment, campaign-wide. This serializes all Claude Code — Codex scenarios and prevents them from overlapping Claude Code — Fable because concurrent Claude sessions fight over session state.
 - **Claude Code — Fable runs last, after everything else is settled**, and only after the claudex proxy (owned by `$REPO/.skill-issue/claudex/manage`) is stopped and verifiably gone — the Codex-proxy route and the normal `claude` route must never coexist.
@@ -77,8 +89,20 @@ Never weaken the evaluator-owned sandbox, bypass approvals, or broaden the evalu
 
 ## Keeping the operator in the loop
 
-Post short one-line updates in the conversation as events happen — a run starting (with its container), finishing (with expected/observed counts), entering diagnosis (with the cause), retrying in the same container number (with the correction), or completing a configuration — plus an occasional tally like `12/30 complete, 8 running, 1 failed`. The operator watches the campaign through these lines.
+Post short one-line updates in the conversation as events happen — a run
+starting (with its container), finishing (with expected/observed counts),
+entering diagnosis (with the cause), retrying in the same container number
+(with the correction), or completing a configuration — plus an occasional
+tally like `12/27 complete, 8 running, 1 failed`. The operator watches the
+campaign through these lines.
 
-In the tracker, keep statuses, informational attempt counts, stable container references (always as `<chats>/chat-<n>`, never machine-absolute paths), failure-log rows, and the summary tables consistent with reality, and leave it prettier-clean after each edit. A retry keeps the evaluation's existing container reference even though the failed container itself is deleted and recreated.
+In `../current-state.md`, keep campaign statuses, informational attempt counts,
+stable container references (always as `<chats>/chat-<n>`, never
+machine-absolute paths), and the campaign summary consistent with reality. A
+retry keeps the evaluation's existing container reference even though the
+failed container itself is deleted and recreated.
 
-The final report belongs to the operator: per-configuration outcomes, the exact identifiers and versions actually used, each failure with its diagnosis and container, and whether the campaign reached 30/30. Publishing, committing, and cleanup decisions stay with the operator.
+The final report belongs to the operator: per-configuration outcomes, the exact
+identifiers and versions actually used, each failure with its diagnosis and
+container, and whether the campaign reached 27/27. Publishing, committing, and
+cleanup decisions stay with the operator.

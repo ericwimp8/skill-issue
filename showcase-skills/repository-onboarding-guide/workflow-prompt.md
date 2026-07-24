@@ -5,9 +5,12 @@ This publication-safe record preserves the initiating prompt with the checkout n
 > Work in `<repo-root>`.
 >
 > Run the complete current project-local Skill Issue workflow from
-> `plugins/skill-issue/skills/skill-intake/SKILL.md` through `plugins/skill-issue/skills/skill-generation/SKILL.md` and
-> `plugins/skill-issue/skills/skill-evaluation-and-refinement/SKILL.md`, applying their required
-> supporting disciplines. Create a reusable skill named
+> `dependencies/codex-skill-issue-plugin/plugins/skill-issue/skills/skill-intake/SKILL.md`
+> through
+> `dependencies/codex-skill-issue-plugin/plugins/skill-issue/skills/skill-generation/SKILL.md`
+> and
+> `dependencies/codex-skill-issue-plugin/plugins/skill-issue/skills/skill-evaluation-and-refinement/SKILL.md`,
+> applying their required supporting disciplines. Create a reusable skill named
 > `repository-onboarding-guide`.
 >
 > The skill must create a concise, source-backed onboarding guide for an

@@ -3,10 +3,13 @@
 ```text
 Work in `<repo-root>`. Create a reusable skill named
 `incident-timeline-builder` by running the complete current project-local Skill
-Issue workflow from `plugins/skill-issue/skills/skill-intake/SKILL.md` through
-`plugins/skill-issue/skills/skill-generation/SKILL.md` and
-`plugins/skill-issue/skills/skill-evaluation-and-refinement/SKILL.md`, applying the supporting
-disciplines those sources require.
+Issue workflow from
+`dependencies/codex-skill-issue-plugin/plugins/skill-issue/skills/skill-intake/SKILL.md`
+through
+`dependencies/codex-skill-issue-plugin/plugins/skill-issue/skills/skill-generation/SKILL.md`
+and
+`dependencies/codex-skill-issue-plugin/plugins/skill-issue/skills/skill-evaluation-and-refinement/SKILL.md`,
+applying the supporting disciplines those sources require.
 
 The skill must deterministically turn supplied logs, alerts, deployment
 records, and operator notes into a chronological incident timeline. Normalize
